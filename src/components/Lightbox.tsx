@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { Artwork } from '../lib/supabase';
+import type { Artwork } from '../lib/supabase';
 
 interface LightboxProps {
   artworks: Artwork[];

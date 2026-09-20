@@ -19,7 +19,7 @@ for (let i = 0; i < particleCount; i++) {
 export default function HeroScene() {
   const pointsRef = useRef<THREE.Points>(null);
 
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     if (pointsRef.current) {
       pointsRef.current.rotation.y += delta * 0.05;
       pointsRef.current.rotation.x += delta * 0.02;

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { supabase, Artwork } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
+import type { Artwork } from '../lib/supabase';
 import { motion } from 'framer-motion';
 import Lightbox from './Lightbox';
 

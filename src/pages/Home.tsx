@@ -59,7 +59,7 @@ export default function Home() {
       {/* Categories Grid */}
       <section className="pb-24">
         <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-3 gap-6 auto-rows-[250px]">
-          {sections.map((section, i) => (
+          {sections.map((section) => (
             <Link 
               key={section.id} 
               to={`/section/${section.id}`}
