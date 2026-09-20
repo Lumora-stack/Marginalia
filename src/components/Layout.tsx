@@ -11,7 +11,7 @@ export default function Layout() {
         <Outlet />
       </main>
       <footer className="py-8 text-center text-sm opacity-60">
-        &copy; {new Date().getFullYear()} Praveenkumar G. All rights reserved.
+        &copy; {new Date().getFullYear()} Artville Gallery of Imagination. All rights reserved.
       </footer>
       <UploadFAB />
       <InstallPrompt />

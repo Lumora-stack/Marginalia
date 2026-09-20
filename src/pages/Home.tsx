@@ -43,7 +43,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            Praveenkumar G
+            Artville Gallery of Imagination
           </motion.h1>
           <motion.p 
             className="text-base md:text-xl font-serif italic text-accent max-w-2xl mx-auto leading-relaxed"

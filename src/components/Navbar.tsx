@@ -18,7 +18,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 w-full backdrop-blur-sm bg-paper/80 dark:bg-[#1a1a1c]/80 border-b border-ink/5 dark:border-white/5">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <Link to="/" className="font-serif text-xl tracking-tight font-medium">
-          Praveenkumar G.
+          Artville
         </Link>
 
         {/* Desktop Nav */}

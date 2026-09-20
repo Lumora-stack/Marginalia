@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Praveenkumar G Portfolio',
-        short_name: 'PraveenArt',
-        description: 'Premium art portfolio of Praveenkumar G',
+        name: 'Artville Gallery of Imagination',
+        short_name: 'Artville',
+        description: 'Premium art portfolio of Artville Gallery',
         theme_color: '#F7F5F1',
         background_color: '#F7F5F1',
         display: 'standalone',
