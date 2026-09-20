@@ -23,9 +23,9 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-24">
+    <div className="flex flex-col gap-12 md:gap-24">
       {/* Hero Section */}
-      <section className="relative h-[80vh] flex items-center justify-center -mt-12 overflow-hidden">
+      <section className="relative min-h-[60vh] md:h-[80vh] flex items-center justify-center -mt-12 overflow-hidden py-24 md:py-0">
         {mounted && !shouldReduceMotion && (
           <div className="absolute inset-0 z-0 pointer-events-none opacity-60">
             <Suspense fallback={null}>
@@ -36,9 +36,9 @@ export default function Home() {
           </div>
         )}
         
-        <div className="z-10 text-center relative pointer-events-none">
+        <div className="z-10 text-center relative pointer-events-none px-4">
           <motion.h1 
-            className="text-5xl md:text-7xl lg:text-8xl font-serif mb-4 tracking-tight"
+            className="text-5xl md:text-7xl lg:text-8xl font-serif mb-6 tracking-tight"
             initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -46,18 +46,18 @@ export default function Home() {
             Praveenkumar G
           </motion.h1>
           <motion.p 
-            className="text-lg md:text-xl font-sans tracking-wide uppercase opacity-80"
+            className="text-base md:text-xl font-serif italic text-accent max-w-2xl mx-auto leading-relaxed"
             initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           >
-            Fine Art & Digital Portfolio
+            "Creating art from tiny feelings, peaceful thoughts, and a little bit of imagination — straight from Chennai 🤍"
           </motion.p>
         </div>
       </section>
 
       {/* Categories Grid */}
-      <section className="pb-24">
+      <section className="pb-12 md:pb-24">
         <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-3 gap-6 auto-rows-[250px]">
           {sections.map((section) => (
             <Link 
