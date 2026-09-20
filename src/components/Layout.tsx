@@ -4,12 +4,6 @@ import UploadFAB from './UploadFAB';
 import InstallPrompt from './InstallPrompt';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const pageVariants = {
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
-  exit:    { opacity: 0, y: -8, transition: { duration: 0.25 } },
-};
-
 export default function Layout() {
   const location = useLocation();
 
@@ -20,10 +14,10 @@ export default function Layout() {
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
-            variants={pageVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
           >
             <Outlet />
           </motion.div>
