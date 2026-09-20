@@ -100,7 +100,7 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
                 {isOwner && (
                   <button 
                     onClick={(e) => handleDelete(e, artwork.id)}
-                    className="absolute top-2 right-2 p-2 bg-red-500/80 text-white rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-600 transition-all z-20"
+                    className="absolute top-2 right-2 p-2 bg-red-500/80 text-white rounded-full md:opacity-0 md:group-hover:opacity-100 opacity-100 hover:bg-red-600 transition-all z-20"
                   >
                     <Trash2 size={16} />
                   </button>
