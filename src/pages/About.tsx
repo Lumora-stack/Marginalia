@@ -30,29 +30,56 @@ const timeline = [
 
 export default function About() {
   return (
-    <div className="max-w-4xl mx-auto pb-12">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
+      className="max-w-4xl mx-auto pb-12"
+    >
       <div className="flex flex-col gap-12 md:gap-16">
         
         {/* Intro Section */}
         <section className="text-center md:text-left flex flex-col md:flex-row gap-12 items-center md:items-start">
           <div className="flex-1 space-y-6 text-lg leading-relaxed opacity-90 font-serif">
-            <p className="text-2xl md:text-3xl font-serif text-accent mb-6 leading-snug">
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.8 }}
+              className="text-2xl md:text-3xl font-serif text-accent mb-6 leading-snug"
+            >
               Creating art from tiny feelings, peaceful thoughts, and a little bit of imagination — straight from Chennai 🤍.
-            </p>
-            <p>
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+            >
               A passionate creative artist with a deep love for pencil sketches, pixel art, DIY crafts, and aesthetic visual storytelling ✨ Every artwork is created with patience, imagination, and emotion, transforming simple ideas into meaningful visual experiences.
-            </p>
-            <p>
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+            >
               Inspired by nature, memories, silence, and everyday emotions, the creative journey continues through exploring different artistic styles and handmade creations 🌙
-            </p>
-            <p>
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+            >
               This portfolio is a collection of artistic works, ideas, and creative moments developed over time — pencil drawings, sketchbook studies, DIY crafts, pixel art, games, and quotes ✨
-            </p>
+            </motion.p>
           </div>
         </section>
 
         {/* Contact Info */}
-        <section className="bg-ink/5 dark:bg-white/5 p-8 rounded-2xl text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-6">
+        <motion.section 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.6, duration: 0.8 }}
+          className="bg-ink/5 dark:bg-white/5 p-8 rounded-2xl text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-6 shadow-sm hover:shadow-md transition-shadow"
+        >
           <div>
             <h3 className="font-serif text-2xl mb-4 text-accent">Let's Connect</h3>
             <div className="space-y-2 opacity-80 font-mono text-sm">
@@ -95,6 +122,6 @@ export default function About() {
         </section>
 
       </div>
-    </div>
+    </motion.div>
   );
 }
