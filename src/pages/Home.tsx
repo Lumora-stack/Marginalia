@@ -26,8 +26,14 @@ export default function Home() {
     <div className="flex flex-col gap-12 md:gap-24">
       {/* Hero Section */}
       <section className="relative min-h-[60vh] md:h-[80vh] flex items-center justify-center -mt-12 overflow-hidden py-24 md:py-0">
+        
+        {/* Animated Background Orbs */}
+        <div className="absolute top-1/2 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-accent/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[80px] animate-blob z-0" />
+        <div className="absolute top-1/3 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-accent/30 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[80px] animate-blob z-0" style={{ animationDelay: '2s' }} />
+        <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-72 md:w-96 h-72 md:h-96 bg-[#8a6b25]/20 dark:bg-white/10 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[80px] animate-blob z-0" style={{ animationDelay: '4s' }} />
+
         {mounted && !shouldReduceMotion && (
-          <div className="absolute inset-0 z-0 pointer-events-none opacity-60">
+          <div className="absolute inset-0 z-0 pointer-events-none opacity-80">
             <Suspense fallback={null}>
               <Canvas camera={{ position: [0, 0, 5], fov: 60 }}>
                 <HeroScene />

@@ -32,10 +32,10 @@ export default function HeroScene() {
         <PointMaterial
           transparent
           color="#D4AF37"
-          size={0.02}
+          size={0.03}
           sizeAttenuation={true}
           depthWrite={false}
-          opacity={0.4}
+          opacity={0.8}
         />
       </Points>
     </Float>
