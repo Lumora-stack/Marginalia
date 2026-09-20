@@ -88,7 +88,7 @@ export default function About() {
               <p>Insta: <a href="https://instagram.com/crafted.strokes.42" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors">@crafted.strokes.42</a></p>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* Timeline Section */}
         <section className="mt-12">
