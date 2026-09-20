@@ -7,11 +7,41 @@ const HeroScene = lazy(() => import('../components/HeroScene'));
 const Canvas = lazy(() => import('@react-three/fiber').then(m => ({ default: m.Canvas })));
 
 const sections = [
-  { id: 'pencil-arts', label: 'Pencil Arts', class: 'md:col-span-2 md:row-span-2' },
-  { id: 'pixel-arts', label: 'Pixel Arts', class: 'md:col-span-1 md:row-span-1' },
-  { id: 'sketches', label: 'Sketches', class: 'md:col-span-1 md:row-span-2' },
-  { id: 'doodles', label: 'Doodles', class: 'md:col-span-1 md:row-span-1' },
-  { id: 'diy-crafts', label: 'DIY Crafts', class: 'md:col-span-2 md:row-span-1' },
+  { 
+    id: 'pencil-arts', 
+    label: 'Pencil Arts', 
+    desc: 'The timeless beauty of graphite and shadow.',
+    img: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=2000&auto=format&fit=crop',
+    class: 'md:col-span-2 md:row-span-2' 
+  },
+  { 
+    id: 'pixel-arts', 
+    label: 'Pixel Arts', 
+    desc: 'Retro aesthetics meeting modern imagination.',
+    img: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000&auto=format&fit=crop',
+    class: 'md:col-span-1 md:row-span-1' 
+  },
+  { 
+    id: 'sketches', 
+    label: 'Sketches', 
+    desc: 'Raw ideas and spontaneous strokes.',
+    img: 'https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=1000&auto=format&fit=crop',
+    class: 'md:col-span-1 md:row-span-2' 
+  },
+  { 
+    id: 'doodles', 
+    label: 'Doodles', 
+    desc: 'Wandering minds on paper.',
+    img: 'https://images.unsplash.com/photo-1580828236166-512140fa960e?q=80&w=1000&auto=format&fit=crop',
+    class: 'md:col-span-1 md:row-span-1' 
+  },
+  { 
+    id: 'diy-crafts', 
+    label: 'DIY Crafts', 
+    desc: 'Handmade creations from the heart.',
+    img: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=2000&auto=format&fit=crop',
+    class: 'md:col-span-2 md:row-span-1' 
+  },
 ];
 
 export default function Home() {
@@ -27,10 +57,10 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative min-h-[60vh] md:h-[80vh] flex items-center justify-center -mt-12 overflow-hidden py-24 md:py-0">
         
-        {/* Animated Background Orbs */}
-        <div className="absolute top-1/2 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-accent/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[80px] animate-blob z-0" />
-        <div className="absolute top-1/3 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-accent/30 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[80px] animate-blob z-0" style={{ animationDelay: '2s' }} />
-        <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-72 md:w-96 h-72 md:h-96 bg-[#8a6b25]/20 dark:bg-white/10 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[80px] animate-blob z-0" style={{ animationDelay: '4s' }} />
+        {/* Animated Background Orbs (Optimized for mobile scrolling) */}
+        <div className="absolute top-1/2 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-accent/10 md:bg-accent/20 rounded-full filter blur-[60px] md:blur-[80px] animate-blob z-0 transform-gpu will-change-transform" />
+        <div className="absolute top-1/3 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-accent/15 md:bg-accent/30 rounded-full filter blur-[60px] md:blur-[80px] animate-blob z-0 transform-gpu will-change-transform" style={{ animationDelay: '2s' }} />
+        <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-72 md:w-96 h-72 md:h-96 bg-[#8a6b25]/10 md:bg-[#8a6b25]/20 dark:bg-white/5 rounded-full filter blur-[60px] md:blur-[80px] animate-blob z-0 transform-gpu will-change-transform" style={{ animationDelay: '4s' }} />
 
         {mounted && !shouldReduceMotion && (
           <div className="absolute inset-0 z-0 pointer-events-none opacity-80">
@@ -64,22 +94,29 @@ export default function Home() {
 
       {/* Categories Grid */}
       <section className="pb-12 md:pb-24">
-        <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-3 gap-6 auto-rows-[250px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-3 gap-6 auto-rows-[300px] md:auto-rows-[250px]">
           {sections.map((section) => (
             <Link 
               key={section.id} 
               to={`/section/${section.id}`}
-              className={`group relative overflow-hidden rounded-xl bg-ink/5 dark:bg-white/5 ${section.class} block`}
+              className={`group relative overflow-hidden rounded-xl bg-ink ${section.class} block`}
             >
-              <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
-              {/* Fallback pattern until we wire up Supabase cover images */}
-              <div className="absolute inset-0 opacity-20 dark:opacity-10 mix-blend-multiply dark:mix-blend-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-accent to-transparent group-hover:scale-110 transition-transform duration-700 ease-out" />
+              <img 
+                src={section.img} 
+                alt={section.label}
+                className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700 ease-out"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/20 to-transparent" />
               
-              <div className="absolute bottom-6 left-6 z-20">
-                <h2 className="text-2xl md:text-3xl font-serif mb-1 group-hover:text-accent transition-colors duration-300">
+              <div className="absolute bottom-6 left-6 right-6 z-20">
+                <h2 className="text-2xl md:text-3xl font-serif mb-2 text-white group-hover:text-accent transition-colors duration-300">
                   {section.label}
                 </h2>
-                <div className="h-0.5 w-0 bg-accent group-hover:w-full transition-all duration-500 ease-out" />
+                <p className="text-white/70 font-sans text-sm md:text-base opacity-0 -translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
+                  {section.desc}
+                </p>
+                <div className="h-0.5 w-0 bg-accent group-hover:w-12 mt-4 transition-all duration-500 ease-out" />
               </div>
             </Link>
           ))}
