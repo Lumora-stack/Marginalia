@@ -57,10 +57,10 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative min-h-[60vh] md:h-[80vh] flex items-center justify-center -mt-12 overflow-hidden py-24 md:py-0">
         
-        {/* Animated Background Orbs (Optimized for mobile scrolling) */}
-        <div className="absolute top-1/2 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-accent/10 md:bg-accent/20 rounded-full filter blur-[60px] md:blur-[80px] animate-blob z-0 transform-gpu will-change-transform" />
-        <div className="absolute top-1/3 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-accent/15 md:bg-accent/30 rounded-full filter blur-[60px] md:blur-[80px] animate-blob z-0 transform-gpu will-change-transform" style={{ animationDelay: '2s' }} />
-        <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-72 md:w-96 h-72 md:h-96 bg-[#8a6b25]/10 md:bg-[#8a6b25]/20 dark:bg-white/5 rounded-full filter blur-[60px] md:blur-[80px] animate-blob z-0 transform-gpu will-change-transform" style={{ animationDelay: '4s' }} />
+        {/* Animated Background Orbs - subtle ambient glow */}
+        <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-accent/8 rounded-full filter blur-[100px] animate-blob z-0 transform-gpu will-change-transform" />
+        <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-accent/10 rounded-full filter blur-[100px] animate-blob z-0 transform-gpu will-change-transform" style={{ animationDelay: '2s' }} />
+        <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-64 h-64 bg-accent/6 rounded-full filter blur-[120px] animate-blob z-0 transform-gpu will-change-transform" style={{ animationDelay: '4s' }} />
 
         {mounted && !shouldReduceMotion && (
           <div className="absolute inset-0 z-0 pointer-events-none opacity-80">
@@ -94,12 +94,12 @@ export default function Home() {
 
       {/* Categories Grid */}
       <section className="pb-12 md:pb-24">
-        <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-3 gap-6 auto-rows-[300px] md:auto-rows-[250px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 [grid-template-rows:repeat(3,280px)] grid-rows-none">
           {sections.map((section) => (
             <Link 
               key={section.id} 
               to={`/section/${section.id}`}
-              className={`group relative overflow-hidden rounded-xl bg-ink ${section.class} block`}
+              className={`group relative overflow-hidden rounded-2xl bg-ink ${section.class} block h-[280px] md:h-auto`}
             >
               <img 
                 src={section.img} 
