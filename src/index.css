@@ -2,37 +2,94 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-paper text-ink transition-colors duration-300 font-sans;
+    @apply bg-paper text-ink font-sans;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   .dark body {
-    @apply bg-[#1a1a1c] text-[#f0ede6];
+    @apply bg-[#111111] text-[#f0ede6];
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif;
   }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.4); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(212,175,55,0.7); }
 }
 
 @layer utilities {
+  /* Film grain overlay */
   .bg-grain {
     position: relative;
   }
-  
   .bg-grain::before {
     content: "";
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     pointer-events: none;
-    z-index: 50;
-    opacity: 0.04;
+    z-index: 9999;
+    opacity: 0.035;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+  .dark .bg-grain::before {
+    opacity: 0.025;
+    filter: invert(1);
   }
 
-  .dark .bg-grain::before {
-    opacity: 0.03;
-    filter: invert(1);
+  /* Glassmorphism */
+  .glass {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .dark .glass {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  /* Gold gradient text */
+  .text-gradient {
+    background: linear-gradient(135deg, #D4AF37 0%, #E8C84A 50%, #B8941F 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Shimmer animation utility */
+  .shimmer-bg {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,255,255,0.06) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2.5s linear infinite;
+  }
+
+  /* Perspective for 3D cards */
+  .perspective-card {
+    perspective: 1200px;
+    transform-style: preserve-3d;
   }
 }
