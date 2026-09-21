@@ -2,15 +2,22 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import UploadFAB from './UploadFAB';
 import InstallPrompt from './InstallPrompt';
+import Footer from './Footer';
+import ScrollProgress from './ScrollProgress';
+import CustomCursor from './CustomCursor';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Layout() {
   const location = useLocation();
+  const isHome = location.pathname === '/';
 
   return (
-    <div className="min-h-screen flex flex-col relative bg-grain">
+    <div className="min-h-screen flex flex-col relative bg-grain selection:bg-accent/30 selection:text-ink dark:selection:text-white">
+      <ScrollProgress />
+      <CustomCursor />
       <Navbar />
-      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
+
+      <main className={`flex-1 w-full ${isHome ? 'max-w-7xl mx-auto px-6' : 'max-w-7xl mx-auto px-6 py-12'}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
@@ -23,9 +30,8 @@ export default function Layout() {
           </motion.div>
         </AnimatePresence>
       </main>
-      <footer className="py-8 text-center text-sm opacity-60">
-        &copy; {new Date().getFullYear()} Artville Gallery of Imagination. All rights reserved.
-      </footer>
+
+      <Footer />
       <UploadFAB />
       <InstallPrompt />
     </div>

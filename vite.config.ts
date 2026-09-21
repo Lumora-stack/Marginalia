@@ -8,29 +8,19 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['favicon.svg'],
       manifest: {
         name: 'Artville Gallery of Imagination',
         short_name: 'Artville',
-        description: 'Premium art portfolio of Artville Gallery',
-        theme_color: '#F7F5F1',
-        background_color: '#F7F5F1',
+        description: 'Living Digital Art Gallery & Archive',
+        theme_color: '#0C0C0D',
+        background_color: '#0C0C0D',
         display: 'standalone',
         icons: [
           {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
+            src: 'favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
             purpose: 'any maskable'
           }
         ]
