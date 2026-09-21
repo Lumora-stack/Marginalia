@@ -14,8 +14,9 @@ export default function CustomCursor() {
   const y = useSpring(cursorY, springConfig);
 
   useEffect(() => {
-    // Only enable on non-touch devices
-    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    // Only enable on desktop non-touch devices
+    if (typeof window === 'undefined') return;
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth < 768;
     if (isTouch) return;
 
     const handleMouseMove = (e: MouseEvent) => {

@@ -83,7 +83,7 @@ export default function HeroScene() {
   // Generate spherical golden particles
   const { positions } = useMemo(() => {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const count = isMobile ? 1200 : 2400;
+    const count = isMobile ? 600 : 2200;
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       const theta = Math.random() * 2 * Math.PI;
@@ -96,8 +96,10 @@ export default function HeroScene() {
     return { positions: pos };
   }, []);
 
-  // Smooth mouse-follow camera parallax and gentle rotation
+  // Smooth mouse-follow camera parallax and gentle rotation (pauses offscreen)
   useFrame(({ pointer }, delta) => {
+    if (typeof window !== 'undefined' && window.scrollY > 800) return;
+
     if (pointsRef.current) {
       pointsRef.current.rotation.y += delta * 0.025;
       pointsRef.current.rotation.x += delta * 0.01;

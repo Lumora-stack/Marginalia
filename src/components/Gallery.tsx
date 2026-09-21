@@ -138,21 +138,20 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
           {artworks.map((artwork, i) => (
             <motion.div
               key={artwork.id}
-              layout
-              initial={{ opacity: 0, y: 24, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.2 } }}
-              transition={{ duration: 0.55, delay: Math.min(i, 8) * 0.06, ease: [0.16, 1, 0.3, 1] }}
-              className="break-inside-avoid mb-3 md:mb-5 cursor-zoom-in group"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.15 } }}
+              transition={{ duration: 0.4, delay: Math.min(i, 6) * 0.05, ease: 'easeOut' }}
+              className="break-inside-avoid mb-3 md:mb-5 cursor-zoom-in group transform-gpu"
               onClick={() => setLightboxIndex(i)}
             >
               <div
-                className="relative rounded-2xl overflow-hidden bg-ink/5 dark:bg-white/5 transition-all duration-500 group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] group-hover:-translate-y-1 border border-ink/5 dark:border-white/5"
+                className="relative rounded-2xl overflow-hidden bg-ink/5 dark:bg-white/5 transition-all duration-300 md:group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] md:group-hover:-translate-y-1 border border-ink/5 dark:border-white/5"
               >
                 <img
                   src={artwork.image_url}
                   alt={artwork.title}
-                  className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                  className="w-full h-auto object-cover transition-transform duration-500 md:group-hover:scale-[1.03]"
                   loading="lazy"
                 />
 

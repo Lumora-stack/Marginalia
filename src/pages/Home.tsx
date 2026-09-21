@@ -48,7 +48,7 @@ export default function Home() {
   }, [mouseX, mouseY]);
 
   const handleTilt = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (shouldReduceMotion) return;
+    if (shouldReduceMotion || typeof window === 'undefined' || window.innerWidth < 768) return;
     const el = e.currentTarget;
     const rect = el.getBoundingClientRect();
     const rx = (((e.clientY - rect.top) / rect.height) - 0.5) * -10;
@@ -57,6 +57,7 @@ export default function Home() {
   };
 
   const resetTilt = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (typeof window === 'undefined' || window.innerWidth < 768) return;
     e.currentTarget.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)';
   };
 
@@ -65,19 +66,23 @@ export default function Home() {
 
       {/* ─── HERO ─── */}
       <section
-        className="relative min-h-[92vh] md:min-h-screen flex items-center justify-center -mx-6 overflow-hidden select-none"
+        className="relative min-h-[85vh] md:min-h-screen flex items-center justify-center -mx-6 overflow-hidden select-none"
         onMouseMove={handleHeroMouseMove}
         onMouseLeave={handleHeroMouseLeave}
       >
-        {/* Soft atmospheric ambient glow orbs */}
-        <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-accent/6 rounded-full filter blur-[120px] animate-blob transform-gpu pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent/8 rounded-full filter blur-[110px] animate-blob transform-gpu pointer-events-none" style={{ animationDelay: '3s' }} />
+        {/* Soft atmospheric ambient glow orbs - desktop only for 60fps mobile */}
+        <div className="hidden md:block absolute top-1/4 left-1/4 w-80 h-80 bg-accent/6 rounded-full filter blur-[100px] animate-blob transform-gpu pointer-events-none" />
+        <div className="hidden md:block absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent/8 rounded-full filter blur-[90px] animate-blob transform-gpu pointer-events-none" style={{ animationDelay: '3s' }} />
 
         {/* 3D Canvas */}
         {mounted && !shouldReduceMotion && (
           <div className="absolute inset-0 z-0 pointer-events-none">
             <Suspense fallback={null}>
-              <Canvas camera={{ position: [0, 0, 5], fov: 58 }}>
+              <Canvas
+                dpr={[1, 1.5]}
+                gl={{ powerPreference: 'high-performance', antialias: false }}
+                camera={{ position: [0, 0, 5], fov: 58 }}
+              >
                 <HeroScene />
               </Canvas>
             </Suspense>
