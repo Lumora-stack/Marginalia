@@ -33,7 +33,7 @@ export const CATEGORIES: Category[] = [
     label: 'Doodles',
     num: '04',
     desc: 'Wandering minds on paper.',
-    img: 'https://images.unsplash.com/photo-1580828236166-512140fa960e?q=80&w=1000&auto=format&fit=crop',
+    img: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=1000&auto=format&fit=crop',
   },
   {
     id: 'diy-crafts',

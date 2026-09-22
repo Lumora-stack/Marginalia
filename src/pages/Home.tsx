@@ -235,6 +235,9 @@ export default function Home() {
                 <img
                   src={section.img}
                   alt={section.label}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=1000&auto=format&fit=crop';
+                  }}
                   className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-75 group-hover:scale-105 transition-all duration-700 ease-out"
                   loading="lazy"
                 />
