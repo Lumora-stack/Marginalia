@@ -149,11 +149,23 @@ export default function Lightbox({ artworks, currentIndex, onClose, onNavigate }
                 <h3 className="text-xl md:text-2xl font-serif text-white tracking-tight">
                   {current.title}
                 </h3>
-                {current.year && (
-                  <p className="text-[10px] font-mono text-accent uppercase tracking-[0.25em] mt-1">
-                    {current.year}
-                  </p>
-                )}
+
+                <div className="flex items-center justify-center gap-2 mt-1.5">
+                  {current.created_at && (
+                    <p className="text-[11px] font-mono text-white/60 tracking-wider">
+                      {new Date(current.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  )}
+                  {current.year && current.created_at && (
+                    <span className="text-accent/60 text-[10px]">•</span>
+                  )}
+                  {current.year && (
+                    <p className="text-[11px] font-mono text-accent uppercase tracking-[0.2em]">
+                      {current.year}
+                    </p>
+                  )}
+                </div>
+
                 {current.description && (
                   <p className="mt-2 text-xs md:text-sm text-white/60 font-serif italic leading-relaxed">
                     {current.description}

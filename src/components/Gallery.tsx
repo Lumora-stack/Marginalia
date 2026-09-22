@@ -5,6 +5,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, ImageOff, AlertCircle } from 'lucide-react';
 import Lightbox from './Lightbox';
 
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch {
+    return '';
+  }
+};
+
+const isRecent = (dateStr?: string) => {
+  if (!dateStr) return false;
+  try {
+    const diffDays = (Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24);
+    return diffDays <= 7;
+  } catch {
+    return false;
+  }
+};
+
 export default function Gallery({ sectionId }: { sectionId: string }) {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading]   = useState(true);
@@ -24,7 +48,6 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
         .from('artworks')
         .select('*')
         .eq('section', sectionId)
-        .order('display_order', { ascending: true })
         .order('created_at', { ascending: false });
 
       if (fetchErr) {
@@ -148,6 +171,13 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
               <div
                 className="relative rounded-2xl overflow-hidden bg-ink/5 dark:bg-white/5 transition-all duration-300 md:group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] md:group-hover:-translate-y-1 border border-ink/5 dark:border-white/5"
               >
+                {/* NEW badge for recent uploads (last 7 days) */}
+                {isRecent(artwork.created_at) && (
+                  <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-accent text-white font-mono text-[9px] font-bold tracking-widest uppercase shadow-lg z-10">
+                    NEW
+                  </span>
+                )}
+
                 <img
                   src={artwork.image_url}
                   alt={artwork.title}
@@ -156,15 +186,29 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
                 />
 
                 {/* Hover overlay with title & details */}
-                <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400 flex flex-col justify-end p-4">
-                  <p className="text-white font-serif text-sm md:text-base translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                  <p className="text-white font-serif text-sm md:text-base translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
                     {artwork.title}
                   </p>
-                  {artwork.year && (
-                    <p className="text-accent/80 font-mono text-[10px] tracking-widest mt-0.5">{artwork.year}</p>
-                  )}
+
+                  <div className="flex items-center gap-2 mt-1">
+                    {artwork.created_at && (
+                      <span className="text-white/70 font-mono text-[10px] tracking-wider">
+                        {formatDate(artwork.created_at)}
+                      </span>
+                    )}
+                    {artwork.year && artwork.created_at && (
+                      <span className="text-accent/60 text-[10px]">•</span>
+                    )}
+                    {artwork.year && (
+                      <span className="text-accent/90 font-mono text-[10px] tracking-widest uppercase">
+                        {artwork.year}
+                      </span>
+                    )}
+                  </div>
+
                   {artwork.description && (
-                    <p className="text-white/60 text-xs line-clamp-2 mt-1 font-serif italic">
+                    <p className="text-white/60 text-xs line-clamp-2 mt-1.5 font-serif italic">
                       {artwork.description}
                     </p>
                   )}
