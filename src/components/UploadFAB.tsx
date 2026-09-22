@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { Upload, X, Loader2, Sparkles, Check } from 'lucide-react';
+import { Upload, X, Loader2, Sparkles, Check, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { compressImage } from '../lib/image-utils';
 import { CATEGORIES } from '../lib/categories';
@@ -35,27 +35,57 @@ export default function UploadFAB() {
     };
   }, [previewUrls]);
 
+  const isImageFile = (f: File) => {
+    if (f.type && f.type.toLowerCase().startsWith('image/')) return true;
+    const ext = f.name.split('.').pop()?.toLowerCase() || '';
+    return ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'svg', 'heic', 'heif', 'jfif', 'avif'].includes(ext);
+  };
+
   const handleFiles = (newFiles: File[]) => {
-    // Revoke previous URLs to avoid memory leaks
     previewUrls.forEach(url => URL.revokeObjectURL(url));
 
-    const imageFiles = newFiles.filter(f => f.type.startsWith('image/'));
-    setFiles(imageFiles);
+    const imageFiles = newFiles.filter(isImageFile);
+    if (imageFiles.length === 0 && newFiles.length > 0) {
+      alert('Please select valid image files (JPG, PNG, WebP, GIF, HEIC, etc.).');
+      return;
+    }
 
+    setFiles(imageFiles);
     const urls = imageFiles.map(f => URL.createObjectURL(f));
     setPreviewUrls(urls);
 
     const currentYear = new Date().getFullYear().toString();
     const initialMeta: Record<number, FileMeta> = {};
     imageFiles.forEach((f, i) => {
+      const cleanTitle = f.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
       initialMeta[i] = {
-        title: f.name.split('.')[0].replace(/[-_]/g, ' '),
+        title: cleanTitle,
         section: 'pencil-arts',
         description: '',
         year: currentYear,
       };
     });
     setMetadata(initialMeta);
+  };
+
+  const removeFile = (index: number) => {
+    if (uploading) return;
+    const newFiles = files.filter((_, i) => i !== index);
+    URL.revokeObjectURL(previewUrls[index]);
+    const newUrls = previewUrls.filter((_, i) => i !== index);
+    const newMeta: Record<number, FileMeta> = {};
+    newFiles.forEach((_, i) => {
+      const oldIdx = i >= index ? i + 1 : i;
+      newMeta[i] = metadata[oldIdx] || {
+        title: '',
+        section: 'pencil-arts',
+        description: '',
+        year: new Date().getFullYear().toString(),
+      };
+    });
+    setFiles(newFiles);
+    setPreviewUrls(newUrls);
+    setMetadata(newMeta);
   };
 
   const updateMeta = (index: number, key: keyof FileMeta, value: string) => {
@@ -95,70 +125,111 @@ export default function UploadFAB() {
     if (files.length === 0) return;
     setUploading(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      alert('Error: You must be logged in as owner to upload.');
-      setUploading(false);
-      return;
-    }
-
     try {
+      // 1. Authenticate user
+      const { data: { session } } = await supabase.auth.getSession();
+      let user = session?.user;
+      if (!user) {
+        const { data: { user: fetchedUser } } = await supabase.auth.getUser();
+        user = fetchedUser ?? undefined;
+      }
+
+      if (!user) {
+        alert('Authentication required: Please log in to your owner account to publish artworks.');
+        setUploading(false);
+        return;
+      }
+
+      const firstSection = metadata[0]?.section || 'pencil-arts';
+
+      // 2. Process and upload each file
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const meta = metadata[i];
-        setUploadProgress(`Processing ${i + 1} of ${files.length}: ${meta.title}...`);
+        const meta = metadata[i] || {
+          title: file.name.replace(/\.[^/.]+$/, ''),
+          section: 'pencil-arts',
+          description: '',
+          year: new Date().getFullYear().toString(),
+        };
 
-        // Compress main image and thumbnail with image-utils
-        const mainBlob = await compressImage(file, 2048);
-        const thumbBlob = await compressImage(file, 600);
+        setUploadProgress(`Uploading ${i + 1} of ${files.length}: "${meta.title || file.name}"...`);
+
+        // Compress image safely (with original file fallback)
+        let uploadBlob: Blob | File = file;
+        let finalExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+        let mimeType = file.type || 'image/jpeg';
+
+        try {
+          const compressed = await compressImage(file, 2048);
+          if (compressed && compressed.size > 0) {
+            uploadBlob = compressed;
+            if (compressed instanceof Blob && !(compressed instanceof File)) {
+              finalExt = 'webp';
+              mimeType = 'image/webp';
+            }
+          }
+        } catch (compErr) {
+          console.warn('Image compression fallback:', compErr);
+          uploadBlob = file;
+        }
 
         const timestamp = Date.now();
         const rand = Math.random().toString(36).substring(2, 8);
-        const mainPath = `${user.id}/${timestamp}-${rand}-main.webp`;
-        const thumbPath = `${user.id}/${timestamp}-${rand}-thumb.webp`;
+        const filePath = `${user.id}/${timestamp}-${rand}.${finalExt}`;
 
-        // 1. Upload Main Image to Storage
-        const { error: mainUploadError } = await supabase.storage
+        // 3. Upload to Storage Bucket
+        const { error: uploadError } = await supabase.storage
           .from('portfolio-images')
-          .upload(mainPath, mainBlob, { contentType: 'image/webp' });
-        if (mainUploadError) throw mainUploadError;
+          .upload(filePath, uploadBlob, {
+            contentType: mimeType,
+            upsert: true,
+          });
 
-        // 2. Upload Thumbnail
-        const { error: thumbUploadError } = await supabase.storage
+        if (uploadError) {
+          throw new Error(`Storage upload failed: ${uploadError.message}`);
+        }
+
+        // 4. Get Public URL
+        const { data: { publicUrl } } = supabase.storage
           .from('portfolio-images')
-          .upload(thumbPath, thumbBlob, { contentType: 'image/webp' });
-        if (thumbUploadError) throw thumbUploadError;
+          .getPublicUrl(filePath);
 
-        // 3. Get Public URLs
-        const { data: { publicUrl: mainUrl } } = supabase.storage
-          .from('portfolio-images')
-          .getPublicUrl(mainPath);
-
-        const { data: { publicUrl: thumbUrl } } = supabase.storage
-          .from('portfolio-images')
-          .getPublicUrl(thumbPath);
-
-        // 4. Insert into Database
-        const { error: dbError } = await supabase.from('artworks').insert({
-          section: meta.section,
-          title: meta.title,
-          description: meta.description,
-          year: meta.year,
-          image_url: mainUrl,
-          thumbnail_url: thumbUrl,
+        // 5. Insert Database Record
+        const payload: Record<string, any> = {
+          section: meta.section || 'pencil-arts',
+          title: meta.title?.trim() || file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ') || 'Untitled Artwork',
+          description: meta.description?.trim() || '',
+          image_url: publicUrl,
+          thumbnail_url: publicUrl,
           user_id: user.id,
-        });
+        };
 
-        if (dbError) throw dbError;
+        if (meta.year?.trim()) {
+          payload.year = meta.year.trim();
+        }
+
+        let { error: dbError } = await supabase.from('artworks').insert(payload);
+
+        // If the 'year' column is not in the user's schema, retry without it
+        if (dbError && dbError.message && dbError.message.includes('year')) {
+          delete payload.year;
+          const retry = await supabase.from('artworks').insert(payload);
+          dbError = retry.error;
+        }
+
+        if (dbError) {
+          throw new Error(`Database error: ${dbError.message}`);
+        }
       }
 
-      setUploadProgress('Upload complete!');
-      alert('Artworks published to exhibition successfully!');
+      setUploadProgress('Published successfully!');
+      alert('Success! Your artwork has been published to the gallery.');
       closeModal();
-      window.location.reload();
+      // Redirect to the section where the artwork was uploaded
+      window.location.href = `/section/${firstSection}`;
     } catch (err: any) {
-      console.error('Upload failed:', err);
-      alert('Upload failed: ' + err.message);
+      console.error('Upload process failed:', err);
+      alert('Upload failed: ' + (err.message || 'Unknown error occurred'));
     } finally {
       setUploading(false);
       setUploadProgress('');
@@ -189,14 +260,16 @@ export default function UploadFAB() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 sm:p-6"
+            onDragOver={e => e.preventDefault()}
+            onDrop={e => e.preventDefault()}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 sm:p-6"
             onClick={closeModal}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
               onClick={e => e.stopPropagation()}
               className="bg-paper dark:bg-[#121214] w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl p-6 sm:p-8 relative border border-ink/10 dark:border-white/10"
             >
@@ -204,6 +277,7 @@ export default function UploadFAB() {
               <button
                 onClick={closeModal}
                 disabled={uploading}
+                aria-label="Close"
                 className="absolute top-6 right-6 p-2 rounded-full hover:bg-ink/5 dark:hover:bg-white/5 opacity-60 hover:opacity-100 transition-opacity disabled:opacity-20 cursor-pointer"
               >
                 <X size={20} />
@@ -211,7 +285,7 @@ export default function UploadFAB() {
 
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles size={16} className="text-accent" />
-                <p className="text-xs font-mono uppercase tracking-[0.25em] text-accent">Exhibition Curator</p>
+                <p className="text-xs font-mono uppercase tracking-[0.25em] text-accent font-semibold">Exhibition Curator</p>
               </div>
               <h2 className="text-3xl font-serif mb-6">Add New Artworks</h2>
 
@@ -222,49 +296,66 @@ export default function UploadFAB() {
                 onDrop={handleDrop}
                 className={`border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center transition-all ${
                   isDragging
-                    ? 'border-accent bg-accent/5 scale-[1.01]'
-                    : 'border-ink/20 dark:border-white/20 hover:border-accent/50'
+                    ? 'border-accent bg-accent/10 scale-[1.01]'
+                    : 'border-ink/20 dark:border-white/20 hover:border-accent/60'
                 }`}
               >
-                <p className="opacity-70 text-sm font-serif mb-4">
-                  Drag and drop artwork images here, or select from your device
+                <p className="opacity-80 text-sm font-serif mb-4">
+                  Drag and drop images here, or choose files from your device
                 </p>
                 <input
                   ref={fileInputRef}
                   type="file"
                   multiple
-                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.jfif"
                   className="hidden"
                   id="file-upload"
                   onChange={e => {
-                    if (e.target.files) handleFiles(Array.from(e.target.files));
+                    if (e.target.files && e.target.files.length > 0) {
+                      handleFiles(Array.from(e.target.files));
+                    }
+                    e.target.value = '';
                   }}
                   disabled={uploading}
                 />
                 <label
                   htmlFor="file-upload"
-                  className="cursor-pointer px-6 py-2.5 bg-ink text-paper dark:bg-paper dark:text-ink rounded-full text-xs font-mono tracking-widest uppercase inline-block hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white transition-colors"
+                  className="cursor-pointer px-6 py-2.5 bg-ink text-paper dark:bg-paper dark:text-ink rounded-full text-xs font-mono tracking-widest uppercase inline-block hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white transition-colors shadow-sm"
                 >
                   Browse Files
                 </label>
                 <p className="text-[11px] font-mono opacity-40 mt-3">
-                  Automatic high-quality WebP compression enabled
+                  JPG, PNG, WebP, GIF supported • Automatic optimization
                 </p>
               </div>
 
               {/* Files Details List */}
               {files.length > 0 && (
                 <div className="mt-8 space-y-4">
-                  <p className="text-xs font-mono uppercase tracking-widest text-accent">
-                    {files.length} {files.length === 1 ? 'Item' : 'Items'} Ready to Curate
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-mono uppercase tracking-widest text-accent font-semibold">
+                      {files.length} {files.length === 1 ? 'Artwork' : 'Artworks'} Ready to Curate
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        previewUrls.forEach(url => URL.revokeObjectURL(url));
+                        setFiles([]);
+                        setPreviewUrls([]);
+                        setMetadata({});
+                      }}
+                      className="text-[11px] font-mono text-red-400 hover:text-red-500 uppercase tracking-wider"
+                    >
+                      Clear All
+                    </button>
+                  </div>
 
                   {files.map((_file, i) => (
                     <div
                       key={i}
-                      className="flex flex-col sm:flex-row gap-4 items-start bg-ink/5 dark:bg-white/5 p-4 rounded-2xl border border-ink/5 dark:border-white/5"
+                      className="flex flex-col sm:flex-row gap-4 items-start bg-ink/5 dark:bg-white/5 p-4 rounded-2xl border border-ink/5 dark:border-white/5 relative group"
                     >
-                      <div className="w-20 h-20 bg-black/10 rounded-xl overflow-hidden flex-shrink-0">
+                      <div className="w-20 h-20 bg-black/10 rounded-xl overflow-hidden flex-shrink-0 relative">
                         {previewUrls[i] && (
                           <img
                             src={previewUrls[i]}
@@ -274,7 +365,7 @@ export default function UploadFAB() {
                         )}
                       </div>
 
-                      <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+                      <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3 w-full pr-8 sm:pr-0">
                         <input
                           type="text"
                           placeholder="Artwork Title"
@@ -287,7 +378,7 @@ export default function UploadFAB() {
                         <select
                           value={metadata[i]?.section || 'pencil-arts'}
                           onChange={e => updateMeta(i, 'section', e.target.value)}
-                          className="p-2.5 rounded-xl bg-white dark:bg-black/30 border border-ink/10 dark:border-white/10 outline-none focus:border-accent text-xs font-sans w-full"
+                          className="p-2.5 rounded-xl bg-white dark:bg-black/30 border border-ink/10 dark:border-white/10 outline-none focus:border-accent text-xs font-sans w-full cursor-pointer"
                           disabled={uploading}
                         >
                           {CATEGORIES.map(cat => (
@@ -315,6 +406,17 @@ export default function UploadFAB() {
                           disabled={uploading}
                         />
                       </div>
+
+                      {/* Remove single file button */}
+                      <button
+                        type="button"
+                        onClick={() => removeFile(i)}
+                        disabled={uploading}
+                        title="Remove artwork"
+                        className="absolute top-4 right-4 p-1.5 text-ink/40 dark:text-white/40 hover:text-red-500 rounded-full hover:bg-red-500/10 transition-colors"
+                      >
+                        <Trash2 size={15} />
+                      </button>
                     </div>
                   ))}
 
