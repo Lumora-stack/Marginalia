@@ -1,48 +1,53 @@
-# Praveenkumar G - Portfolio
+# Artville — Gallery of Imagination ✦
 
-A premium, installable Progressive Web App (PWA) portfolio built with React, Vite, Tailwind CSS, Framer Motion, React Three Fiber, and Supabase.
+> *"Creating art from tiny feelings, peaceful thoughts, and a little bit of imagination — straight from Chennai 🤍."*
 
-## Features
-- **3D Ambient Hero**: Subtle interactive particles using React Three Fiber.
-- **Masonry Gallery**: Smooth staggered animations with Framer Motion.
-- **PWA**: Installable app with offline shell support.
-- **Admin Dashboard**: Secure, hidden upload flow via Supabase Auth and Storage.
+**Artville** is an immersive digital art museum and creative archive showcasing drawings, pixel art, and handcrafted creations by **Praveenkumar G**.
 
-## Local Setup
+🔗 **Live Website:** [marginalia-alpha-ten.vercel.app](https://marginalia-alpha-ten.vercel.app)
 
-1. Clone the repository and install dependencies:
-   ```bash
-   npm install
-   ```
+---
 
-2. Duplicate `.env.example` to `.env.local` and fill in your Supabase details (see below).
+## 🏛️ What the Website Consists Of
 
-3. Run the development server:
-   ```bash
-   npm run dev
-   ```
+The gallery is divided into curated exhibition rooms:
 
-## Supabase Setup
+- **01. Pencil Arts** — The timeless beauty of graphite, shading, and portraits capturing light and shadow.
+- **02. Pixel Arts** — Retro aesthetics and nostalgic digital pixel artwork.
+- **03. Sketches** — Raw, spontaneous strokes, ink studies, and quick ideas.
+- **04. Doodles** — Freeform line art, wandering thoughts, and playful notebook patterns.
+- **05. DIY Crafts** — Physical handmade creations from paper, glue, and scissors.
+- **✦ About the Artist** — Creative journey timeline (2022–2026), artist philosophy, and direct contact details.
+- **🔐 Curator Studio (Admin)** — A secure owner studio to upload and curate new artworks with automatic image compression.
 
-1. Create a new project on [Supabase](https://supabase.com).
-2. Go to **Project Settings -> API** to find your `URL` and `anon` key. Add these to your `.env.local`.
-3. Go to the **SQL Editor** in Supabase and paste the contents of `supabase_schema.sql` to run the migration. This creates the `artworks` table, the `portfolio-images` storage bucket, and sets up the Row Level Security (RLS) policies.
-4. Go to **Authentication -> Users** and invite yourself or create a new user. This will be your "owner" account.
+---
 
-## Uploading Artwork
-1. Run the app and navigate to `/admin`.
-2. Sign in with the owner account you created in Supabase.
-3. Once signed in, a floating **Upload** button will appear in the bottom right corner of all pages.
-4. Click the button to open the drag-and-drop uploader. It handles client-side compression and uploads directly to your Supabase bucket.
+## ✨ Experience Highlights
 
-## Vercel Deployment
+- **🌌 Interactive 3D Ambient Hero** — Real-time Three.js floating sculptures and golden particles responding to your cursor.
+- **🖼️ Fullscreen Touch Lightbox** — Inspect artworks in detail with touch swipe navigation on phones and arrow keys on desktop.
+- **🌓 Dark & Light Atmosphere** — Toggle between a deep cinematic museum theme and a warm paper aesthetic.
+- **📱 Fluid Mobile Experience** — Touch-optimized 60/120fps scrolling with installable PWA support.
+- **🎯 Dynamic Custom Cursor** — Interactive desktop cursor with spring physics and visual cues.
 
-This project is configured to be deployed easily on Vercel with GitHub integration.
+---
 
-1. Push this code to a GitHub repository.
-2. Go to [Vercel](https://vercel.com) and click **Add New -> Project**.
-3. Import your GitHub repository.
-4. In the **Environment Variables** section, add:
-   - `VITE_SUPABASE_URL`: Your Supabase URL
-   - `VITE_SUPABASE_ANON_KEY`: Your Supabase anon key
-5. Click **Deploy**. Vercel will automatically build and deploy your site. Any future pushes to the `main` branch will trigger an automatic redeploy!
+## 🛠️ Built With
+
+- **Frontend:** React 19, TypeScript, Vite
+- **3D & Motion:** Three.js, React Three Fiber, Drei, Framer Motion
+- **Styling:** Tailwind CSS
+- **Backend & Storage:** Supabase (Auth, Database, Storage)
+- **Deployment:** Vercel
+
+---
+
+## 📬 Contact the Artist
+
+- **Email:** [quantumvoyager2005@gmail.com](mailto:quantumvoyager2005@gmail.com)
+- **Instagram:** [@crafted.strokes.42](https://instagram.com/crafted.strokes.42)
+- **Location:** Chennai, India
+
+---
+
+© 2026 Artville Gallery of Imagination. Handcrafted with patience and silence.
