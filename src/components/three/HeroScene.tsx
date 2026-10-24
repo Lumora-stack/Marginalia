@@ -12,17 +12,18 @@ import {
   Vignette,
 } from '@react-three/postprocessing'
 import {
-  AdditiveBlending,
   BufferGeometry,
   DoubleSide,
   Float32BufferAttribute,
   MathUtils,
+  Color,
   Vector2,
   type Group,
   type Mesh,
   type Points as ThreePoints,
 } from 'three'
 import { qualityAtLeast, type QualityTier } from '../../lib/quality-types'
+import { useThemeColors } from '../../lib/useThemeColors'
 
 const PARTICLE_VERTEX = `
   attribute vec3 aFrame;
@@ -33,6 +34,7 @@ const PARTICLE_VERTEX = `
   uniform float uMorph;
   uniform vec2 uPointer;
   uniform float uPointSize;
+  uniform vec3 uParticleColor;
   varying float vGlow;
 
   void main() {
@@ -70,7 +72,7 @@ const PARTICLE_FRAGMENT = `
     float core = 1.0 - smoothstep(0.035, 0.5, radius);
     float halo = exp(-radius * 12.0) * 0.35;
     float alpha = (core + halo) * vGlow * 0.24;
-    vec3 gold = mix(vec3(0.48, 0.24, 0.035), vec3(1.0, 0.86, 0.48), vGlow);
+    vec3 gold = mix(uParticleColor * 0.55, uParticleColor, clamp(vGlow, 0.0, 1.0));
     gl_FragColor = vec4(gold, alpha);
   }
 `
@@ -191,10 +193,12 @@ function AdaptiveDpr({
 function WireShape({
   position,
   rotSpeed,
+  color,
   scale = 1,
 }: {
   position: [number, number, number]
   rotSpeed: number
+  color: string
   scale?: number
 }) {
   const ref = useRef<Mesh>(null)
@@ -206,12 +210,12 @@ function WireShape({
   return (
     <mesh ref={ref} position={position} scale={scale}>
       <icosahedronGeometry args={[0.3, 0]} />
-      <meshStandardMaterial color="#D4AF37" wireframe transparent opacity={0.65} />
+      <meshStandardMaterial color={color} wireframe transparent opacity={0.65} />
     </mesh>
   )
 }
 
-function RingShape({ position, rotSpeed, scale = 1 }: { position: [number, number, number]; rotSpeed: number; scale?: number }) {
+function RingShape({ position, rotSpeed, color, scale = 1 }: { position: [number, number, number]; rotSpeed: number; color: string; scale?: number }) {
   const ref = useRef<Mesh>(null)
   useFrame((_, delta) => {
     if (!ref.current) return
@@ -221,12 +225,12 @@ function RingShape({ position, rotSpeed, scale = 1 }: { position: [number, numbe
   return (
     <mesh ref={ref} position={position} scale={scale}>
       <torusGeometry args={[0.48, 0.018, 8, 72]} />
-      <meshBasicMaterial color="#f2d77b" transparent opacity={0.8} />
+      <meshBasicMaterial color={color} transparent opacity={0.8} />
     </mesh>
   )
 }
 
-function FloatingPortal({ position, rotSpeed }: { position: [number, number, number]; rotSpeed: number }) {
+function FloatingPortal({ position, rotSpeed, color }: { position: [number, number, number]; rotSpeed: number; color: string }) {
   const ref = useRef<Group>(null)
   useFrame((_, delta) => {
     if (!ref.current) return
@@ -237,17 +241,17 @@ function FloatingPortal({ position, rotSpeed }: { position: [number, number, num
     <group ref={ref} position={position}>
       <mesh>
         <boxGeometry args={[0.9, 1.2, 0.02]} />
-        <meshStandardMaterial color="#D4AF37" wireframe transparent opacity={0.4} />
+        <meshStandardMaterial color={color} wireframe transparent opacity={0.4} />
       </mesh>
       <mesh position={[0, 0, -0.005]}>
         <planeGeometry args={[0.82, 1.12]} />
-        <meshBasicMaterial color="#e9c85d" transparent opacity={0.12} side={DoubleSide} />
+        <meshBasicMaterial color={color} transparent opacity={0.12} side={DoubleSide} />
       </mesh>
     </group>
   )
 }
 
-function MuseumDoorway() {
+function MuseumDoorway({ color }: { color: string }) {
   const ref = useRef<Group>(null)
   useFrame((state, delta) => {
     if (!ref.current) return
@@ -259,15 +263,15 @@ function MuseumDoorway() {
     <group ref={ref} position={[0, 0, -4.2]}>
       <mesh>
         <boxGeometry args={[2.55, 3.35, 0.11]} />
-        <meshStandardMaterial color="#D4AF37" wireframe transparent opacity={0.62} />
+        <meshStandardMaterial color={color} wireframe transparent opacity={0.62} />
       </mesh>
       <mesh position={[0, 0, -0.02]}>
         <planeGeometry args={[2.35, 3.15]} />
-        <meshBasicMaterial color="#D4AF37" transparent opacity={0.07} side={DoubleSide} />
+        <meshBasicMaterial color={color} transparent opacity={0.07} side={DoubleSide} />
       </mesh>
       <mesh position={[0, -0.08, 0.08]}>
         <torusGeometry args={[0.42, 0.018, 8, 64]} />
-        <meshBasicMaterial color="#fff0b5" transparent opacity={0.8} />
+        <meshBasicMaterial color={color} transparent opacity={0.8} />
       </mesh>
     </group>
   )
@@ -276,19 +280,23 @@ function MuseumDoorway() {
 function GalaxyParticles({
   quality,
   groupRef,
+  colors,
 }: {
   quality: QualityTier
   groupRef: RefObject<Group | null>
+  colors: ReturnType<typeof useThemeColors>
 }) {
   const pointsRef = useRef<ThreePoints>(null)
   const count = quality === 'ultra' ? 80000 : quality === 'high' ? 50000 : 24000
   const geometry = useMemo(() => particleGeometry(count), [count])
+  const particleColor = useMemo(() => new Color(colors.particle), [colors.particle])
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
     uMorph: { value: 0 },
     uPointer: { value: new Vector2() },
     uPointSize: { value: quality === 'ultra' ? 0.65 : 0.55 },
-  }), [quality])
+    uParticleColor: { value: particleColor },
+  }), [particleColor, quality])
 
   useFrame(({ pointer, clock }, delta) => {
     // Three.js uniforms are deliberately updated in place outside React rendering.
@@ -316,7 +324,7 @@ function GalaxyParticles({
         uniforms={uniforms}
         transparent
         depthWrite={false}
-        blending={AdditiveBlending}
+        blending={colors.particleBlending}
       />
     </points>
   )
@@ -326,19 +334,11 @@ export default function HeroScene({ quality = 'high' }: { quality?: QualityTier 
   const sculptureRef = useRef<Group>(null)
   const camera = useThree(state => state.camera)
   const raySource = useRef<Mesh>(null!)
-  const [isDark, setIsDark] = useState(() =>
-    typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
-  )
+  const colors = useThemeColors()
   const [reduceEffects, setReduceEffects] = useState(false)
   const reduceForPerformance = useCallback(() => setReduceEffects(true), [])
   const restoreEffects = useCallback(() => setReduceEffects(false), [])
   const usePremiumEffects = quality === 'ultra' || quality === 'high'
-  useEffect(() => {
-    const root = document.documentElement
-    const observer = new MutationObserver(() => setIsDark(root.classList.contains('dark')))
-    observer.observe(root, { attributes: true, attributeFilter: ['class'] })
-    return () => observer.disconnect()
-  }, [])
 
   useFrame((state, delta) => {
     const elapsed = state.clock.elapsedTime
@@ -364,19 +364,19 @@ export default function HeroScene({ quality = 'high' }: { quality?: QualityTier 
         onDecline={reduceForPerformance}
         onIncline={restoreEffects}
       />
-      <color attach="background" args={['#0d0d0f']} />
-      <fog attach="fog" args={['#0d0d0f', 8, 20]} />
-      <ambientLight intensity={isDark ? 0.4 : 0.85} color={isDark ? '#fff8e5' : '#fff0cf'} />
-      <pointLight position={[0, 2.6, 2]} intensity={isDark ? 16 : 13} distance={12} color="#f1c95f" />
-      <pointLight position={[-5, -3, -2]} intensity={isDark ? 3 : 5} color="#f0ede6" />
+      <color attach="background" args={[colors.background]} />
+      <fog attach="fog" args={[colors.background, 8, 20]} />
+      <ambientLight intensity={colors.ambientIntensity} color={colors.ambientLight} />
+      <pointLight position={[0, 2.6, 2]} intensity={colors.isDark ? 16 : 5} distance={12} color={colors.keyLight} />
+      <pointLight position={[-5, -3, -2]} intensity={colors.secondaryIntensity} color={colors.secondaryLight} />
 
       <group ref={sculptureRef}>
-        <GalaxyParticles quality={quality} groupRef={sculptureRef} />
+        <GalaxyParticles quality={quality} groupRef={sculptureRef} colors={colors} />
         <Float speed={1.5} rotationIntensity={0.25} floatIntensity={0.25}>
           <mesh position={[-2.85, 1.1, -1.8]} rotation={[0.4, 0.3, 0.15]}>
             <icosahedronGeometry args={[0.78, 1]} />
             <MeshTransmissionMaterial
-              color="#e2ba54"
+              color={colors.accent}
               samples={quality === 'ultra' ? 8 : 4}
               resolution={quality === 'ultra' ? 512 : 256}
               thickness={0.65}
@@ -389,45 +389,47 @@ export default function HeroScene({ quality = 'high' }: { quality?: QualityTier 
             />
           </mesh>
         </Float>
-        <WireShape position={[-3.3, 1.75, -2.4]} rotSpeed={0.25} scale={1.1} />
-        <WireShape position={[3.65, -1.35, -1.8]} rotSpeed={0.18} scale={0.85} />
-        <WireShape position={[0.35, 2.8, -3.2]} rotSpeed={0.3} scale={0.75} />
+        <WireShape position={[-3.3, 1.75, -2.4]} rotSpeed={0.25} color={colors.accent} scale={1.1} />
+        <WireShape position={[3.65, -1.35, -1.8]} rotSpeed={0.18} color={colors.accent} scale={0.85} />
+        <WireShape position={[0.35, 2.8, -3.2]} rotSpeed={0.3} color={colors.accent} scale={0.75} />
         {qualityAtLeast(quality, 'high') && (
           <>
-            <RingShape position={[2.6, 2, -2.6]} rotSpeed={0.35} scale={1.1} />
-            <RingShape position={[-2.6, -1, -2.2]} rotSpeed={0.28} scale={0.9} />
-            <FloatingPortal position={[-3.6, -0.6, -3]} rotSpeed={0.15} />
-            <FloatingPortal position={[3.2, 1.2, -2.8]} rotSpeed={-0.12} />
+            <RingShape position={[2.6, 2, -2.6]} rotSpeed={0.35} color={colors.particle} scale={1.1} />
+            <RingShape position={[-2.6, -1, -2.2]} rotSpeed={0.28} color={colors.particle} scale={0.9} />
+            <FloatingPortal position={[-3.6, -0.6, -3]} rotSpeed={0.15} color={colors.accent} />
+            <FloatingPortal position={[3.2, 1.2, -2.8]} rotSpeed={-0.12} color={colors.accent} />
           </>
         )}
-        <MuseumDoorway />
+        <MuseumDoorway color={colors.accent} />
       </group>
 
       {usePremiumEffects && (
         <mesh ref={raySource} position={[0, 0, -2]}>
           <sphereGeometry args={[0.07, 8, 8]} />
-          <meshBasicMaterial color="#ffe8a2" />
+          <meshBasicMaterial color={colors.particle} />
         </mesh>
       )}
 
       <EffectComposer multisampling={0}>
         <Bloom
-          intensity={reduceEffects && quality !== 'ultra'
-            ? quality === 'high' ? 0.18 : 0.1
-            : quality === 'ultra' ? 0.58 : quality === 'high' ? 0.4 : 0.22}
+          intensity={!colors.isDark
+            ? 0.16
+            : reduceEffects && quality !== 'ultra'
+              ? quality === 'high' ? 0.18 : 0.1
+              : quality === 'ultra' ? 0.58 : quality === 'high' ? 0.4 : 0.22}
           luminanceThreshold={0.58}
           luminanceSmoothing={0.2}
           mipmapBlur
         />
         {qualityAtLeast(quality, 'high') && !reduceEffects && <Noise opacity={0.024} />}
-        {quality === 'ultra' && (
+        {quality === 'ultra' && colors.isDark && (
           <>
             <GodRays sun={raySource} samples={48} density={0.92} decay={0.94} weight={0.42} exposure={0.28} blur />
             <DepthOfField focusDistance={0.02} focalLength={0.025} bokehScale={2.2} height={480} />
             <ChromaticAberration offset={new Vector2(0.00045, 0.00045)} />
           </>
         )}
-        {qualityAtLeast(quality, 'high') && !reduceEffects && <Vignette eskil={false} offset={0.18} darkness={0.55} />}
+        {colors.isDark && qualityAtLeast(quality, 'high') && !reduceEffects && <Vignette eskil={false} offset={0.18} darkness={0.55} />}
       </EffectComposer>
     </>
   )

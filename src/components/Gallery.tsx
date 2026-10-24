@@ -335,10 +335,10 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
                       </span>
                     )}
                     {artwork.year && artwork.created_at && (
-                      <span className="text-accent/60 text-[10px]">•</span>
+                      <span className="text-accent text-[10px]">•</span>
                     )}
                     {artwork.year && (
-                      <span className="text-accent/90 font-mono text-[10px] tracking-widest uppercase">
+                      <span className="text-accent font-mono text-[10px] tracking-widest uppercase">
                         {artwork.year}
                       </span>
                     )}

@@ -10,8 +10,8 @@ export default {
       colors: {
         ink: '#0C0C0D',
         paper: '#F7F5F1',
-        accent: '#D4AF37',
-        'accent-light': '#E8C84A',
+        accent: 'rgb(var(--accent-rgb) / <alpha-value>)',
+        'accent-light': 'rgb(var(--accent-light-rgb) / <alpha-value>)',
       },
       fontFamily: {
         serif: ['"Playfair Display"', 'serif'],

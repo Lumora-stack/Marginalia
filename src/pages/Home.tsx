@@ -301,7 +301,7 @@ export default function Home() {
       )}
 
       <div aria-hidden="true" className="collection-marquee my-8 -mx-6 overflow-hidden border-y border-accent/15 py-4">
-        <div className="collection-marquee-track w-max whitespace-nowrap font-serif text-3xl text-accent/60 sm:text-5xl">
+        <div className="collection-marquee-track w-max whitespace-nowrap font-serif text-3xl text-accent sm:text-5xl">
           PENCIL <span>·</span> PIXEL <span>·</span> SKETCH <span>·</span> DOODLE <span>·</span> CRAFT <span>·</span> PLAY <span>·</span>&nbsp;&nbsp;
           PENCIL <span>·</span> PIXEL <span>·</span> SKETCH <span>·</span> DOODLE <span>·</span> CRAFT <span>·</span> PLAY <span>·</span>
         </div>

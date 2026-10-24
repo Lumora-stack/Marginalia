@@ -55,7 +55,7 @@ export default function Footer() {
                     to={`/section/${cat.id}`}
                     className="text-sm opacity-70 hover:opacity-100 hover:text-accent transition-colors flex items-center gap-2 group"
                   >
-                    <span className="text-[10px] font-mono text-accent/60 group-hover:text-accent">{cat.num}</span>
+                    <span className="text-[10px] font-mono text-accent group-hover:text-accent">{cat.num}</span>
                     <span>{cat.label}</span>
                   </Link>
                 </li>
@@ -65,7 +65,7 @@ export default function Footer() {
                   to="/about"
                   className="text-sm opacity-70 hover:opacity-100 hover:text-accent transition-colors flex items-center gap-2"
                 >
-                  <span className="text-[10px] font-mono text-accent/60">✦</span>
+                  <span className="text-[10px] font-mono text-accent">✦</span>
                   <span>About</span>
                 </Link>
               </li>

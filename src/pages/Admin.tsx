@@ -146,7 +146,7 @@ export default function Admin() {
     >
       <div className="flex items-center justify-between mb-12">
         <div>
-          <p className="text-xs font-mono tracking-[0.3em] uppercase text-accent/70 mb-2">Artville Admin</p>
+          <p className="text-xs font-mono tracking-[0.3em] uppercase text-accent mb-2">Artville Admin</p>
           <h1 className="text-4xl md:text-5xl font-serif">Dashboard</h1>
         </div>
         <button

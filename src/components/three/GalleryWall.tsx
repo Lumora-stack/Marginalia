@@ -6,6 +6,7 @@ import { useQuality } from '../../lib/quality-context'
 import { qualityAtLeast } from '../../lib/quality-types'
 import type { Artwork } from '../../lib/supabase'
 import { useCanvasActivity } from '../motion/useCanvasActivity'
+import { useThemeColors } from '../../lib/useThemeColors'
 
 type WalkState = {
   keys: Set<string>
@@ -91,10 +92,12 @@ function WallArtwork({
   artwork,
   index,
   onFocus,
+  colors,
 }: {
   artwork: Artwork
   index: number
   onFocus: () => void
+  colors: ReturnType<typeof useThemeColors>
 }) {
   const side = index % 2 === 0 ? -1 : 1
   const x = side * 4.05
@@ -104,13 +107,18 @@ function WallArtwork({
 
   return (
     <group position={[x, y, z]}>
-      <pointLight position={[-side * 0.35, 0.35, 0.7]} color="#f5d779" intensity={4.2} distance={5} />
+      <pointLight position={[-side * 0.35, 0.35, 0.7]} color={colors.keyLight} intensity={4.2} distance={5} />
       <Html transform distanceFactor={7} rotation={rotation}>
         <button
           type="button"
           onClick={onFocus}
           aria-label={`Focus on ${artwork.title}`}
           className="group block w-[170px] overflow-hidden border-[8px] border-[#b8943b] bg-[#171613] p-2 text-left shadow-[0_16px_44px_rgba(0,0,0,.45)] transition-transform hover:-translate-y-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+          style={{
+            borderColor: colors.accent,
+            backgroundColor: colors.isDark ? '#171613' : '#eee8da',
+            color: colors.isDark ? '#f0ede6' : '#252218',
+          }}
         >
           <img
             src={artwork.thumbnail_url || artwork.image_url}
@@ -120,7 +128,7 @@ function WallArtwork({
             loading="lazy"
             className="h-[132px] w-full object-cover"
           />
-          <span className="block truncate px-1 pt-2 font-serif text-sm text-[#f0ede6]">
+          <span className="block truncate px-1 pt-2 font-serif text-sm">
             {artwork.title}
           </span>
         </button>
@@ -138,6 +146,7 @@ export default function GalleryWall({
 }) {
   const shouldReduceMotion = useReducedMotion()
   const { tier } = useQuality()
+  const colors = useThemeColors()
   const wrapper = useRef<HTMLDivElement>(null)
   const canvasActive = useCanvasActivity(wrapper)
   const dragging = useRef<{ pointerId: number; x: number; y: number } | null>(null)
@@ -228,6 +237,7 @@ export default function GalleryWall({
       onPointerCancel={stopLook}
       className="relative h-[32rem] overflow-hidden rounded-3xl border border-ink/10 bg-[#11100e] shadow-inner outline-none focus-visible:ring-2 focus-visible:ring-accent sm:h-[40rem]"
       aria-label="Walkable gallery. Use WASD or arrow keys to move and drag to look around."
+      style={{ backgroundColor: colors.background }}
     >
       <Canvas
         frameloop={canvasActive ? 'always' : 'never'}
@@ -236,18 +246,18 @@ export default function GalleryWall({
         gl={{ powerPreference: 'low-power', antialias: !smallScreen }}
         onCreated={({ gl }) => { gl.domElement.style.pointerEvents = 'none' }}
       >
-        <color attach="background" args={['#11100e']} />
-        <fog attach="fog" args={['#11100e', 12, corridorLength + 3]} />
-        <ambientLight intensity={0.6} />
+        <color attach="background" args={[colors.background]} />
+        <fog attach="fog" args={[colors.background, 12, corridorLength + 3]} />
+        <ambientLight intensity={colors.isDark ? 0.6 : 0.9} color={colors.ambientLight} />
         <WalkController events={walkEvents} onSelect={onSelect} corridorLength={corridorLength} />
         <mesh position={[0, -0.15, -corridorLength / 2]}>
           <boxGeometry args={[8, 0.3, corridorLength]} />
-          <meshStandardMaterial color="#33302a" metalness={0.72} roughness={0.24} />
+          <meshStandardMaterial color={colors.isDark ? '#33302a' : '#ddd5c4'} metalness={0.72} roughness={0.24} />
         </mesh>
         {[-4.2, 4.2].map(x => (
           <mesh key={x} position={[x, 1.7, -corridorLength / 2]}>
             <boxGeometry args={[0.22, 4, corridorLength]} />
-            <meshStandardMaterial color="#211f1b" metalness={0.22} roughness={0.68} />
+            <meshStandardMaterial color={colors.isDark ? '#211f1b' : '#e5dfd1'} metalness={0.22} roughness={0.68} />
           </mesh>
         ))}
         {artworks.slice(0, 20).map((artwork, index) => (
@@ -256,6 +266,7 @@ export default function GalleryWall({
             artwork={artwork}
             index={index}
             onFocus={() => sendWalkInput({ type: 'focus', index })}
+            colors={colors}
           />
         ))}
       </Canvas>

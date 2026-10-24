@@ -50,7 +50,7 @@ export default function About() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="text-xs font-mono tracking-[0.3em] uppercase text-accent/70 mb-4"
+          className="text-xs font-mono tracking-[0.3em] uppercase text-accent mb-4"
         >
           The Artist
         </motion.p>
@@ -132,7 +132,7 @@ export default function About() {
           viewport={{ once: true }}
           className="mb-12"
         >
-          <p className="text-xs font-mono tracking-[0.3em] uppercase text-accent/70 mb-4">Creative Journey</p>
+          <p className="text-xs font-mono tracking-[0.3em] uppercase text-accent mb-4">Creative Journey</p>
           <h2 className="text-4xl md:text-5xl font-serif">
             My artistic <span className="text-accent italic">growth</span>
           </h2>

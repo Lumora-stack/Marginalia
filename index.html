@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#F7F5F1" />
+    <meta name="color-scheme" content="light" />
     <title>Artville Gallery of Imagination</title>
     <!-- Inline theme init: prevents flash of wrong theme on load -->
     <script>
@@ -12,6 +14,9 @@
         if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark');
         }
+        var isDark = document.documentElement.classList.contains('dark');
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', isDark ? '#0C0C0E' : '#F7F5F1');
+        document.querySelector('meta[name="color-scheme"]').setAttribute('content', isDark ? 'dark' : 'light');
       })();
     </script>
   </head>
