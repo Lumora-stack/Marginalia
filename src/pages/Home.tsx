@@ -40,31 +40,36 @@ export default function Home() {
     if (!qualityAtLeast(tier, 'high') || shouldReduceMotion || window.innerWidth < 1024) return
     let active = true
     let revert = () => {}
-    void Promise.all([import('gsap'), import('gsap/ScrollTrigger')]).then(([gsapModule, triggerModule]) => {
-      if (!active || !roomsRef.current || !roomsSectionRef.current) return
-      const gsap = gsapModule.default
-      const { ScrollTrigger } = triggerModule
-      gsap.registerPlugin(ScrollTrigger)
-      const section = roomsSectionRef.current
-      const rail = roomsRef.current
-      const context = gsap.context(() => {
-        const getDistance = () => Math.max(0, rail.scrollWidth - window.innerWidth + 56)
-        gsap.to(rail, {
-          x: () => -getDistance(),
-          ease: 'none',
-          scrollTrigger: {
-            trigger: section,
-            start: 'top top',
-            end: () => `+=${getDistance()}`,
-            scrub: 1,
-            pin: true,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-          },
-        })
-      }, section)
-      revert = () => context.revert()
-    })
+    void Promise.all([import('gsap'), import('gsap/ScrollTrigger')])
+      .then(([gsapModule, triggerModule]) => {
+        if (!active || !roomsRef.current || !roomsSectionRef.current) return
+        const gsap = gsapModule.default
+        const { ScrollTrigger } = triggerModule
+        gsap.registerPlugin(ScrollTrigger)
+        const section = roomsSectionRef.current
+        const rail = roomsRef.current
+        const context = gsap.context(() => {
+          const getDistance = () => Math.max(0, rail.scrollWidth - window.innerWidth + 56)
+          gsap.to(rail, {
+            x: () => -getDistance(),
+            ease: 'none',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top top',
+              end: () => `+=${getDistance()}`,
+              scrub: 1,
+              pin: true,
+              anticipatePin: 1,
+              invalidateOnRefresh: true,
+            },
+          })
+        }, section)
+        ScrollTrigger.refresh()
+        revert = () => context.revert()
+      })
+      .catch((error: unknown) => {
+        if (active) console.error('Could not initialize the curated-rooms scroll animation:', error)
+      })
     return () => {
       active = false
       revert()

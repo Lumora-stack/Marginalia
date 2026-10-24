@@ -7,7 +7,7 @@ export default function SmoothScroll() {
 
     let active = true;
     let cleanup = () => {};
-    Promise.all([
+    void Promise.all([
       import('lenis'),
       import('gsap'),
       import('gsap/ScrollTrigger'),
@@ -68,6 +68,8 @@ export default function SmoothScroll() {
         gsap.ticker.remove(tick);
         lenis.destroy();
       };
+    }).catch((error: unknown) => {
+      if (active) console.error('Could not initialize smooth scrolling:', error);
     });
 
     return () => {

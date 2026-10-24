@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { MotionConfig } from 'framer-motion';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
@@ -7,6 +7,7 @@ import SmoothScroll from './components/motion/SmoothScroll';
 import { QualityProvider } from './lib/quality';
 import ScrollVelocity from './components/motion/ScrollVelocity';
 import { SoundProvider } from './lib/sound';
+import FrameStats from './components/motion/FrameStats';
 
 const Home = lazy(() => import('./pages/Home'));
 const Section = lazy(() => import('./pages/Section'));
@@ -15,11 +16,76 @@ const Admin = lazy(() => import('./pages/Admin'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 function RouteLoading() {
+  const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setTimedOut(true), 8000);
+    return () => window.clearTimeout(timeout);
+  }, []);
+
+  if (timedOut) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center" role="alert">
+        <p className="font-serif text-lg">This exhibition is taking longer than expected to open.</p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="rounded-full border border-accent/50 px-4 py-2 font-mono text-xs uppercase tracking-widest text-accent focus-visible:outline"
+        >
+          Reload exhibition
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-[50vh] items-center justify-center" role="status" aria-label="Opening exhibition">
       <span className="h-px w-20 animate-pulse bg-accent" />
     </div>
   );
+}
+
+function ScrollTriggerRefresh() {
+  const location = useLocation();
+
+  useEffect(() => {
+    let active = true;
+    let frame = 0;
+    const refresh = () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        void Promise.all([import('gsap'), import('gsap/ScrollTrigger')])
+          .then(([gsapModule, triggerModule]) => {
+            if (!active) return;
+            gsapModule.default.registerPlugin(triggerModule.ScrollTrigger);
+            triggerModule.ScrollTrigger.refresh();
+          })
+          .catch((error: unknown) => {
+            console.error('Could not refresh exhibition scroll positions:', error);
+          });
+      });
+    };
+    const handleResourceLoad = (event: Event) => {
+      if (event.target instanceof HTMLImageElement) refresh();
+    };
+
+    refresh();
+    window.addEventListener('load', refresh);
+    document.addEventListener('load', handleResourceLoad, true);
+    window.addEventListener('artville:layoutchange', refresh);
+    void document.fonts.ready.then(refresh);
+
+    return () => {
+      active = false;
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener('load', refresh);
+      document.removeEventListener('load', handleResourceLoad, true);
+      window.removeEventListener('artville:layoutchange', refresh);
+    };
+  }, [location.pathname, location.search, location.hash]);
+
+  return null;
 }
 
 function App() {
@@ -29,8 +95,10 @@ function App() {
         <SoundProvider>
           <MotionConfig reducedMotion="user">
             <SmoothScroll />
+            <ScrollTriggerRefresh />
             <ScrollVelocity />
             <ScrollToTop />
+            <FrameStats />
             <Routes>
               <Route path="/" element={<Layout />}>
                 <Route index element={<Suspense fallback={<RouteLoading />}><Home /></Suspense>} />

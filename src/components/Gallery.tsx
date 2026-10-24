@@ -87,7 +87,10 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
         console.error('Error fetching artworks:', fetchErr);
         if (active) setLoadError({ section: sectionId, message: 'We couldn’t load this gallery. Please try again in a moment.' });
       } finally {
-        if (active) setLoadedSection(sectionId);
+        if (active) {
+          setLoadedSection(sectionId);
+          window.dispatchEvent(new Event('artville:layoutchange'));
+        }
       }
     };
 

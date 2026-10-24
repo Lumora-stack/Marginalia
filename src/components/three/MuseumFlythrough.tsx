@@ -189,7 +189,10 @@ export default function MuseumFlythrough({ quality }: { quality: QualityTier }) 
             .order('created_at', { ascending: false })
             .limit(12)
           if (error) throw error
-          if (active && data?.length) setArtworks(data as Artwork[])
+          if (active && data?.length) {
+            setArtworks(data as Artwork[])
+            window.dispatchEvent(new Event('artville:layoutchange'))
+          }
         } catch (error) {
           console.error('Could not load flythrough artwork thumbnails:', error)
         }
@@ -219,6 +222,7 @@ export default function MuseumFlythrough({ quality }: { quality: QualityTier }) 
         },
       })
     }, element)
+    ScrollTrigger.refresh()
     return () => context.revert()
   }, [])
 
