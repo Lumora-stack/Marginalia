@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { AdditiveBlending, NormalBlending } from 'three'
 
 const darkPalette = {
   isDark: true,
@@ -11,7 +10,6 @@ const darkPalette = {
   ambientIntensity: 0.4,
   secondaryLight: '#f0ede6',
   secondaryIntensity: 3,
-  particleBlending: AdditiveBlending,
 }
 
 const lightPalette = {
@@ -24,7 +22,6 @@ const lightPalette = {
   ambientIntensity: 0.85,
   secondaryLight: '#584d32',
   secondaryIntensity: 2,
-  particleBlending: NormalBlending,
 }
 
 export function useThemeColors() {

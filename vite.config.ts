@@ -3,6 +3,7 @@ import { gzipSync, brotliCompressSync } from 'node:zlib'
 import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
+import { fileURLToPath, URL } from 'node:url'
 import { VitePWA } from 'vite-plugin-pwa'
 import { visualizer } from 'rollup-plugin-visualizer'
 
@@ -37,6 +38,11 @@ function compressionPlugin(algorithm: 'gzip' | 'brotli', extension: '.gz' | '.br
 
 // https://vite.dev/config/
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   plugins: [
     react(),
     process.env.ANALYZE === 'true' && visualizer({
@@ -80,9 +86,6 @@ export default defineConfig({
         codeSplitting: {
           includeDependenciesRecursively: false,
           groups: [
-            { name: 'three-core', test: /node_modules[\\/]three[\\/]build[\\/]three\.core\.js$/, priority: 35 },
-            { name: 'three-objects', test: /node_modules[\\/]three[\\/]build[\\/]three\.module\.js$/, priority: 34 },
-            { name: 'postprocessing', test: /node_modules[\\/](?:@react-three[\\/]postprocessing|postprocessing)[\\/]/, priority: 15 },
             { name: 'gsap', test: /node_modules[\\/]gsap[\\/]/, priority: 10 },
           ],
         },

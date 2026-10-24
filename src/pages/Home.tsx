@@ -1,21 +1,27 @@
-import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useMotionValue, useTransform, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ChevronDown, Sparkles, ArrowUpRight } from 'lucide-react';
 import { CATEGORIES } from '../lib/categories';
 import { useQuality } from '../lib/quality-context';
 import { qualityAtLeast } from '../lib/quality-types';
-import ScrambleText from '../components/motion/ScrambleText';
+import { useThemeColors } from '../lib/useThemeColors';
 import { useCanvasActivity } from '../components/motion/useCanvasActivity';
+import ScrambleText from '../components/motion/ScrambleText';
 
-const HeroScene = lazy(() => import('../components/three/HeroScene'));
-const Canvas = lazy(() => import('@react-three/fiber').then(m => ({ default: m.Canvas })));
+const Aurora = lazy(() => import('../components/Aurora'));
+const Particles = lazy(() => import('../components/Particles'));
+const SplitText = lazy(() => import('../components/SplitText'));
+const ShinyText = lazy(() => import('../components/ShinyText'));
+const BlurText = lazy(() => import('../components/BlurText'));
+const Magnet = lazy(() => import('../components/Magnet'));
+const StarBorder = lazy(() => import('../components/StarBorder'));
 const MotionLink = motion.create(Link);
 
 export default function Home() {
   const shouldReduceMotion = useReducedMotion();
   const { tier } = useQuality();
-  const smallScreen = typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches;
+  const colors = useThemeColors();
   const device = typeof navigator !== 'undefined'
     ? navigator as Navigator & {
         deviceMemory?: number;
@@ -29,11 +35,10 @@ export default function Home() {
   const connectionType = device?.connection?.effectiveType;
   const saveData = device?.connection?.saveData === true;
   const slowConnection = connectionType === 'slow-2g' || connectionType === '2g' || connectionType === '3g';
-  const enable3D = qualityAtLeast(tier, 'medium') && shouldReduceMotion === false &&
-    !smallScreen && !lowMemory && !lowCpu && !saveData && !slowConnection;
-  const [hero3DReady, setHero3DReady] = useState(false);
+  const enableHeroEffects = tier !== 'low' && !shouldReduceMotion && !lowMemory && !lowCpu && !saveData && !slowConnection;
+  const [heroEffectsReady, setHeroEffectsReady] = useState(false);
   const heroSectionRef = useRef<HTMLElement>(null);
-  const heroCanvasActive = useCanvasActivity(heroSectionRef);
+  const heroEffectsActive = useCanvasActivity(heroSectionRef);
   const roomsRef = useRef<HTMLDivElement>(null);
   const roomsSectionRef = useRef<HTMLElement>(null);
   const dragging = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
@@ -78,44 +83,33 @@ export default function Home() {
     }
   }, [shouldReduceMotion, tier])
 
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const rotateX = useTransform(mouseY, [-300, 300], [3.5, -3.5]);
-  const rotateY = useTransform(mouseX, [-300, 300], [-3.5, 3.5]);
-
   useEffect(() => {
-    if (!enable3D) return;
+    if (!enableHeroEffects) return;
     let timeoutId: number | undefined;
     let idleId: number | undefined;
+    let completed = false;
     const idleWindow = window as Window & {
       requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
       cancelIdleCallback?: (id: number) => void;
     };
+    const reveal = () => {
+      if (completed) return;
+      completed = true;
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+      if (idleId !== undefined) idleWindow.cancelIdleCallback?.(idleId);
+      setHeroEffectsReady(true);
+    };
     if (idleWindow.requestIdleCallback) {
-      idleId = idleWindow.requestIdleCallback(() => setHero3DReady(true), { timeout: 2000 });
+      idleId = idleWindow.requestIdleCallback(reveal, { timeout: 900 });
+      timeoutId = window.setTimeout(reveal, 1200);
     } else {
-      timeoutId = window.setTimeout(() => setHero3DReady(true), 300);
+      timeoutId = window.setTimeout(reveal, 300);
     }
     return () => {
       if (idleId !== undefined) idleWindow.cancelIdleCallback?.(idleId);
       if (timeoutId !== undefined) window.clearTimeout(timeoutId);
     };
-  }, [enable3D]);
-
-  const handleHeroMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLElement>) => {
-      if (shouldReduceMotion) return;
-      const rect = e.currentTarget.getBoundingClientRect();
-      mouseX.set(e.clientX - rect.left - rect.width / 2);
-      mouseY.set(e.clientY - rect.top - rect.height / 2);
-    },
-    [shouldReduceMotion, mouseX, mouseY]
-  );
-
-  const handleHeroMouseLeave = useCallback(() => {
-    mouseX.set(0);
-    mouseY.set(0);
-  }, [mouseX, mouseY]);
+  }, [enableHeroEffects]);
 
   const handleTilt = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (shouldReduceMotion || typeof window === 'undefined' || window.innerWidth < 768) return;
@@ -161,39 +155,66 @@ export default function Home() {
         id="home-hero"
         ref={heroSectionRef}
         className="hero-viewport relative min-h-[85vh] md:min-h-screen flex items-center justify-center -mx-6 overflow-hidden select-none"
-        onMouseMove={handleHeroMouseMove}
-        onMouseLeave={handleHeroMouseLeave}
       >
-        {/* Soft atmospheric ambient glow orbs - desktop only for 60fps mobile */}
-        <div className="hidden md:block absolute top-1/4 left-1/4 w-80 h-80 bg-accent/6 rounded-full filter blur-[100px] animate-blob transform-gpu pointer-events-none" />
-        <div className="hidden md:block absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent/8 rounded-full filter blur-[90px] animate-blob transform-gpu pointer-events-none" style={{ animationDelay: '3s' }} />
-
         <div
           aria-hidden="true"
-          className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(ellipse_at_50%_45%,rgba(212,175,55,0.12),transparent_55%)]"
+          className="hero-poster absolute inset-0 z-0 pointer-events-none"
         />
 
-        {/* 3D Canvas mounts only after the first paint and an idle callback. */}
-        {enable3D && hero3DReady && (
-          <div className="hero-scene-layer absolute inset-0 z-0 pointer-events-none will-change-transform">
+        {enableHeroEffects && heroEffectsReady && (
+          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
             <Suspense fallback={null}>
-              <Canvas
-                frameloop={heroCanvasActive ? 'always' : 'never'}
-                dpr={[1, tier === 'ultra' ? 2 : tier === 'high' ? 1.5 : 1.25]}
-                gl={{ powerPreference: 'high-performance', antialias: false }}
-                camera={{ position: [0, 0, 22], fov: 58 }}
-              >
-                <HeroScene quality={tier} />
-              </Canvas>
+              <Aurora
+                colorStops={colors.isDark
+                  ? ['#5e4918', '#d4af37', '#382b10']
+                  : ['#9a7b1f', '#ccb05d', '#80641c']}
+                amplitude={0.9}
+                blend={0.48}
+                speed={shouldReduceMotion ? 0 : tier === 'ultra' ? 0.72 : 0.42}
+                height={0.55}
+                scale={1.2}
+                glow={0.28}
+                brightness={colors.isDark ? 0.7 : 0.5}
+                layers={tier === 'ultra' ? 2 : 1}
+                lightMode={!colors.isDark}
+                paused={!heroEffectsActive || !!shouldReduceMotion}
+                dpr={Math.min(window.devicePixelRatio || 1, tier === 'ultra' ? 1.5 : 1)}
+                className="absolute inset-0"
+              />
+              <Particles
+                particleCount={tier === 'ultra' ? 1800 : tier === 'high' ? 1100 : 450}
+                particleSpread={9}
+                speed={0.12}
+                particleColors={[colors.particle, colors.accent]}
+                moveParticlesOnHover
+                particleHoverFactor={0.7}
+                alphaParticles
+                particleBaseSize={2}
+                sizeRandomness={1.4}
+                disableRotation
+                pixelRatio={Math.min(window.devicePixelRatio || 1, tier === 'ultra' ? 1.5 : 1)}
+                shape="sparkle"
+                glow={0.15}
+                twinkle={0.35}
+                depthOfField={0}
+                connections={false}
+                hoverEffect="repel"
+                hoverRadius={1.8}
+                clickBurst
+                drift="up"
+                driftSpeed={0.04}
+                intro={!shouldReduceMotion}
+                opacity={0.72}
+                lightMode={!colors.isDark}
+                paused={!heroEffectsActive || !!shouldReduceMotion}
+                className="absolute inset-0"
+              />
             </Suspense>
           </div>
         )}
 
         {/* Hero Content */}
-        <motion.div
-          style={shouldReduceMotion ? {} : { rotateX, rotateY, transformStyle: 'preserve-3d' as const }}
-          className="z-10 text-center relative px-6 max-w-5xl mx-auto"
-        >
+        <div className="z-10 text-center relative px-6 max-w-5xl mx-auto">
           {/* Subtle Tag */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -207,49 +228,45 @@ export default function Home() {
             </span>
           </motion.div>
 
-          <motion.h1
-            initial={shouldReduceMotion ? false : 'hidden'}
-            animate="visible"
-            variants={{
-              hidden: {},
-              visible: { transition: { delayChildren: 0.18, staggerChildren: 0.045 } },
-            }}
-            aria-label="Artville"
-            className="hero-wordmark text-6xl sm:text-7xl md:text-8xl lg:text-[9.5rem] font-serif leading-none tracking-tighter mb-4"
-          >
-            {'Artville'.split('').map((letter, index) => (
-              <span key={`${letter}-${index}`} className="inline-block overflow-hidden align-bottom pb-2">
-                <motion.span
-                  aria-hidden="true"
-                  variants={{
-                    hidden: { opacity: 0, y: '110%', rotateX: -75, filter: 'blur(12px)' },
-                    visible: { opacity: 1, y: '0%', rotateX: 0, filter: 'blur(0px)', transition: { duration: 0.85, ease: [0.16, 1, 0.3, 1] } },
-                  }}
-                  className="inline-block origin-bottom text-gradient"
-                >
-                  {letter}
-                </motion.span>
-              </span>
-            ))}
-          </motion.h1>
+          <Suspense fallback={<h1 className="hero-wordmark text-6xl sm:text-7xl md:text-8xl lg:text-[9.5rem] font-serif leading-none tracking-tighter mb-4 text-gradient">Artville</h1>}>
+            <SplitText
+              text="Artville"
+              tag="h1"
+              splitType="chars"
+              effect="flip"
+              trigger="load"
+              duration={0.85}
+              delay={45}
+              className="hero-wordmark text-6xl sm:text-7xl md:text-8xl lg:text-[9.5rem] font-serif leading-none tracking-tighter mb-4 text-gradient"
+              color={colors.accent}
+              accentColor={colors.accent}
+            />
+          </Suspense>
 
-          <motion.h2
-            initial={{ opacity: 0, y: 35 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.32, ease: [0.16, 1, 0.3, 1] }}
-            className="hero-title-shimmer text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-serif italic text-accent leading-none tracking-tight mb-8"
-          >
-            Gallery of Imagination
-          </motion.h2>
+          <Suspense fallback={<h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-serif italic text-accent leading-none tracking-tight mb-8">Gallery of Imagination</h2>}>
+            <ShinyText
+              text="Gallery of Imagination"
+              color={colors.accent}
+              shineColor={colors.isDark ? '#fff2bd' : '#5f4a12'}
+              speed={4}
+              delay={0.8}
+              trigger="loop"
+              className="mb-8 block text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-serif italic leading-none tracking-tight"
+            />
+          </Suspense>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
-            className="text-sm md:text-base font-serif italic opacity-70 max-w-lg mx-auto leading-relaxed"
-          >
-            "Creating art from tiny feelings, peaceful thoughts, and a little bit of imagination — straight from Chennai 🤍"
-          </motion.p>
+          <Suspense fallback={<p className="text-sm md:text-base font-serif italic opacity-70 max-w-lg mx-auto leading-relaxed">Creating art from tiny feelings, peaceful thoughts, and a little bit of imagination — straight from Chennai.</p>}>
+            <BlurText
+              text="Creating art from tiny feelings, peaceful thoughts, and a little bit of imagination — straight from Chennai."
+              animateBy="words"
+              effect="blur"
+              trigger={shouldReduceMotion ? 'load' : 'view'}
+              delay={85}
+              stepDuration={0.3}
+              color={colors.isDark ? '#f0ede6' : '#29271f'}
+              className="text-sm md:text-base font-serif italic opacity-75 max-w-lg mx-auto leading-relaxed"
+            />
+          </Suspense>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -257,21 +274,35 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.65, ease: 'easeOut' }}
             className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-6"
           >
-            <Link
-              to="/section/pencil-arts"
-              className="px-8 py-3.5 rounded-full bg-accent text-white font-sans text-xs font-semibold tracking-widest uppercase hover:bg-accent-light transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] pointer-events-auto inline-flex items-center gap-2 group"
-            >
-              <span>Explore Exhibition</span>
-              <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </Link>
-            <Link
-              to="/about"
-              className="px-8 py-3.5 rounded-full border border-ink/20 dark:border-white/20 font-sans text-xs font-semibold tracking-widest uppercase hover:border-accent hover:text-accent transition-all duration-300 pointer-events-auto"
-            >
-              About the Artist
-            </Link>
+            <Suspense fallback={<Link to="/section/pencil-arts" className="rounded-full bg-accent px-8 py-3.5 text-xs font-semibold uppercase tracking-widest text-white">Explore Exhibition</Link>}>
+              <Magnet padding={60} magnetStrength={2.2} maxOffset={12} className="pointer-events-auto">
+                <Link to="/section/pencil-arts" aria-label="Explore Exhibition">
+                  <StarBorder
+                    as="span"
+                    color={colors.accent}
+                    trailColor={colors.isDark ? '#fff0b5' : '#5f4a12'}
+                    theme={colors.isDark ? 'dark' : 'light'}
+                    backgroundColor={colors.background}
+                    textColor={colors.isDark ? '#f0ede6' : '#28251d'}
+                    borderColor={colors.accent}
+                    className="group px-8 py-3.5 font-sans text-xs font-semibold uppercase tracking-widest"
+                  >
+                    <span>Explore Exhibition</span>
+                    <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </StarBorder>
+                </Link>
+              </Magnet>
+              <Magnet padding={60} magnetStrength={1.6} maxOffset={9} className="pointer-events-auto">
+                <Link
+                  to="/about"
+                  className="inline-flex rounded-full border border-ink/20 px-8 py-3.5 font-sans text-xs font-semibold uppercase tracking-widest transition-colors hover:border-accent hover:text-accent dark:border-white/20"
+                >
+                  About the Artist
+                </Link>
+              </Magnet>
+            </Suspense>
           </motion.div>
-        </motion.div>
+        </div>
 
         {/* Scroll Indicator */}
         <motion.div

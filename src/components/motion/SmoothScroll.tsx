@@ -29,41 +29,7 @@ export default function SmoothScroll() {
       gsap.ticker.add(tick);
       gsap.ticker.lagSmoothing(0);
 
-      let hasHeroTimeline = false;
-      let destroyHeroTimeline = () => {};
-      const syncHeroTimeline = () => {
-        const hasHero = document.querySelector('.hero-scene-layer') && document.querySelector('#home-hero');
-        if (hasHero && !hasHeroTimeline) {
-          const heroTimeline = gsap.to('.hero-scene-layer', {
-            scale: 1.35,
-            yPercent: 22,
-            opacity: 0.18,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: '#home-hero',
-              start: 'top top',
-              end: 'bottom top',
-              scrub: true,
-            },
-          });
-          destroyHeroTimeline = () => {
-            heroTimeline.scrollTrigger?.kill();
-            heroTimeline.kill();
-          };
-          hasHeroTimeline = true;
-        } else if (!hasHero && hasHeroTimeline) {
-          destroyHeroTimeline();
-          destroyHeroTimeline = () => {};
-          hasHeroTimeline = false;
-        }
-      };
-      const routeObserver = new MutationObserver(syncHeroTimeline);
-      routeObserver.observe(document.body, { childList: true, subtree: true });
-      syncHeroTimeline();
-
       cleanup = () => {
-        routeObserver.disconnect();
-        destroyHeroTimeline();
         lenis.off('scroll', updateScrollTrigger);
         gsap.ticker.remove(tick);
         lenis.destroy();
