@@ -7,7 +7,6 @@ import { useQuality } from '../lib/quality-context';
 import { qualityAtLeast } from '../lib/quality-types';
 import { useThemeColors } from '../lib/useThemeColors';
 import { useCanvasActivity } from '../components/motion/useCanvasActivity';
-import ScrambleText from '../components/motion/ScrambleText';
 
 const Aurora = lazy(() => import('../components/Aurora'));
 const Particles = lazy(() => import('../components/Particles'));
@@ -16,6 +15,11 @@ const ShinyText = lazy(() => import('../components/ShinyText'));
 const BlurText = lazy(() => import('../components/BlurText'));
 const Magnet = lazy(() => import('../components/Magnet'));
 const StarBorder = lazy(() => import('../components/StarBorder'));
+const TiltedCard = lazy(() => import('../components/TiltedCard'));
+const FadeContent = lazy(() => import('../components/FadeContent'));
+const ScrollReveal = lazy(() => import('../components/ScrollReveal'));
+const RoomScrollVelocity = lazy(() => import('../components/ScrollVelocity'));
+const DecryptedText = lazy(() => import('../components/DecryptedText'));
 const MotionLink = motion.create(Link);
 
 export default function Home() {
@@ -111,20 +115,6 @@ export default function Home() {
     };
   }, [enableHeroEffects]);
 
-  const handleTilt = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (shouldReduceMotion || typeof window === 'undefined' || window.innerWidth < 768) return;
-    const el = e.currentTarget;
-    const rect = el.getBoundingClientRect();
-    const rx = (((e.clientY - rect.top) / rect.height) - 0.5) * -10;
-    const ry = (((e.clientX - rect.left) / rect.width) - 0.5) * 10;
-    el.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) scale3d(1.015,1.015,1.015)`;
-  };
-
-  const resetTilt = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (typeof window === 'undefined' || window.innerWidth < 768) return;
-    e.currentTarget.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)';
-  };
-
   const startRoomDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== 'mouse' || e.button !== 0 || !roomsRef.current) return;
     dragging.current = {
@@ -146,6 +136,27 @@ export default function Home() {
   const stopRoomDrag = () => {
     dragging.current.active = false;
   };
+
+  const manifesto = (
+    <div className="my-12 grid grid-cols-2 gap-6 border-y border-ink/10 py-12 text-center font-mono text-xs dark:border-white/10 sm:grid-cols-4">
+      <div>
+        <p className="mb-1 font-serif text-2xl text-accent">06</p>
+        <p className="text-[10px] uppercase tracking-widest opacity-50">Curated Rooms</p>
+      </div>
+      <div>
+        <p className="mb-1 font-serif text-2xl text-accent">Pencil &amp; Pixel</p>
+        <p className="text-[10px] uppercase tracking-widest opacity-50">Dual Mediums</p>
+      </div>
+      <div>
+        <p className="mb-1 font-serif text-2xl text-accent">Handcrafted</p>
+        <p className="text-[10px] uppercase tracking-widest opacity-50">Physical &amp; Digital</p>
+      </div>
+      <div>
+        <p className="mb-1 font-serif text-2xl text-accent">Chennai</p>
+        <p className="text-[10px] uppercase tracking-widest opacity-50">Origin Studio</p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex flex-col gap-0 pb-16">
@@ -324,43 +335,78 @@ export default function Home() {
         </motion.div>
       </section>
 
-      <div aria-hidden="true" className="collection-marquee my-8 -mx-6 overflow-hidden border-y border-accent/15 py-4">
-        <div className="collection-marquee-track w-max whitespace-nowrap font-serif text-3xl text-accent sm:text-5xl">
-          PENCIL <span>·</span> PIXEL <span>·</span> SKETCH <span>·</span> DOODLE <span>·</span> CRAFT <span>·</span> PLAY <span>·</span>&nbsp;&nbsp;
-          PENCIL <span>·</span> PIXEL <span>·</span> SKETCH <span>·</span> DOODLE <span>·</span> CRAFT <span>·</span> PLAY <span>·</span>
-        </div>
+      <div aria-hidden="true" className="-mx-6 my-8 overflow-hidden border-y border-accent/15 py-4">
+        <Suspense fallback={<div className="whitespace-nowrap py-1 font-serif text-3xl text-accent sm:text-5xl">PENCIL · PIXEL · SKETCH · DOODLE · CRAFT · PLAY ·</div>}>
+          <RoomScrollVelocity
+            texts={['PENCIL · PIXEL · SKETCH · DOODLE · CRAFT · PLAY']}
+            velocity={22}
+            damping={50}
+            stiffness={400}
+            numCopies={5}
+            velocityMapping={{ input: [0, 1000], output: [0, 2] }}
+            parallaxClassName="relative overflow-hidden"
+            scrollerClassName="font-serif text-3xl font-normal tracking-normal text-accent sm:text-5xl"
+            scrollerStyle={{ color: colors.accent }}
+            pauseOnHover
+            fadeEdges
+            skewWithVelocity={0.004}
+            scaleWithVelocity={0.01}
+          />
+        </Suspense>
       </div>
 
       {/* ─── EXHIBITION STATS & MANIFESTO ─── */}
-      <div className="py-12 border-y border-ink/10 dark:border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center my-12 font-mono text-xs">
-        <div>
-          <p className="text-2xl font-serif text-accent mb-1">06</p>
-          <p className="opacity-50 uppercase tracking-widest text-[10px]">Curated Rooms</p>
-        </div>
-        <div>
-          <p className="text-2xl font-serif text-accent mb-1">Pencil & Pixel</p>
-          <p className="opacity-50 uppercase tracking-widest text-[10px]">Dual Mediums</p>
-        </div>
-        <div>
-          <p className="text-2xl font-serif text-accent mb-1">Handcrafted</p>
-          <p className="opacity-50 uppercase tracking-widest text-[10px]">Physical & Digital</p>
-        </div>
-        <div>
-          <p className="text-2xl font-serif text-accent mb-1">Chennai</p>
-          <p className="opacity-50 uppercase tracking-widest text-[10px]">Origin Studio</p>
-        </div>
-      </div>
+      <Suspense fallback={manifesto}>
+        <FadeContent
+          className="w-full"
+          effect="focus"
+          blur={4}
+          duration={0.75}
+          threshold={0.15}
+          once
+        >
+          {manifesto}
+        </FadeContent>
+      </Suspense>
 
       {/* ─── SECTION INTRO ─── */}
       <div id="curated-rooms" className="pt-12 pb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 scroll-mt-24">
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-8 h-px bg-accent" />
-            <ScrambleText text="The Permanent Collection" className="text-xs font-mono tracking-[0.3em] uppercase text-accent font-semibold" />
+            {shouldReduceMotion || tier === 'low' ? (
+              <span className="text-xs font-mono font-semibold uppercase tracking-[0.3em] text-accent">
+                The Permanent Collection
+              </span>
+            ) : (
+              <Suspense fallback={<span className="text-xs font-mono font-semibold uppercase tracking-[0.3em] text-accent">The Permanent Collection</span>}>
+                <DecryptedText
+                  text="The Permanent Collection"
+                  animateOn="hover"
+                  effect="scramble"
+                  speed={32}
+                  maxIterations={8}
+                  scrambleColor={colors.accent}
+                  className="text-xs font-mono font-semibold uppercase tracking-[0.3em] text-accent"
+                />
+              </Suspense>
+            )}
           </div>
-          <h2 className="text-4xl md:text-5xl font-serif">
-            Curated <span className="italic text-accent">Rooms</span>
-          </h2>
+          <Suspense fallback={<h2 className="text-4xl font-serif md:text-5xl">Curated <span className="italic text-accent">Rooms</span></h2>}>
+            <ScrollReveal
+              mode="enter"
+              effect="rise"
+              splitBy="words"
+              enableBlur={qualityAtLeast(tier, 'medium') && !shouldReduceMotion}
+              baseOpacity={0}
+              baseRotation={0}
+              duration={0.8}
+              containerClassName="!my-0"
+              textClassName="!font-serif !text-4xl !font-normal !leading-none md:!text-5xl"
+            >
+              <>Curated <span className="italic text-accent">Rooms</span></>
+            </ScrollReveal>
+          </Suspense>
         </div>
         <p className="text-sm opacity-50 font-serif italic max-w-sm">
           Select any exhibition hall below to immerse yourself in the individual works.
@@ -398,66 +444,84 @@ export default function Home() {
               <MotionLink
                 to={`/section/${section.id}`}
                 layoutId={`room-cover-${section.id}`}
-                className="group relative block w-full h-full overflow-hidden rounded-3xl bg-ink border border-ink/10 dark:border-white/10 shadow-lg"
+                aria-label={`Explore ${section.label} exhibition`}
+                className="group block h-full w-full overflow-hidden rounded-3xl border border-ink/10 bg-ink shadow-lg dark:border-white/10"
                 onClick={e => {
                   if (dragging.current.moved) {
                     e.preventDefault();
                     dragging.current.moved = false;
                   }
                 }}
-                onMouseMove={e => {
-                  handleTilt(e);
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  e.currentTarget.style.setProperty('--glare-x', `${e.clientX - rect.left}px`);
-                  e.currentTarget.style.setProperty('--glare-y', `${e.clientY - rect.top}px`);
-                }}
-                onMouseLeave={resetTilt}
-                style={{
-                  transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-                  '--glare-x': '50%',
-                  '--glare-y': '50%',
-                } as React.CSSProperties}
               >
-                <span aria-hidden="true" className="room-card-glare absolute inset-0 z-[1] pointer-events-none" />
-                <span aria-hidden="true" className="room-card-dissolve absolute inset-0 z-[2] pointer-events-none" />
-                {/* Cover image */}
-                <img
-                  src={section.img}
-                  alt={section.label}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=1000&auto=format&fit=crop';
-                  }}
-                  className="room-cover-image absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-75 transition-all duration-700 ease-out"
-                  loading="lazy"
-                />
-
-                {/* Dark Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-ink/95 via-ink/40 to-transparent" />
-
-                {/* Content */}
-                <div className="absolute inset-0 p-6 sm:p-8 flex flex-col justify-between z-10">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/40 font-mono text-xs tracking-[0.25em] group-hover:text-accent transition-colors">
-                      {section.num}
-                    </span>
-                    <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/60 group-hover:text-white group-hover:bg-accent group-hover:scale-110 transition-all duration-300">
-                      <ArrowUpRight size={14} />
+                <Suspense
+                  fallback={
+                    <div className="relative h-full w-full overflow-hidden rounded-3xl bg-ink">
+                      <img
+                        src={section.img}
+                        alt={section.label}
+                        onError={e => {
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=1000&auto=format&fit=crop';
+                        }}
+                        className="absolute inset-0 h-full w-full object-cover opacity-50"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 flex items-end bg-gradient-to-t from-ink/95 via-ink/40 to-transparent p-6 sm:p-8">
+                        <h3 className="font-serif text-2xl text-white md:text-3xl">{section.label}</h3>
+                      </div>
                     </div>
-                  </div>
-
-                  <div>
-                    <span aria-hidden="true" className="room-parallax-number absolute bottom-10 right-5 font-serif text-[8rem] leading-none text-white/10 md:text-[12rem]">
-                      {section.num}
-                    </span>
-                    <h3 className="text-2xl md:text-3xl font-serif text-white mb-2 group-hover:text-accent transition-colors duration-300 leading-tight">
-                      {section.label}
-                    </h3>
-                    <p className="text-white/60 text-xs sm:text-sm font-sans leading-relaxed line-clamp-2">
-                      {section.desc}
-                    </p>
-                    <div className="mt-4 h-0.5 w-0 bg-accent group-hover:w-10 transition-all duration-500 ease-out" />
-                  </div>
-                </div>
+                  }
+                >
+                  <TiltedCard
+                    imageSrc={section.img}
+                    altText={section.label}
+                    onImageError={e => {
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=1000&auto=format&fit=crop';
+                    }}
+                    containerWidth="100%"
+                    containerHeight="100%"
+                    imageWidth="100%"
+                    imageHeight="100%"
+                    rotateAmplitude={
+                      shouldReduceMotion || tier === 'low'
+                        ? 0
+                        : tier === 'medium' ? 5 : tier === 'ultra' ? 12 : 8
+                    }
+                    scaleOnHover={shouldReduceMotion || tier === 'low' ? 1 : 1.025}
+                    smoothness={0.72}
+                    glare={shouldReduceMotion || tier === 'low' ? 0 : tier === 'medium' ? 0.16 : 0.28}
+                    glareColor={colors.accent}
+                    shadow={shouldReduceMotion || tier === 'low' ? 0 : 0.28}
+                    parallax={shouldReduceMotion || tier === 'low' ? 0 : 0.7}
+                    gyroscope={false}
+                    intro={false}
+                    showTooltip={false}
+                    radius="1.5rem"
+                    className="room-cover-card h-full w-full"
+                  >
+                    <div className="absolute inset-0 z-[1] flex flex-col justify-between bg-gradient-to-t from-ink/95 via-ink/40 to-transparent p-6 sm:p-8">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs tracking-[0.25em] text-white/50 transition-colors group-hover:text-accent">
+                          {section.num}
+                        </span>
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/70 transition-all duration-300 group-hover:scale-110 group-hover:bg-accent group-hover:text-white">
+                          <ArrowUpRight size={14} />
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <span aria-hidden="true" className="room-depth-number absolute bottom-0 right-0 font-serif text-[8rem] leading-none text-white/10 md:text-[12rem]">
+                          {section.num}
+                        </span>
+                        <h3 className="relative mb-2 font-serif text-2xl leading-tight text-white transition-colors duration-300 group-hover:text-accent md:text-3xl">
+                          {section.label}
+                        </h3>
+                        <p className="relative line-clamp-2 font-sans text-xs leading-relaxed text-white/60 sm:text-sm">
+                          {section.desc}
+                        </p>
+                        <span aria-hidden="true" className="mt-4 block h-0.5 w-0 bg-accent transition-all duration-500 ease-out group-hover:w-10" />
+                      </div>
+                    </div>
+                  </TiltedCard>
+                </Suspense>
               </MotionLink>
             </motion.div>
           ))}

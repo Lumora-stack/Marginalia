@@ -128,49 +128,24 @@
       linear-gradient(135deg, #0d0d0f, #15120a 56%, #0d0d0f);
   }
 
-  .collection-marquee-track {
-    animation: collection-marquee 28s linear infinite;
-    transform: skewY(var(--scroll-skew, 0deg));
-    will-change: transform;
-  }
-
-  .collection-marquee-track span {
-    color: rgb(var(--accent-light-rgb));
-    padding: 0 0.2em;
-  }
-
-  .room-cover-image {
-    transform: scale(1);
-    transition: opacity 700ms ease, transform 900ms cubic-bezier(0.16, 1, 0.3, 1), filter 700ms ease;
-  }
-
-  .group:hover .room-cover-image {
-    transform: scale(1.1);
-    filter: saturate(1.28) contrast(1.06);
-  }
-
-  .room-card-dissolve {
-    background:
-      radial-gradient(circle at 25% 35%, rgba(245, 213, 119, 0.36), transparent 24%),
-      radial-gradient(circle at 72% 70%, rgba(232, 160, 61, 0.26), transparent 30%);
-    opacity: 0;
-    mix-blend-mode: screen;
-    transition: opacity 500ms ease;
-  }
-
-  .room-parallax-number {
+  .room-depth-number {
     pointer-events: none;
-    transform: translateY(var(--scroll-offset, 0px));
-    transition: color 300ms ease, transform 400ms cubic-bezier(0.2, 1, 0.2, 1);
+    transform: translateZ(-8px);
   }
 
-  .group:hover .room-card-dissolve {
-    opacity: 1;
+  .room-cover-card .tilted-card__front > img {
+    opacity: 0.5;
+    transition: filter 700ms ease, opacity 700ms ease;
+  }
+
+  .room-cover-card:hover .tilted-card__front > img {
+    filter: saturate(1.18) contrast(1.04);
+    opacity: 0.75;
   }
 
   .artwork-image {
     --art-scale: 1;
-    transform: skewY(var(--scroll-skew, 0deg)) scale(var(--art-scale));
+    transform: scale(var(--art-scale));
     transition: transform 550ms cubic-bezier(0.2, 1, 0.2, 1), filter 500ms ease;
     will-change: transform;
   }
@@ -184,13 +159,6 @@
   html[data-fx="high"] .group:hover .artwork-image,
   html[data-fx="ultra"] .group:hover .artwork-image {
     filter: url(#liquid-image) saturate(1.18);
-  }
-
-  html[data-fx="high"] .group:hover .room-card-dissolve,
-  html[data-fx="ultra"] .group:hover .room-card-dissolve {
-    opacity: 1;
-    filter: url(#liquid-image);
-    animation: dissolve-pulse 1.8s ease-in-out infinite alternate;
   }
 
   .section-room {
@@ -261,28 +229,8 @@
     }
   }
 
-  @keyframes collection-marquee {
-    from { transform: translateX(0) skewY(var(--scroll-skew, 0deg)); }
-    to { transform: translateX(-50%) skewY(var(--scroll-skew, 0deg)); }
-  }
-
-  @keyframes dissolve-pulse {
-    from { opacity: 0.28; }
-    to { opacity: 0.78; }
-  }
-
   @keyframes pencil-draw {
     to { stroke-dashoffset: 0; }
-  }
-
-  .room-card-glare {
-    background: radial-gradient(
-      420px circle at var(--glare-x, 50%) var(--glare-y, 50%),
-      rgba(255, 236, 174, 0.2),
-      transparent 42%
-    );
-    opacity: 0;
-    transition: opacity 350ms ease;
   }
 
   .museum-room-rail {
@@ -292,10 +240,6 @@
 
   .museum-room-rail::-webkit-scrollbar {
     display: none;
-  }
-
-  .group:hover > .room-card-glare {
-    opacity: 1;
   }
 
   :focus-visible {

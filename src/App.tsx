@@ -5,7 +5,6 @@ import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 import SmoothScroll from './components/motion/SmoothScroll';
 import { QualityProvider } from './lib/quality';
-import ScrollVelocity from './components/motion/ScrollVelocity';
 import { SoundProvider } from './lib/sound';
 import FrameStats from './components/motion/FrameStats';
 
@@ -128,7 +127,6 @@ function App() {
           <MotionConfig reducedMotion="user">
             <SmoothScroll />
             <ScrollTriggerRefresh />
-            <ScrollVelocity />
             <ScrollToTop />
             {import.meta.env.DEV && <FrameStats />}
             <RouteErrorBoundary>
