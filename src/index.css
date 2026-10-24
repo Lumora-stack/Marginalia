@@ -311,7 +311,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid #D4AF37;
+    outline: 2px solid rgb(var(--accent-rgb));
     outline-offset: 4px;
   }
 
@@ -327,6 +327,68 @@
   @keyframes theme-reveal {
     from { clip-path: circle(0 at var(--theme-x, 50%) var(--theme-y, 50%)); }
     to { clip-path: circle(150vmax at var(--theme-x, 50%) var(--theme-y, 50%)); }
+  }
+}
+
+@supports (height: 100dvh) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+
+  .viewport-screen {
+    height: 100dvh;
+  }
+
+  .hero-viewport {
+    min-height: 85dvh;
+  }
+
+  .museum-scroll-distance {
+    height: 180dvh;
+  }
+
+  .viewport-min-60 {
+    min-height: 60dvh;
+  }
+
+  .viewport-min-70 {
+    min-height: 70dvh;
+  }
+
+  .viewport-min-80 {
+    min-height: 80dvh;
+  }
+
+  .viewport-max-60 {
+    max-height: 60dvh;
+  }
+
+  .viewport-max-88 {
+    max-height: 88dvh;
+  }
+
+  .viewport-max-90 {
+    max-height: 90dvh;
+  }
+
+  .viewport-max-art {
+    max-height: 68dvh;
+  }
+}
+
+@media (min-width: 768px) {
+  .hero-viewport {
+    min-height: 100vh;
+  }
+
+  @supports (height: 100dvh) {
+    .hero-viewport {
+      min-height: 100dvh;
+    }
+
+    .viewport-max-art {
+      max-height: 72dvh;
+    }
   }
 }
 

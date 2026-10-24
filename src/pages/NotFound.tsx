@@ -4,7 +4,7 @@ import { ArrowLeft, Sparkles } from 'lucide-react';
 
 export default function NotFound() {
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-6">
+    <div className="viewport-min-70 min-h-[70vh] flex flex-col items-center justify-center text-center px-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

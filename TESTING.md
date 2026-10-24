@@ -19,3 +19,15 @@
 ## Production bundle
 
 Run `npm run build` and `npm run lint`. Confirm the production output contains `.gz` and `.br` assets, and the PWA precache does not include compressed duplicates.
+
+## Smoothness, themes, and responsive layout
+
+1. In development, open `/?debug=1`. Confirm the FPS/frame-time overlay appears, updates about twice a second, and stops sampling while the tab is hidden. Confirm it is absent in a production build.
+2. With `?fx=high`, scroll through the home page and back, navigate away and return, and toggle the theme. Confirm the pinned room rail and museum fly-through stay aligned and no old animation remains active.
+3. Scroll past the hero and fly-through, switch browser tabs, and return. Confirm offscreen/hidden 3D scenes pause and resume normally.
+4. On a desktop pointer, move over text, links, and artwork, then open the lightbox. Confirm the custom cursor follows correctly. On touch/mobile emulation, confirm the custom cursor is absent.
+5. Switch themes on Home, all six collections, Games, About, Admin, and 404. Confirm body text, labels, focus rings, nav, gallery scenes, and game controls remain legible; check the browser toolbar theme color updates.
+6. Check Home, all six collections, Games, About, Admin, and 404 at 375px, 768px, and 1440px widths in both themes. Confirm no horizontal page scroll, clipped controls, or overlapping content.
+7. At mobile width, open the gallery wall and lightbox, rotate the device or show/hide the browser toolbar, and confirm the scene and artwork remain within the visible viewport.
+8. Enable reduced motion and verify the hero remains usable without 3D, navigation and gallery controls still work, and no content is hidden.
+9. In the browser console, verify there are no runtime errors or rejected promises while switching themes, navigating between routes, loading galleries, and opening/closing the lightbox. A Three.js `Clock` deprecation warning may appear from the installed R3F/Three integration.

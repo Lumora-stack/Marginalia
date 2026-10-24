@@ -57,7 +57,7 @@ export default function Admin() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="viewport-min-60 min-h-[60vh] flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
@@ -69,7 +69,7 @@ export default function Admin() {
 
   if (!user) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center relative overflow-hidden -mx-6 px-6">
+      <div className="viewport-min-80 min-h-[80vh] flex items-center justify-center relative overflow-hidden -mx-6 px-6">
         {/* Background glow blobs */}
         <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-accent/8 rounded-full blur-3xl animate-blob" />
         <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-accent/6 rounded-full blur-3xl animate-blob" style={{ animationDelay: '4s' }} />
@@ -81,7 +81,7 @@ export default function Admin() {
           className="relative z-10 w-full max-w-md"
         >
           {/* Glass card */}
-          <div className="p-8 md:p-10 rounded-3xl border border-white/12 dark:border-white/6 bg-white/70 dark:bg-black/40 backdrop-blur-xl shadow-2xl">
+          <div className="p-8 md:p-10 rounded-3xl border border-ink/10 dark:border-white/10 bg-white/80 dark:bg-black/40 backdrop-blur-xl shadow-2xl">
             <div className="flex items-center gap-3 mb-8">
               <div className="w-10 h-10 rounded-full bg-accent/15 flex items-center justify-center">
                 <Sparkles size={18} className="text-accent" />

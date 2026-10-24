@@ -161,7 +161,7 @@ export default function Home() {
       <section
         id="home-hero"
         ref={heroSectionRef}
-        className="relative min-h-[85vh] md:min-h-screen flex items-center justify-center -mx-6 overflow-hidden select-none"
+        className="hero-viewport relative min-h-[85vh] md:min-h-screen flex items-center justify-center -mx-6 overflow-hidden select-none"
         onMouseMove={handleHeroMouseMove}
         onMouseLeave={handleHeroMouseLeave}
       >
@@ -295,7 +295,7 @@ export default function Home() {
       </section>
 
       {qualityAtLeast(tier, 'medium') && !shouldReduceMotion && (
-        <Suspense fallback={<div aria-hidden="true" className="my-14 h-[70vh] rounded-3xl bg-gradient-to-br from-[#17140c] via-[#0d0d0f] to-[#211a0e]" />}>
+        <Suspense fallback={<div aria-hidden="true" className="my-14 h-[70vh] rounded-3xl bg-gradient-to-br from-paper via-paper to-[#e8e0cf] dark:from-[#17140c] dark:via-[#0d0d0f] dark:to-[#211a0e]" />}>
           <MuseumFlythrough quality={tier} />
         </Suspense>
       )}

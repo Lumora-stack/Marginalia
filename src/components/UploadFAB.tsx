@@ -339,7 +339,7 @@ export default function UploadFAB() {
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
               onClick={e => e.stopPropagation()}
-              className="bg-paper dark:bg-[#121214] w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl p-6 sm:p-8 relative border border-ink/10 dark:border-white/10"
+              className="viewport-max-90 bg-paper dark:bg-[#121214] w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl p-6 sm:p-8 relative border border-ink/10 dark:border-white/10"
             >
               {/* Close Button */}
               <button

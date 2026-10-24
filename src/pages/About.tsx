@@ -64,10 +64,10 @@ export default function About() {
           <span className="italic text-accent"> Gallery</span>
         </motion.h1>
         <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: 48 }}
+          initial={{ scaleX: 0, transformOrigin: 'left' }}
+          animate={{ scaleX: 1 }}
           transition={{ delay: 0.4, duration: 0.6 }}
-          className="mt-6 h-px bg-accent"
+          className="mt-6 h-px w-12 bg-accent"
         />
       </div>
 

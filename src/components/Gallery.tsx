@@ -263,7 +263,7 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
                   width={sortedArtworks[visibleCarouselIndex]?.width ?? 1200}
                   height={sortedArtworks[visibleCarouselIndex]?.height ?? 900}
                   loading="lazy"
-                  className="mx-auto max-h-[60vh] max-w-full rounded-2xl object-contain shadow-2xl transition-transform group-hover:scale-[1.01]"
+                  className="viewport-max-60 mx-auto max-h-[60vh] max-w-full rounded-2xl object-contain shadow-2xl transition-transform group-hover:scale-[1.01]"
                 />
                 <span className="mt-4 block font-serif text-lg">{sortedArtworks[visibleCarouselIndex]?.title}</span>
               </motion.button>

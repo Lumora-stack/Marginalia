@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { Component, lazy, Suspense, useEffect, useState, type ErrorInfo, type ReactNode } from 'react';
 import { MotionConfig } from 'framer-motion';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
@@ -45,6 +45,37 @@ function RouteLoading() {
   );
 }
 
+class RouteErrorBoundary extends Component<
+  { children: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('The exhibition route failed to load:', error, info);
+  }
+
+  render() {
+    if (!this.state.failed) return this.props.children;
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center" role="alert">
+        <p className="font-serif text-lg">This exhibition couldn’t be opened.</p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="rounded-full border border-accent/50 px-4 py-2 font-mono text-xs uppercase tracking-widest text-accent focus-visible:outline"
+        >
+          Reload exhibition
+        </button>
+      </div>
+    );
+  }
+}
+
 function ScrollTriggerRefresh() {
   const location = useLocation();
 
@@ -52,6 +83,7 @@ function ScrollTriggerRefresh() {
     let active = true;
     let frame = 0;
     const refresh = () => {
+      if (!active) return;
       if (frame) cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         frame = 0;
@@ -98,17 +130,19 @@ function App() {
             <ScrollTriggerRefresh />
             <ScrollVelocity />
             <ScrollToTop />
-            <FrameStats />
-            <Routes>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Suspense fallback={<RouteLoading />}><Home /></Suspense>} />
-                <Route path="section/:id" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
-                <Route path="section/:id/:mode" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
-                <Route path="about" element={<Suspense fallback={<RouteLoading />}><About /></Suspense>} />
-                <Route path="admin" element={<Suspense fallback={<RouteLoading />}><Admin /></Suspense>} />
-                <Route path="*" element={<Suspense fallback={<RouteLoading />}><NotFound /></Suspense>} />
-              </Route>
-            </Routes>
+            {import.meta.env.DEV && <FrameStats />}
+            <RouteErrorBoundary>
+              <Routes>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Suspense fallback={<RouteLoading />}><Home /></Suspense>} />
+                  <Route path="section/:id" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
+                  <Route path="section/:id/:mode" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
+                  <Route path="about" element={<Suspense fallback={<RouteLoading />}><About /></Suspense>} />
+                  <Route path="admin" element={<Suspense fallback={<RouteLoading />}><Admin /></Suspense>} />
+                  <Route path="*" element={<Suspense fallback={<RouteLoading />}><NotFound /></Suspense>} />
+                </Route>
+              </Routes>
+            </RouteErrorBoundary>
           </MotionConfig>
         </SoundProvider>
       </QualityProvider>

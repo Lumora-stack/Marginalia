@@ -253,8 +253,8 @@ export default function MuseumFlythrough({ quality }: { quality: QualityTier }) 
   }, [])
 
   return (
-    <section ref={rootRef} className="relative -mx-6 my-14 h-[180vh] overflow-clip" aria-label="Walk through the permanent collection">
-      <div className="sticky top-0 h-screen min-h-[560px] overflow-hidden bg-[#0d0d0f]">
+    <section ref={rootRef} className="museum-scroll-distance relative -mx-6 my-14 h-[180vh] overflow-clip" aria-label="Walk through the permanent collection">
+      <div className="sticky top-0 viewport-screen h-screen min-h-[560px] overflow-hidden" style={{ backgroundColor: colors.background }}>
         <Canvas
           frameloop={canvasActive ? 'always' : 'never'}
           dpr={[1, quality === 'ultra' ? 1.6 : quality === 'high' ? 1.35 : 1.1]}

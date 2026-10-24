@@ -215,7 +215,7 @@ export default function Lightbox({ artworks, currentIndex, onClose, onNavigate }
 
         {/* Artwork Image Container */}
         <div
-          className="relative max-w-5xl max-h-[88vh] w-full px-4 sm:px-16 flex flex-col items-center justify-center"
+          className="viewport-max-88 relative max-w-5xl max-h-[88vh] w-full px-4 sm:px-16 flex flex-col items-center justify-center"
           onClick={e => e.stopPropagation()}
           onWheel={e => {
             e.preventDefault();
@@ -246,7 +246,7 @@ export default function Lightbox({ artworks, currentIndex, onClose, onNavigate }
                 alt={current.title}
                 onLoad={() => setLoadedIndex(currentIndex)}
                 style={{ transform: `scale(${zoom})` }}
-                className={`max-w-full max-h-[68vh] md:max-h-[72vh] object-contain rounded-xl shadow-2xl transition-opacity duration-300 ${
+                className={`viewport-max-art max-w-full max-h-[68vh] md:max-h-[72vh] object-contain rounded-xl shadow-2xl transition-opacity duration-300 ${
                   imageLoaded ? 'opacity-100' : 'opacity-0'
                 }`}
               />
