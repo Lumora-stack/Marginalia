@@ -4,8 +4,10 @@ export interface Category {
   num: string;
   desc: string;
   img: string;
-  gameModes?: { id: string; label: string; desc: string }[];
+  gameModes?: { id: GameMode; label: string; desc: string }[];
 }
+
+export type GameMode = 'singleplayer' | 'multiplayer';
 
 export const CATEGORIES: Category[] = [
   {

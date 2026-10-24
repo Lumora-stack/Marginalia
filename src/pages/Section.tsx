@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import Gallery from '../components/Gallery';
+import Games from '../components/Games';
 import { motion } from 'framer-motion';
 import { getCategoryById, CATEGORIES } from '../lib/categories';
 import { ArrowLeft, ArrowUpRight, Sparkles } from 'lucide-react';
@@ -117,7 +118,12 @@ export default function Section() {
           ))}
         </div>
       ) : (
-        <Gallery sectionId={artworkSectionId} />
+        <>
+          {selectedMode && <Games mode={selectedMode.id} />}
+          <div className={selectedMode ? 'mt-12' : ''}>
+            <Gallery sectionId={artworkSectionId} />
+          </div>
+        </>
       )}
     </motion.div>
   );
