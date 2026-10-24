@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { RotateCcw, Volume2, VolumeX } from 'lucide-react';
 import type { GameMode } from '../lib/categories';
 import { useMuseumSound } from '../lib/sound-context';
+const Counter = lazy(() => import('./Counter'));
 type MemoryCard = { pair: number; symbol: string };
 
 const MEMORY_SYMBOLS = ['🌙', '⭐', '🌸', '🦋', '🍀', '🎈', '🐚', '🍓'];
@@ -119,7 +120,12 @@ function MemoryMatch() {
         </div>
         <div className="flex items-center gap-4">
           <div className="text-right text-sm font-mono opacity-70">
-            <span>Moves: {moves} · {Math.floor(elapsedSeconds / 60)}:{String(elapsedSeconds % 60).padStart(2, '0')}</span>
+            <span>
+              Moves: <Suspense fallback={moves}>
+                <Counter value={moves} duration={0.4} motionBlur={false} />
+              </Suspense>
+              {' · '}{Math.floor(elapsedSeconds / 60)}:{String(elapsedSeconds % 60).padStart(2, '0')}
+            </span>
             {combo > 1 && <motion.span key={combo} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="ml-2 inline-block text-accent">COMBO ×{combo}</motion.span>}
           </div>
           <button
@@ -172,6 +178,11 @@ function MemoryMatch() {
           );
         })}
       </div>
+      <p className="mt-4 text-center text-xs font-mono uppercase tracking-wider opacity-60">
+        Pairs: <Suspense fallback={matched.length}>
+          <Counter value={matched.length} duration={0.4} motionBlur={false} />
+        </Suspense> / {MEMORY_SYMBOLS.length}
+      </p>
       {isComplete && (
         <p className="mt-5 text-center font-serif text-lg text-accent">
           All pairs matched in {moves} moves. Well played!

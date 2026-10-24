@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom';
 import { CATEGORIES } from '../lib/categories';
 import { ArrowUp, Mail, Phone, AtSign, Sparkles } from 'lucide-react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { lazy, Suspense } from 'react';
 import { useQuality } from '../lib/quality-context';
 import type { QualityTier } from '../lib/quality-types';
 import { useMuseumSound } from '../lib/sound-context';
 
+const ScrollVelocity = lazy(() => import('./ScrollVelocity'));
+
 export default function Footer() {
-  const shouldReduceMotion = useReducedMotion();
   const { tier, setOverride } = useQuality();
   const sound = useMuseumSound();
   const cycleQuality = () => {
@@ -120,13 +121,15 @@ export default function Footer() {
         </div>
 
         <div aria-hidden="true" className="mb-10 overflow-hidden border-y border-ink/10 dark:border-white/10 py-4">
-          <motion.div
-            animate={shouldReduceMotion ? undefined : { x: ['0%', '-25%'] }}
-            transition={shouldReduceMotion ? undefined : { duration: 24, repeat: Infinity, ease: 'linear' }}
-            className="w-max whitespace-nowrap font-serif text-4xl sm:text-6xl text-accent/25"
-          >
-            ART IS A WAY OF SEEING · ART IS A WAY OF SEEING · ART IS A WAY OF SEEING ·
-          </motion.div>
+          <Suspense fallback={<p className="whitespace-nowrap font-serif text-4xl text-accent/25 sm:text-6xl">ART IS A WAY OF SEEING · ART IS A WAY OF SEEING ·</p>}>
+            <ScrollVelocity
+              texts={['ART IS A WAY OF SEEING']}
+              velocity={18}
+              numCopies={4}
+              className="font-serif text-4xl text-accent/25 sm:text-6xl"
+              draggable={false}
+            />
+          </Suspense>
         </div>
 
         {/* Separator and Bottom Bar */}

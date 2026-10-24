@@ -1,4 +1,10 @@
+import { lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
+import { useThemeColors } from '../lib/useThemeColors';
+
+const CountUp = lazy(() => import('../components/CountUp'));
+const ProfileCard = lazy(() => import('../components/ProfileCard'));
+const ScrollReveal = lazy(() => import('../components/ScrollReveal'));
 import { Mail, Phone, AtSign } from 'lucide-react';
 
 const timeline = [
@@ -36,6 +42,8 @@ const contacts = [
 ];
 
 export default function About() {
+  const colors = useThemeColors();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -72,23 +80,42 @@ export default function About() {
       </div>
 
       {/* ── INTRO PARAGRAPHS ── */}
-      <section className="mb-20 space-y-6">
-        {[
-          { delay: 0.2, large: true, text: 'Creating art from tiny feelings, peaceful thoughts, and a little bit of imagination — straight from Chennai 🤍.' },
-          { delay: 0.3, large: false, text: 'A passionate creative artist with a deep love for pencil sketches, pixel art, DIY crafts, and aesthetic visual storytelling ✨ Every artwork is created with patience, imagination, and emotion, transforming simple ideas into meaningful visual experiences.' },
-          { delay: 0.4, large: false, text: 'Inspired by nature, memories, silence, and everyday emotions, the creative journey continues through exploring different artistic styles and handmade creations 🌙' },
-          { delay: 0.5, large: false, text: 'This portfolio is a collection of artistic works, ideas, and creative moments developed over time — pencil drawings, sketchbook studies, DIY crafts, pixel art, games, and quotes ✨' },
-        ].map((p, i) => (
-          <motion.p
-            key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: p.delay, duration: 0.7, ease: 'easeOut' }}
-            className={`font-serif leading-relaxed ${p.large ? 'text-xl md:text-2xl text-accent' : 'text-base md:text-lg opacity-80'}`}
-          >
-            {p.text}
-          </motion.p>
-        ))}
+      <section className="mb-20 grid items-center gap-10 md:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="space-y-6">
+          {[
+            { large: true, text: 'Creating art from tiny feelings, peaceful thoughts, and a little bit of imagination — straight from Chennai 🤍.' },
+            { large: false, text: 'A passionate creative artist with a deep love for pencil sketches, pixel art, DIY crafts, and aesthetic visual storytelling ✨ Every artwork is created with patience, imagination, and emotion, transforming simple ideas into meaningful visual experiences.' },
+            { large: false, text: 'Inspired by nature, memories, silence, and everyday emotions, the creative journey continues through exploring different artistic styles and handmade creations 🌙' },
+            { large: false, text: 'This portfolio is a collection of artistic works, ideas, and creative moments developed over time — pencil drawings, sketchbook studies, DIY crafts, pixel art, games, and quotes ✨' },
+          ].map((paragraph) => (
+            <Suspense key={paragraph.text} fallback={<p className={`font-serif leading-relaxed ${paragraph.large ? 'text-xl md:text-2xl text-accent' : 'text-base md:text-lg opacity-80'}`}>{paragraph.text}</p>}>
+              <ScrollReveal
+                splitBy="words"
+                effect="rise"
+                mode="enter"
+                duration={0.65}
+                stagger={0.025}
+                containerClassName={`font-serif leading-relaxed ${paragraph.large ? 'text-xl md:text-2xl text-accent' : 'text-base md:text-lg opacity-80'}`}
+              >
+                {paragraph.text}
+              </ScrollReveal>
+            </Suspense>
+          ))}
+        </div>
+        <div className="flex justify-center md:justify-end">
+          <Suspense fallback={<div className="aspect-[4/5] w-full max-w-[340px] animate-pulse rounded-3xl bg-ink/5 dark:bg-white/5" />}>
+            <ProfileCard
+              name="Praveenkumar G"
+              title="Artist · Chennai"
+              handle="artvile"
+              status="Creating"
+              statusColor={colors.accent}
+              contactText="Say hello"
+              theme={colors.isDark ? 'dark' : 'light'}
+              onContactClick={() => window.location.assign('mailto:quantumvoyager2005@gmail.com')}
+            />
+          </Suspense>
+        </div>
       </section>
 
       {/* ── CONTACT ── */}
@@ -143,8 +170,8 @@ export default function About() {
 
         <div className="mb-12 grid grid-cols-3 gap-3 sm:gap-5">
           {[
-            { value: '06', label: 'Curated rooms' },
-            { value: String(timeline.length).padStart(2, '0'), label: 'Creative milestones' },
+            { value: 6, label: 'Curated rooms' },
+            { value: timeline.length, label: 'Creative milestones' },
             { value: '2022—26', label: 'On the journey' },
           ].map((stat, index) => (
             <motion.div
@@ -155,7 +182,20 @@ export default function About() {
               transition={{ delay: index * 0.08 }}
               className="rounded-2xl border border-ink/10 dark:border-white/10 bg-ink/3 dark:bg-white/3 p-4 sm:p-6"
             >
-              <p className="font-serif text-xl text-accent sm:text-3xl">{stat.value}</p>
+              <p className="font-serif text-xl text-accent sm:text-3xl">
+                {typeof stat.value === 'number' ? (
+                  <Suspense fallback={`0${stat.value}`}>
+                    <CountUp
+                      from={0}
+                      to={stat.value}
+                      prefix="0"
+                      duration={1.2}
+                      easing="easeOut"
+                      trigger="view"
+                    />
+                  </Suspense>
+                ) : stat.value}
+              </p>
               <p className="mt-2 text-[9px] font-mono uppercase tracking-wider opacity-50 sm:text-[10px]">{stat.label}</p>
             </motion.div>
           ))}
