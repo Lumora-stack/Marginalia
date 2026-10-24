@@ -5,6 +5,7 @@ import { useReducedMotion } from 'framer-motion'
 import { useQuality } from '../../lib/quality-context'
 import { qualityAtLeast } from '../../lib/quality-types'
 import type { Artwork } from '../../lib/supabase'
+import { useCanvasActivity } from '../motion/useCanvasActivity'
 
 type WalkState = {
   keys: Set<string>
@@ -138,6 +139,7 @@ export default function GalleryWall({
   const shouldReduceMotion = useReducedMotion()
   const { tier } = useQuality()
   const wrapper = useRef<HTMLDivElement>(null)
+  const canvasActive = useCanvasActivity(wrapper)
   const dragging = useRef<{ pointerId: number; x: number; y: number } | null>(null)
   const deviceMemory = typeof navigator !== 'undefined'
     ? (navigator as Navigator & { deviceMemory?: number }).deviceMemory
@@ -228,6 +230,7 @@ export default function GalleryWall({
       aria-label="Walkable gallery. Use WASD or arrow keys to move and drag to look around."
     >
       <Canvas
+        frameloop={canvasActive ? 'always' : 'never'}
         dpr={smallScreen ? 1 : [1, 1.5]}
         camera={{ position: [0, 1.65, 7], fov: 64 }}
         gl={{ powerPreference: 'low-power', antialias: !smallScreen }}

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
-import { PerformanceMonitor, Float, MeshTransmissionMaterial } from '@react-three/drei'
+import { Float, MeshTransmissionMaterial } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import {
   Bloom,
@@ -149,16 +149,43 @@ function particleGeometry(count: number): BufferGeometry {
   return geometry
 }
 
-function AdaptiveDpr({ quality }: { quality: QualityTier }) {
+function AdaptiveDpr({
+  quality,
+  onDecline,
+  onIncline,
+}: {
+  quality: QualityTier
+  onDecline: () => void
+  onIncline: () => void
+}) {
   const setDpr = useThree(state => state.setDpr)
   const desired = quality === 'ultra' ? 2 : quality === 'high' ? 1.5 : 1.25
-  return (
-    <PerformanceMonitor
-      onDecline={() => setDpr(1)}
-      onIncline={() => setDpr(desired)}
-      flipflops={3}
-    />
-  )
+  const sample = useRef({ elapsed: 0, frames: 0, reduced: false })
+
+  useEffect(() => {
+    sample.current = { elapsed: 0, frames: 0, reduced: false }
+    setDpr(desired)
+    onIncline()
+  }, [desired, onIncline, quality, setDpr])
+
+  useFrame((_, delta) => {
+    if (quality === 'ultra') return
+    sample.current.elapsed += delta
+    sample.current.frames += 1
+    if (sample.current.elapsed < 0.5) return
+
+    const reduced = sample.current.frames / sample.current.elapsed < 50
+    if (reduced !== sample.current.reduced) {
+      sample.current.reduced = reduced
+      setDpr(reduced ? 1 : desired)
+      if (reduced) onDecline()
+      else onIncline()
+    }
+    sample.current.elapsed = 0
+    sample.current.frames = 0
+  })
+
+  return null
 }
 
 function WireShape({
@@ -302,6 +329,9 @@ export default function HeroScene({ quality = 'high' }: { quality?: QualityTier 
   const [isDark, setIsDark] = useState(() =>
     typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
   )
+  const [reduceEffects, setReduceEffects] = useState(false)
+  const reduceForPerformance = useCallback(() => setReduceEffects(true), [])
+  const restoreEffects = useCallback(() => setReduceEffects(false), [])
   const usePremiumEffects = quality === 'ultra' || quality === 'high'
   useEffect(() => {
     const root = document.documentElement
@@ -329,7 +359,11 @@ export default function HeroScene({ quality = 'high' }: { quality?: QualityTier 
 
   return (
     <>
-      <AdaptiveDpr quality={quality} />
+      <AdaptiveDpr
+        quality={quality}
+        onDecline={reduceForPerformance}
+        onIncline={restoreEffects}
+      />
       <color attach="background" args={['#0d0d0f']} />
       <fog attach="fog" args={['#0d0d0f', 8, 20]} />
       <ambientLight intensity={isDark ? 0.4 : 0.85} color={isDark ? '#fff8e5' : '#fff0cf'} />
@@ -377,8 +411,15 @@ export default function HeroScene({ quality = 'high' }: { quality?: QualityTier 
       )}
 
       <EffectComposer multisampling={0}>
-        <Bloom intensity={quality === 'ultra' ? 0.58 : quality === 'high' ? 0.4 : 0.22} luminanceThreshold={0.58} luminanceSmoothing={0.2} mipmapBlur />
-        {qualityAtLeast(quality, 'high') && <Noise opacity={0.024} />}
+        <Bloom
+          intensity={reduceEffects && quality !== 'ultra'
+            ? quality === 'high' ? 0.18 : 0.1
+            : quality === 'ultra' ? 0.58 : quality === 'high' ? 0.4 : 0.22}
+          luminanceThreshold={0.58}
+          luminanceSmoothing={0.2}
+          mipmapBlur
+        />
+        {qualityAtLeast(quality, 'high') && !reduceEffects && <Noise opacity={0.024} />}
         {quality === 'ultra' && (
           <>
             <GodRays sun={raySource} samples={48} density={0.92} decay={0.94} weight={0.42} exposure={0.28} blur />
@@ -386,7 +427,7 @@ export default function HeroScene({ quality = 'high' }: { quality?: QualityTier 
             <ChromaticAberration offset={new Vector2(0.00045, 0.00045)} />
           </>
         )}
-        {qualityAtLeast(quality, 'high') && <Vignette eskil={false} offset={0.18} darkness={0.55} />}
+        {qualityAtLeast(quality, 'high') && !reduceEffects && <Vignette eskil={false} offset={0.18} darkness={0.55} />}
       </EffectComposer>
     </>
   )

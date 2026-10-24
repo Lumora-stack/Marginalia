@@ -10,6 +10,7 @@ import { getMockArtworks } from '../../lib/mock-artworks'
 import { isMockGalleryEnabled, isSupabaseConfigured, supabase, type Artwork } from '../../lib/supabase'
 import { CATEGORIES } from '../../lib/categories'
 import { qualityAtLeast, type QualityTier } from '../../lib/quality-types'
+import { useCanvasActivity } from '../motion/useCanvasActivity'
 
 const fallbackFrames = CATEGORIES.slice(0, 6).map((category, index) => ({
   id: `cover-${category.id}`,
@@ -171,6 +172,7 @@ function Corridor({ artworks, quality, progress }: {
 
 export default function MuseumFlythrough({ quality }: { quality: QualityTier }) {
   const rootRef = useRef<HTMLElement>(null)
+  const canvasActive = useCanvasActivity(rootRef)
   const progress = useRef(0)
   const [artworks, setArtworks] = useState<Artwork[]>(() =>
     isMockGalleryEnabled
@@ -230,6 +232,7 @@ export default function MuseumFlythrough({ quality }: { quality: QualityTier }) 
     <section ref={rootRef} className="relative -mx-6 my-14 h-[180vh] overflow-clip" aria-label="Walk through the permanent collection">
       <div className="sticky top-0 h-screen min-h-[560px] overflow-hidden bg-[#0d0d0f]">
         <Canvas
+          frameloop={canvasActive ? 'always' : 'never'}
           dpr={[1, quality === 'ultra' ? 1.6 : quality === 'high' ? 1.35 : 1.1]}
           camera={{ position: [0, 0, 5.5], fov: 68, near: 0.1, far: 50 }}
           gl={{ powerPreference: 'high-performance', antialias: false }}

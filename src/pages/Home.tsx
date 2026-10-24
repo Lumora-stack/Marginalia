@@ -6,6 +6,7 @@ import { CATEGORIES } from '../lib/categories';
 import { useQuality } from '../lib/quality-context';
 import { qualityAtLeast } from '../lib/quality-types';
 import ScrambleText from '../components/motion/ScrambleText';
+import { useCanvasActivity } from '../components/motion/useCanvasActivity';
 
 const HeroScene = lazy(() => import('../components/three/HeroScene'));
 const MuseumFlythrough = lazy(() => import('../components/three/MuseumFlythrough'));
@@ -32,6 +33,8 @@ export default function Home() {
   const enable3D = qualityAtLeast(tier, 'medium') && shouldReduceMotion === false &&
     !smallScreen && !lowMemory && !lowCpu && !saveData && !slowConnection;
   const [hero3DReady, setHero3DReady] = useState(false);
+  const heroSectionRef = useRef<HTMLElement>(null);
+  const heroCanvasActive = useCanvasActivity(heroSectionRef);
   const roomsRef = useRef<HTMLDivElement>(null);
   const roomsSectionRef = useRef<HTMLElement>(null);
   const dragging = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
@@ -157,6 +160,7 @@ export default function Home() {
       {/* ─── HERO ─── */}
       <section
         id="home-hero"
+        ref={heroSectionRef}
         className="relative min-h-[85vh] md:min-h-screen flex items-center justify-center -mx-6 overflow-hidden select-none"
         onMouseMove={handleHeroMouseMove}
         onMouseLeave={handleHeroMouseLeave}
@@ -175,6 +179,7 @@ export default function Home() {
           <div className="hero-scene-layer absolute inset-0 z-0 pointer-events-none will-change-transform">
             <Suspense fallback={null}>
               <Canvas
+                frameloop={heroCanvasActive ? 'always' : 'never'}
                 dpr={[1, tier === 'ultra' ? 2 : tier === 'high' ? 1.5 : 1.25]}
                 gl={{ powerPreference: 'high-performance', antialias: false }}
                 camera={{ position: [0, 0, 22], fov: 58 }}
