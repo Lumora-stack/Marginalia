@@ -1,8 +1,7 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
 import { Menu, X, LogOut, Sparkles } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { useState, useEffect, useRef } from 'react';
 import { CATEGORIES } from '../lib/categories';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,11 +9,22 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const closeMenuRef = useRef<HTMLButtonElement>(null);
   const navigate = useNavigate();
 
   // Scroll detection for dynamic blur
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const onScroll = () => {
+      const currentScrollY = window.scrollY;
+      setScrolled(currentScrollY > 40);
+      setHidden(currentScrollY > 120 && currentScrollY > lastScrollY.current + 4);
+      if (currentScrollY < 80 || currentScrollY < lastScrollY.current - 4) setHidden(false);
+      lastScrollY.current = currentScrollY;
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -33,20 +43,63 @@ export default function Navbar() {
 
   // Auth detection
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsOwner(!!session?.user);
+    let active = true;
+    let unsubscribe = () => {};
+    void import('../lib/supabase').then(({ supabase, isSupabaseConfigured }) => {
+      if (!active || !isSupabaseConfigured) return;
+      void supabase.auth.getSession().then(({ data: { session } }) => {
+        if (active) setIsOwner(!!session?.user);
+      });
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+        if (active) setIsOwner(!!session?.user);
+      });
+      unsubscribe = () => subscription.unsubscribe();
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setIsOwner(!!session?.user);
-    });
-    return () => subscription.unsubscribe();
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, []);
 
   const handleLogout = async () => {
+    const { supabase, isSupabaseConfigured } = await import('../lib/supabase');
+    if (!isSupabaseConfigured) return;
     await supabase.auth.signOut();
     setIsOwner(false);
     navigate('/');
   };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const menuTrigger = menuTriggerRef.current;
+    closeMenuRef.current?.focus();
+    const menu = menuRef.current;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab' || !menu) return;
+      const focusable = Array.from(menu.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ));
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    menu?.addEventListener('keydown', handleKeyDown);
+    return () => {
+      menu?.removeEventListener('keydown', handleKeyDown);
+      menuTrigger?.focus();
+    };
+  }, [isOpen]);
 
   const navClass = scrolled
     ? 'bg-paper/85 dark:bg-[#0c0c0e]/85 backdrop-blur-xl shadow-sm border-b border-ink/8 dark:border-white/8'
@@ -56,7 +109,7 @@ export default function Navbar() {
     <>
       <motion.header
         initial={{ y: -80, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
+        animate={{ y: hidden && !isOpen ? -100 : 0, opacity: 1 }}
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         className={`sticky top-0 z-40 w-full transition-all duration-500 ${navClass}`}
       >
@@ -143,14 +196,18 @@ export default function Navbar() {
               <button
                 onClick={handleLogout}
                 title="Logout"
+                aria-label="Log out"
                 className="p-2 text-red-400 hover:text-red-500 transition-colors"
               >
                 <LogOut size={18} />
               </button>
             )}
             <button
+              ref={menuTriggerRef}
               onClick={() => setIsOpen(!isOpen)}
               aria-label={isOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isOpen}
+              aria-controls="mobile-exhibition-menu"
               className="p-2.5 rounded-full hover:bg-ink/5 dark:hover:bg-white/5 transition-colors"
             >
               {isOpen ? <X size={22} /> : <Menu size={22} />}
@@ -163,16 +220,22 @@ export default function Navbar() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            ref={menuRef}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-50 md:hidden bg-paper dark:bg-[#0c0c0e] flex flex-col justify-between px-8 py-10 overflow-y-auto"
+            id="mobile-exhibition-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile navigation"
           >
             {/* Header in modal */}
             <div className="flex items-center justify-between border-b border-ink/10 dark:border-white/10 pb-6">
               <span className="font-serif text-xl tracking-tight">Artville</span>
               <button
+                ref={closeMenuRef}
                 onClick={() => setIsOpen(false)}
                 className="p-2 rounded-full border border-ink/10 dark:border-white/10 text-ink dark:text-white"
                 aria-label="Close menu"

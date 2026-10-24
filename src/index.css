@@ -12,6 +12,7 @@
   html {
     /* Native scrolling inertia without forced CSS smooth scroll collision */
     -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -94,5 +95,227 @@
     );
     background-size: 200% 100%;
     animation: shimmer 2.5s linear infinite;
+  }
+
+  .hero-title-shimmer {
+    background-image: linear-gradient(110deg, currentColor 0%, currentColor 38%, #fff2bd 50%, currentColor 62%, currentColor 100%);
+    background-size: 220% 100%;
+    background-position: 100% 0;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gold-sweep 5s ease-in-out 1.2s infinite;
+  }
+
+  .hero-wordmark {
+    filter: drop-shadow(0 10px 42px rgba(212, 175, 55, 0.12));
+  }
+
+  .hero-wordmark:hover > span > span {
+    animation: wordmark-glitch 380ms steps(2, end) both;
+  }
+
+  .collection-marquee-track {
+    animation: collection-marquee 28s linear infinite;
+    transform: skewY(var(--scroll-skew, 0deg));
+    will-change: transform;
+  }
+
+  .collection-marquee-track span {
+    color: #e8c84a;
+    padding: 0 0.2em;
+  }
+
+  .room-cover-image {
+    transform: scale(1);
+    transition: opacity 700ms ease, transform 900ms cubic-bezier(0.16, 1, 0.3, 1), filter 700ms ease;
+  }
+
+  .group:hover .room-cover-image {
+    transform: scale(1.1);
+    filter: saturate(1.28) contrast(1.06);
+  }
+
+  .room-card-dissolve {
+    background:
+      radial-gradient(circle at 25% 35%, rgba(245, 213, 119, 0.36), transparent 24%),
+      radial-gradient(circle at 72% 70%, rgba(232, 160, 61, 0.26), transparent 30%);
+    opacity: 0;
+    mix-blend-mode: screen;
+    transition: opacity 500ms ease;
+  }
+
+  .room-parallax-number {
+    pointer-events: none;
+    transform: translateY(var(--scroll-offset, 0px));
+    transition: color 300ms ease, transform 400ms cubic-bezier(0.2, 1, 0.2, 1);
+  }
+
+  .group:hover .room-card-dissolve {
+    opacity: 1;
+  }
+
+  .artwork-image {
+    --art-scale: 1;
+    transform: skewY(var(--scroll-skew, 0deg)) scale(var(--art-scale));
+    transition: transform 550ms cubic-bezier(0.2, 1, 0.2, 1), filter 500ms ease;
+    will-change: transform;
+  }
+
+  html[data-fx="medium"] .group:hover .artwork-image,
+  html[data-fx="high"] .group:hover .artwork-image,
+  html[data-fx="ultra"] .group:hover .artwork-image {
+    --art-scale: 1.045;
+  }
+
+  html[data-fx="high"] .group:hover .artwork-image,
+  html[data-fx="ultra"] .group:hover .artwork-image {
+    filter: url(#liquid-image) saturate(1.18);
+  }
+
+  html[data-fx="high"] .group:hover .room-card-dissolve,
+  html[data-fx="ultra"] .group:hover .room-card-dissolve {
+    opacity: 1;
+    filter: url(#liquid-image);
+    animation: dissolve-pulse 1.8s ease-in-out infinite alternate;
+  }
+
+  .section-room {
+    position: relative;
+  }
+
+  .section-room-pixel-arts::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    opacity: 0;
+    background: repeating-linear-gradient(to bottom, rgba(212, 175, 55, 0.075) 0, rgba(212, 175, 55, 0.075) 1px, transparent 1px, transparent 4px);
+    transition: opacity 400ms ease;
+  }
+
+  html[data-fx="high"] .section-room-pixel-arts::after,
+  html[data-fx="ultra"] .section-room-pixel-arts::after {
+    opacity: 0.48;
+  }
+
+  .pencil-room-stroke path {
+    stroke-dasharray: 900;
+    stroke-dashoffset: 900;
+  }
+
+  html[data-fx="high"] .pencil-room-stroke path,
+  html[data-fx="ultra"] .pencil-room-stroke path {
+    animation: pencil-draw 2.8s cubic-bezier(0.2, 0.7, 0.1, 1) 400ms forwards;
+  }
+
+  .liquid-route-wipe {
+    filter: url(#liquid-wipe);
+    background:
+      radial-gradient(ellipse at 32% 38%, rgba(255, 239, 180, 0.9), transparent 18%),
+      linear-gradient(115deg, #8b6820, #e6c452 45%, #16130c);
+  }
+
+  .route-wipe-medium {
+    filter: none;
+  }
+
+  .memory-card-sweep {
+    display: block;
+    background: linear-gradient(110deg, transparent 25%, rgba(255, 241, 191, 0.68) 48%, transparent 72%);
+    opacity: 0;
+    transform: translateX(-120%);
+    pointer-events: none;
+  }
+
+  .memory-card-sweep-active {
+    animation: memory-light-sweep 680ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  @keyframes memory-light-sweep {
+    20% { opacity: 0.8; }
+    to { opacity: 0; transform: translateX(120%); }
+  }
+
+  @media (min-width: 1024px) {
+    html[data-fx="high"] .museum-room-rail,
+    html[data-fx="ultra"] .museum-room-rail {
+      width: max-content;
+      overflow: visible;
+      cursor: default;
+      scroll-snap-type: none;
+    }
+  }
+
+  @keyframes collection-marquee {
+    from { transform: translateX(0) skewY(var(--scroll-skew, 0deg)); }
+    to { transform: translateX(-50%) skewY(var(--scroll-skew, 0deg)); }
+  }
+
+  @keyframes wordmark-glitch {
+    0%, 100% { filter: drop-shadow(0 0 0 transparent); }
+    28% { filter: drop-shadow(3px 0 rgba(255, 72, 94, 0.62)) drop-shadow(-3px 0 rgba(75, 204, 255, 0.55)); transform: translateX(1px); }
+    54% { filter: drop-shadow(-2px 0 rgba(255, 72, 94, 0.5)) drop-shadow(2px 0 rgba(75, 204, 255, 0.45)); transform: translateX(-1px); }
+  }
+
+  @keyframes dissolve-pulse {
+    from { opacity: 0.28; }
+    to { opacity: 0.78; }
+  }
+
+  @keyframes pencil-draw {
+    to { stroke-dashoffset: 0; }
+  }
+
+  .room-card-glare {
+    background: radial-gradient(
+      420px circle at var(--glare-x, 50%) var(--glare-y, 50%),
+      rgba(255, 236, 174, 0.2),
+      transparent 42%
+    );
+    opacity: 0;
+    transition: opacity 350ms ease;
+  }
+
+  .museum-room-rail {
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .museum-room-rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .group:hover > .room-card-glare {
+    opacity: 1;
+  }
+
+  :focus-visible {
+    outline: 2px solid #D4AF37;
+    outline-offset: 4px;
+  }
+
+  @keyframes gold-sweep {
+    0%, 35% { background-position: 100% 0; }
+    65%, 100% { background-position: -120% 0; }
+  }
+
+  ::view-transition-new(root) {
+    animation: theme-reveal 650ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes theme-reveal {
+    from { clip-path: circle(0 at var(--theme-x, 50%) var(--theme-y, 50%)); }
+    to { clip-path: circle(150vmax at var(--theme-x, 50%) var(--theme-y, 50%)); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

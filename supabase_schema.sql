@@ -8,10 +8,15 @@ CREATE TABLE public.artworks (
     thumbnail_url TEXT NOT NULL,
     year TEXT,
     medium TEXT,
+    width INTEGER,
+    height INTEGER,
     display_order INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     user_id UUID REFERENCES auth.users(id)
 );
+
+ALTER TABLE public.artworks ADD COLUMN IF NOT EXISTS width INTEGER;
+ALTER TABLE public.artworks ADD COLUMN IF NOT EXISTS height INTEGER;
 
 -- Enable Row Level Security
 ALTER TABLE public.artworks ENABLE ROW LEVEL SECURITY;

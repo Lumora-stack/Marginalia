@@ -11,17 +11,22 @@ export default function NotFound() {
         transition={{ duration: 0.6 }}
         className="space-y-6 max-w-md"
       >
-        <div className="w-16 h-16 mx-auto rounded-full bg-accent/10 flex items-center justify-center text-accent">
+        <motion.div
+          animate={{ y: [0, -10, 0], rotate: [-2, 2, -2] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+          className="relative w-28 h-32 mx-auto rounded-lg border-2 border-accent/70 bg-accent/5 shadow-[0_0_42px_rgba(212,175,55,.14)] flex items-center justify-center text-accent"
+        >
           <Sparkles size={28} />
-        </div>
+          <span className="absolute -right-8 top-1/2 h-px w-8 bg-accent/50" />
+        </motion.div>
         <p className="font-mono text-xs tracking-[0.3em] uppercase text-accent">
           404 — Exhibition Not Found
         </p>
         <h1 className="text-4xl sm:text-5xl font-serif">
-          Lost in Imagination
+          Lost in the Museum
         </h1>
         <p className="text-sm opacity-60 font-serif italic">
-          The artwork or room you are searching for does not exist or has been moved to another exhibition.
+          This frame is empty. The room you’re looking for may have moved to another wing.
         </p>
         <div className="pt-4">
           <Link

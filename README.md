@@ -17,6 +17,7 @@ The gallery is divided into curated exhibition rooms:
 - **03. Sketches** — Raw, spontaneous strokes, ink studies, and quick ideas.
 - **04. Doodles** — Freeform line art, wandering thoughts, and playful notebook patterns.
 - **05. DIY Crafts** — Physical handmade creations from paper, glue, and scissors.
+- **06. Games** — A playable Memory Match room and local two-player Tic-Tac-Toe.
 - **✦ About the Artist** — Creative journey timeline (2022–2026), artist philosophy, and direct contact details.
 - **🔐 Curator Studio (Admin)** — A secure owner studio to upload and curate new artworks with automatic image compression.
 
@@ -26,8 +27,10 @@ The gallery is divided into curated exhibition rooms:
 
 - **🌌 Interactive 3D Ambient Hero** — Real-time Three.js floating sculptures and golden particles responding to your cursor.
 - **🖼️ Fullscreen Touch Lightbox** — Inspect artworks in detail with touch swipe navigation on phones and arrow keys on desktop.
+- **🖌️ Three gallery views** — Browse masonry, carousel, or a lazy-loaded orbitable 3D gallery wall with date sorting.
+- **🏛️ Cinematic museum flow** — A 3D hero, drag-scroll curated rooms, shared room-cover transitions, and smooth scroll on supported devices.
 - **🌓 Dark & Light Atmosphere** — Toggle between a deep cinematic museum theme and a warm paper aesthetic.
-- **📱 Fluid Mobile Experience** — Touch-optimized 60/120fps scrolling with installable PWA support.
+- **📱 Responsive, motion-aware experience** — Mobile-friendly fallbacks, reduced-motion support, and installable PWA support.
 - **🎯 Dynamic Custom Cursor** — Interactive desktop cursor with spring physics and visual cues.
 
 ---
@@ -35,7 +38,7 @@ The gallery is divided into curated exhibition rooms:
 ## 🛠️ Built With
 
 - **Frontend:** React 19, TypeScript, Vite
-- **3D & Motion:** Three.js, React Three Fiber, Drei, Framer Motion
+- **3D & Motion:** Three.js, React Three Fiber, Drei, Framer Motion, GSAP ScrollTrigger, Lenis
 - **Styling:** Tailwind CSS
 - **Backend & Storage:** Supabase (Auth, Database, Storage)
 - **Deployment:** Vercel

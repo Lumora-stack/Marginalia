@@ -1,13 +1,56 @@
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { gzipSync, brotliCompressSync } from 'node:zlib'
+import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
+import { defineConfig, type Plugin } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import { visualizer } from 'rollup-plugin-visualizer'
+
+function compressionPlugin(algorithm: 'gzip' | 'brotli', extension: '.gz' | '.br'): Plugin {
+  let outputDirectory = 'dist'
+  return {
+    name: `compress-${algorithm}`,
+    apply: 'build',
+    configResolved(config) {
+      outputDirectory = config.build.outDir
+    },
+    async closeBundle() {
+      const compressDirectory = async (directory: string): Promise<void> => {
+        const entries = await readdir(directory, { withFileTypes: true })
+        await Promise.all(entries.map(async (entry) => {
+          const filePath = join(directory, entry.name)
+          if (entry.isDirectory()) {
+            await compressDirectory(filePath)
+            return
+          }
+          if (!/\.(?:js|mjs|css|html|svg)$/i.test(entry.name) || /\.(?:gz|br)$/i.test(entry.name)) return
+          if ((await stat(filePath)).size < 1024) return
+          const contents = await readFile(filePath)
+          const compressed = algorithm === 'gzip' ? gzipSync(contents) : brotliCompressSync(contents)
+          await writeFile(`${filePath}${extension}`, compressed)
+        }))
+      }
+      await compressDirectory(outputDirectory)
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
+    process.env.ANALYZE === 'true' && visualizer({
+      filename: `dist/bundle-analysis-${process.env.ANALYSIS_LABEL || 'current'}.json`,
+      template: 'raw-data',
+      gzipSize: true,
+      brotliSize: true,
+      open: false,
+    }),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        globIgnores: ['**/*.gz', '**/*.br', '**/bundle-analysis-*.json'],
+      },
       includeAssets: ['favicon.svg'],
       manifest: {
         name: 'Artville Gallery of Imagination',
@@ -25,6 +68,25 @@ export default defineConfig({
           }
         ]
       }
-    })
+    }),
+    compressionPlugin('gzip', '.gz'),
+    compressionPlugin('brotli', '.br'),
   ],
+  build: {
+    rolldownOptions: {
+      preserveEntrySignatures: false,
+      output: {
+        strictExecutionOrder: true,
+        codeSplitting: {
+          includeDependenciesRecursively: false,
+          groups: [
+            { name: 'three-core', test: /node_modules[\\/]three[\\/]build[\\/]three\.core\.js$/, priority: 35 },
+            { name: 'three-objects', test: /node_modules[\\/]three[\\/]build[\\/]three\.module\.js$/, priority: 34 },
+            { name: 'postprocessing', test: /node_modules[\\/](?:@react-three[\\/]postprocessing|postprocessing)[\\/]/, priority: 15 },
+            { name: 'gsap', test: /node_modules[\\/]gsap[\\/]/, priority: 10 },
+          ],
+        },
+      },
+    },
+  },
 })

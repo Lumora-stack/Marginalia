@@ -1,11 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabase';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { Upload, X, Loader2, Sparkles, Check, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { compressImage } from '../lib/image-utils';
 import { ARTWORK_SECTIONS } from '../lib/categories';
 
 type FileMeta = { title: string; section: string; description: string; year: string };
+const extensionForMimeType = (mimeType: string, fallback: string) => {
+  const extensions: Record<string, string> = {
+    'image/webp': 'webp',
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/gif': 'gif',
+    'image/svg+xml': 'svg',
+    'image/avif': 'avif',
+  };
+  return extensions[mimeType] || fallback;
+};
 
 export default function UploadFAB() {
   const [isOwner, setIsOwner] = useState(false);
@@ -15,10 +26,12 @@ export default function UploadFAB() {
   const [metadata, setMetadata] = useState<Record<number, FileMeta>>({});
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string>('');
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (!isSupabaseConfigured) return;
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsOwner(!!session?.user);
     });
@@ -123,6 +136,11 @@ export default function UploadFAB() {
 
   const handleUpload = async () => {
     if (files.length === 0) return;
+    if (!isSupabaseConfigured) {
+      setUploadError('Uploads are temporarily unavailable because Supabase is not configured.');
+      return;
+    }
+    setUploadError(null);
     setUploading(true);
 
     try {
@@ -164,8 +182,8 @@ export default function UploadFAB() {
           if (compressed && compressed.size > 0) {
             uploadBlob = compressed;
             if (compressed instanceof Blob && !(compressed instanceof File)) {
-              finalExt = 'webp';
-              mimeType = 'image/webp';
+              mimeType = compressed.type || 'image/webp';
+              finalExt = extensionForMimeType(mimeType, finalExt);
             }
           }
         } catch (compErr) {
@@ -194,30 +212,79 @@ export default function UploadFAB() {
           .from('portfolio-images')
           .getPublicUrl(filePath);
 
-        // 5. Insert Database Record
-        const payload: Record<string, any> = {
+        const thumbnailBlob = await compressImage(file, 640);
+        const thumbnailType = thumbnailBlob.type || mimeType;
+        const thumbnailExt = extensionForMimeType(thumbnailType, finalExt);
+        const thumbnailPath = `${user.id}/thumbnails/${timestamp}-${rand}.${thumbnailExt}`;
+        const { error: thumbnailError } = await supabase.storage
+          .from('portfolio-images')
+          .upload(thumbnailPath, thumbnailBlob, {
+            contentType: thumbnailType,
+            upsert: true,
+          });
+        if (thumbnailError) {
+          const cleanup = await supabase.storage.from('portfolio-images').remove([filePath]);
+          if (cleanup.error) console.error('Could not clean up uploaded original after thumbnail failure:', cleanup.error);
+          throw new Error(`Thumbnail upload failed: ${thumbnailError.message}`);
+        }
+        const { data: { publicUrl: thumbnailUrl } } = supabase.storage
+          .from('portfolio-images')
+          .getPublicUrl(thumbnailPath);
+
+        let dimensions: { width: number; height: number } | undefined;
+        try {
+          const bitmap = await createImageBitmap(uploadBlob);
+          dimensions = { width: bitmap.width, height: bitmap.height };
+          bitmap.close();
+        } catch (dimensionError) {
+          console.warn('Could not read artwork dimensions:', dimensionError);
+        }
+
+        // 5. Insert the original and thumbnail locations with optional image dimensions.
+        const payload: {
+          section: string;
+          title: string;
+          description: string;
+          image_url: string;
+          thumbnail_url: string;
+          user_id: string;
+          width?: number;
+          height?: number;
+          year?: string;
+        } = {
           section: meta.section || 'pencil-arts',
           title: meta.title?.trim() || file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ') || 'Untitled Artwork',
           description: meta.description?.trim() || '',
           image_url: publicUrl,
-          thumbnail_url: publicUrl,
+          thumbnail_url: thumbnailUrl,
           user_id: user.id,
+          ...(dimensions ? { width: dimensions.width, height: dimensions.height } : {}),
         };
 
         if (meta.year?.trim()) {
           payload.year = meta.year.trim();
         }
 
-        let { error: dbError } = await supabase.from('artworks').insert(payload);
-
-        // If the 'year' column is not in the user's schema, retry without it
-        if (dbError && dbError.message && dbError.message.includes('year')) {
-          delete payload.year;
-          const retry = await supabase.from('artworks').insert(payload);
+        let insertPayload = payload;
+        let { error: dbError } = await supabase.from('artworks').insert(insertPayload);
+        while (dbError) {
+          const missingDimension = /width|height/i.test(dbError.message) &&
+            (insertPayload.width !== undefined || insertPayload.height !== undefined);
+          const missingYear = /year/i.test(dbError.message) && insertPayload.year !== undefined;
+          if (!missingDimension && !missingYear) break;
+          insertPayload = { ...insertPayload };
+          if (missingDimension) {
+            delete insertPayload.width;
+            delete insertPayload.height;
+          }
+          if (missingYear) delete insertPayload.year;
+          const retry = await supabase.from('artworks').insert(insertPayload);
           dbError = retry.error;
         }
 
         if (dbError) {
+          const cleanup = await supabase.storage.from('portfolio-images').remove([filePath, thumbnailPath]);
+          if (cleanup.error) console.error('Could not clean up artwork files after database failure:', cleanup.error);
           throw new Error(`Database error: ${dbError.message}`);
         }
       }
@@ -227,9 +294,9 @@ export default function UploadFAB() {
       closeModal();
       // Redirect to the section where the artwork was uploaded
       window.location.href = `/section/${firstSection}`;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Upload process failed:', err);
-      alert('Upload failed: ' + (err.message || 'Unknown error occurred'));
+      setUploadError(`Upload failed: ${err instanceof Error ? err.message : 'Please try again.'}`);
     } finally {
       setUploading(false);
       setUploadProgress('');
@@ -248,6 +315,7 @@ export default function UploadFAB() {
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
         title="Curate / Upload Artwork"
+        aria-label="Curate or upload artwork"
         className="fixed bottom-6 right-6 w-14 h-14 bg-accent text-white rounded-full shadow-2xl flex items-center justify-center z-40 border border-accent-light/40 hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] transition-shadow cursor-pointer"
       >
         <Upload size={22} />
@@ -288,6 +356,11 @@ export default function UploadFAB() {
                 <p className="text-xs font-mono uppercase tracking-[0.25em] text-accent font-semibold">Exhibition Curator</p>
               </div>
               <h2 className="text-3xl font-serif mb-6">Add New Artworks</h2>
+              {uploadError && (
+                <p role="alert" className="mb-5 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-500">
+                  {uploadError}
+                </p>
+              )}
 
               {/* Drag and Drop Zone */}
               <div
@@ -359,7 +432,7 @@ export default function UploadFAB() {
                         {previewUrls[i] && (
                           <img
                             src={previewUrls[i]}
-                            alt="preview"
+                            alt={`Artwork preview: ${metadata[i]?.title || _file.name}`}
                             className="w-full h-full object-cover"
                           />
                         )}
@@ -413,6 +486,7 @@ export default function UploadFAB() {
                         onClick={() => removeFile(i)}
                         disabled={uploading}
                         title="Remove artwork"
+                        aria-label={`Remove ${metadata[i]?.title || 'artwork'}`}
                         className="absolute top-4 right-4 p-1.5 text-ink/40 dark:text-white/40 hover:text-red-500 rounded-full hover:bg-red-500/10 transition-colors"
                       >
                         <Trash2 size={15} />

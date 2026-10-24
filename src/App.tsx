@@ -1,26 +1,49 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { MotionConfig } from 'framer-motion';
 import Layout from './components/Layout';
-import Home from './pages/Home';
-import Section from './pages/Section';
-import About from './pages/About';
-import Admin from './pages/Admin';
-import NotFound from './pages/NotFound';
 import ScrollToTop from './components/ScrollToTop';
+import SmoothScroll from './components/motion/SmoothScroll';
+import { QualityProvider } from './lib/quality';
+import ScrollVelocity from './components/motion/ScrollVelocity';
+import { SoundProvider } from './lib/sound';
+
+const Home = lazy(() => import('./pages/Home'));
+const Section = lazy(() => import('./pages/Section'));
+const About = lazy(() => import('./pages/About'));
+const Admin = lazy(() => import('./pages/Admin'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+
+function RouteLoading() {
+  return (
+    <div className="flex min-h-[50vh] items-center justify-center" role="status" aria-label="Opening exhibition">
+      <span className="h-px w-20 animate-pulse bg-accent" />
+    </div>
+  );
+}
 
 function App() {
   return (
     <BrowserRouter>
-      <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="section/:id" element={<Section />} />
-          <Route path="section/:id/:mode" element={<Section />} />
-          <Route path="about" element={<About />} />
-          <Route path="admin" element={<Admin />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
+      <QualityProvider>
+        <SoundProvider>
+          <MotionConfig reducedMotion="user">
+            <SmoothScroll />
+            <ScrollVelocity />
+            <ScrollToTop />
+            <Routes>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Suspense fallback={<RouteLoading />}><Home /></Suspense>} />
+                <Route path="section/:id" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
+                <Route path="section/:id/:mode" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
+                <Route path="about" element={<Suspense fallback={<RouteLoading />}><About /></Suspense>} />
+                <Route path="admin" element={<Suspense fallback={<RouteLoading />}><Admin /></Suspense>} />
+                <Route path="*" element={<Suspense fallback={<RouteLoading />}><NotFound /></Suspense>} />
+              </Route>
+            </Routes>
+          </MotionConfig>
+        </SoundProvider>
+      </QualityProvider>
     </BrowserRouter>
   );
 }

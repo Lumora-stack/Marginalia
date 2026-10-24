@@ -36,7 +36,7 @@ export default function Section() {
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="pb-12"
+      className={`section-room section-room-${id} pb-12`}
     >
       {/* Breadcrumb / Back */}
       <div className="mb-8">
@@ -48,6 +48,28 @@ export default function Section() {
           <span>All Collections</span>
         </Link>
       </div>
+
+      <motion.div
+        layoutId={`room-cover-${category.id}`}
+        className="relative mb-10 h-52 sm:h-64 md:h-[22rem] overflow-hidden rounded-3xl border border-ink/10 dark:border-white/10 bg-ink"
+      >
+        <img
+          src={category.img}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover opacity-70"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-transparent" />
+        {id === 'pencil-arts' && (
+          <svg aria-hidden="true" viewBox="0 0 600 150" className="pencil-room-stroke pointer-events-none absolute bottom-8 right-6 w-1/2 max-w-xl opacity-75">
+            <path d="M12 112 C120 18 174 150 280 72 S444 16 588 96" fill="none" stroke="#e4c365" strokeWidth="1.5" />
+            <path d="M90 114 C178 70 220 44 310 102 S468 124 540 42" fill="none" stroke="#e4c365" strokeWidth="1" />
+          </svg>
+        )}
+        <span className="absolute bottom-6 left-6 text-xs font-mono tracking-[0.25em] uppercase text-white/70">
+          Room {category.num} · Permanent Collection
+        </span>
+      </motion.div>
 
       {/* Section Header */}
       <div className="mb-12 md:mb-16">
@@ -88,6 +110,21 @@ export default function Section() {
 
         <div className="mt-8 h-px bg-gradient-to-r from-accent via-accent/30 to-transparent" />
       </div>
+
+      {isGameCollection && (
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18 }}
+          className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-accent/20 bg-accent/5 px-5 py-4"
+        >
+          <div>
+            <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-accent">The Arcade</p>
+            <p className="mt-1 font-serif text-lg">Choose a world. Take a turn.</p>
+          </div>
+          <span className="text-xs font-mono opacity-50">SINGLEPLAYER · MULTIPLAYER</span>
+        </motion.div>
+      )}
 
       {isGameCollection && !selectedMode ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

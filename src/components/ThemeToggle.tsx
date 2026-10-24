@@ -1,5 +1,5 @@
 import { Moon, Sun } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export default function ThemeToggle() {
   const [isDark, setIsDark] = useState(() =>
@@ -8,28 +8,32 @@ export default function ThemeToggle() {
       : false
   );
 
-  useEffect(() => {
-    // Keep state in sync with the actual DOM class
-    setIsDark(document.documentElement.classList.contains('dark'));
-  }, []);
-
-  const toggle = () => {
+  const toggle = (event: React.MouseEvent<HTMLButtonElement>) => {
     const next = !isDark;
-    if (next) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
+    const bounds = event.currentTarget.getBoundingClientRect();
+    document.documentElement.style.setProperty('--theme-x', `${bounds.left + bounds.width / 2}px`);
+    document.documentElement.style.setProperty('--theme-y', `${bounds.top + bounds.height / 2}px`);
+    const applyTheme = () => {
+      document.documentElement.classList.toggle('dark', next);
+      localStorage.setItem('theme', next ? 'dark' : 'light');
+      setIsDark(next);
+    };
+    const transitionDocument = document as Document & {
+      startViewTransition?: (callback: () => void) => void;
+    };
+    if (transitionDocument.startViewTransition) {
+      transitionDocument.startViewTransition(applyTheme);
     } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
+      applyTheme();
     }
-    setIsDark(next);
   };
 
   return (
     <button 
       onClick={toggle}
       className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-      aria-label="Toggle theme"
+      aria-label={`Switch to ${isDark ? 'light' : 'dark'} theme`}
+      aria-pressed={isDark}
     >
       {isDark ? <Sun size={20} /> : <Moon size={20} />}
     </button>

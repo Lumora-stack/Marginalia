@@ -141,6 +141,26 @@ export default function About() {
           </p>
         </motion.div>
 
+        <div className="mb-12 grid grid-cols-3 gap-3 sm:gap-5">
+          {[
+            { value: '06', label: 'Curated rooms' },
+            { value: String(timeline.length).padStart(2, '0'), label: 'Creative milestones' },
+            { value: '2022—26', label: 'On the journey' },
+          ].map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.08 }}
+              className="rounded-2xl border border-ink/10 dark:border-white/10 bg-ink/3 dark:bg-white/3 p-4 sm:p-6"
+            >
+              <p className="font-serif text-xl text-accent sm:text-3xl">{stat.value}</p>
+              <p className="mt-2 text-[9px] font-mono uppercase tracking-wider opacity-50 sm:text-[10px]">{stat.label}</p>
+            </motion.div>
+          ))}
+        </div>
+
         {/* Timeline — alternating on desktop, left-aligned on mobile */}
         <div className="relative">
           {/* Center line (desktop) */}
@@ -180,6 +200,28 @@ export default function About() {
           </div>
         </div>
       </section>
+
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.8 }}
+        className="mt-16 flex justify-end"
+      >
+        <div className="text-right">
+          <svg viewBox="0 0 240 72" role="img" aria-label="Artist's initials, PG" className="ml-auto w-44 text-accent">
+            <motion.path
+              d="M12 52 C18 40 23 17 31 16 C43 14 23 56 31 56 C38 57 46 25 54 25 C62 25 45 54 55 55 C63 56 70 34 78 31 C88 27 72 55 84 56 C94 57 101 35 109 34 C117 33 102 53 115 55 C127 57 131 24 143 23 C153 22 138 47 149 50 C160 53 172 38 184 39 C196 39 197 53 184 57 C170 61 166 46 179 42 C192 38 207 41 225 34"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              variants={{ hidden: { pathLength: 0, opacity: 0 }, visible: { pathLength: 1, opacity: 0.85 } }}
+              transition={{ duration: 1.8, ease: 'easeInOut' }}
+            />
+          </svg>
+          <p className="mt-1 text-[9px] font-mono uppercase tracking-[0.25em] opacity-40">Praveenkumar G</p>
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { Upload, LogOut, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -12,6 +12,9 @@ export default function Admin() {
   const [error, setError]       = useState('');
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      return;
+    }
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
@@ -24,6 +27,10 @@ export default function Admin() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isSupabaseConfigured) {
+      setError('Admin sign-in is unavailable until Supabase is configured.');
+      return;
+    }
     setLoading(true);
     setError('');
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
@@ -32,8 +39,21 @@ export default function Admin() {
   };
 
   const handleLogout = async () => {
+    if (!isSupabaseConfigured) return;
     await supabase.auth.signOut();
   };
+
+  if (!isSupabaseConfigured) {
+    return (
+      <div role="status" className="mx-auto my-16 max-w-xl rounded-3xl border border-accent/20 bg-accent/5 p-8 text-center">
+        <Sparkles size={22} className="mx-auto mb-4 text-accent" />
+        <h1 className="mb-2 font-serif text-2xl">Curator access is not configured</h1>
+        <p className="text-sm opacity-65">
+          Add a valid VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to the deployment environment, then reload this page.
+        </p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

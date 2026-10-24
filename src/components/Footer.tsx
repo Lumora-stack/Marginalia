@@ -1,8 +1,20 @@
 import { Link } from 'react-router-dom';
 import { CATEGORIES } from '../lib/categories';
 import { ArrowUp, Mail, Phone, AtSign, Sparkles } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { useQuality } from '../lib/quality-context';
+import type { QualityTier } from '../lib/quality-types';
+import { useMuseumSound } from '../lib/sound-context';
 
 export default function Footer() {
+  const shouldReduceMotion = useReducedMotion();
+  const { tier, setOverride } = useQuality();
+  const sound = useMuseumSound();
+  const cycleQuality = () => {
+    const order: (QualityTier | null)[] = ['high', 'ultra', 'medium', 'low', null];
+    const nextIndex = (order.indexOf(tier) + 1) % order.length;
+    setOverride(order[nextIndex]);
+  };
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -107,6 +119,16 @@ export default function Footer() {
           </div>
         </div>
 
+        <div aria-hidden="true" className="mb-10 overflow-hidden border-y border-ink/10 dark:border-white/10 py-4">
+          <motion.div
+            animate={shouldReduceMotion ? undefined : { x: ['0%', '-25%'] }}
+            transition={shouldReduceMotion ? undefined : { duration: 24, repeat: Infinity, ease: 'linear' }}
+            className="w-max whitespace-nowrap font-serif text-4xl sm:text-6xl text-accent/25"
+          >
+            ART IS A WAY OF SEEING · ART IS A WAY OF SEEING · ART IS A WAY OF SEEING ·
+          </motion.div>
+        </div>
+
         {/* Separator and Bottom Bar */}
         <div className="pt-8 border-t border-ink/10 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono opacity-60">
           <div>
@@ -120,6 +142,24 @@ export default function Footer() {
             <div className="w-7 h-7 rounded-full border border-ink/20 dark:border-white/20 flex items-center justify-center group-hover:border-accent group-hover:bg-accent/10 transition-all">
               <ArrowUp size={12} className="group-hover:-translate-y-0.5 transition-transform" />
             </div>
+          </button>
+          <button
+            type="button"
+            onClick={cycleQuality}
+            aria-label={`Visual effects quality: ${tier}. Change quality`}
+            title="Cycle visual effects quality"
+            className="rounded-full border border-accent/30 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-accent transition-colors hover:bg-accent/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+          >
+            FX: {tier[0].toUpperCase()}{tier.slice(1)}
+          </button>
+          <button
+            type="button"
+            onClick={sound.toggle}
+            aria-label={sound.enabled ? 'Turn ambient sound off' : 'Turn ambient sound on'}
+            aria-pressed={sound.enabled}
+            className="rounded-full border border-accent/30 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-accent transition-colors hover:bg-accent/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+          >
+            Sound: {sound.enabled ? 'On' : 'Off'}
           </button>
         </div>
       </div>
