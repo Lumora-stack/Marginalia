@@ -1,13 +1,12 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { isMockGalleryEnabled, isSupabaseConfigured, type Artwork } from '../lib/supabase';
 import { getMockArtworks } from '../lib/mock-artworks';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, ImageOff, AlertCircle, LayoutGrid, GalleryHorizontal, Box, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, ImageOff, AlertCircle, LayoutGrid, GalleryHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 import Lightbox from './Lightbox';
 
-const GalleryWall = lazy(() => import('./three/GalleryWall'));
-type GalleryView = 'masonry' | 'wall' | 'carousel';
+type GalleryView = 'masonry' | 'carousel';
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return '';
@@ -204,7 +203,6 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
         <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Gallery view">
           {([
             ['masonry', LayoutGrid, 'Masonry'],
-            ['wall', Box, 'Gallery wall'],
             ['carousel', GalleryHorizontal, 'Carousel'],
           ] as const).map(([mode, Icon, label]) => (
             <button
@@ -240,11 +238,7 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
         </div>
       </div>
 
-      {view === 'wall' ? (
-        <Suspense fallback={<div className="h-[32rem] rounded-3xl bg-ink/5 dark:bg-white/5 shimmer-bg animate-pulse" />}>
-          <GalleryWall artworks={sortedArtworks} onSelect={setLightboxIndex} />
-        </Suspense>
-      ) : view === 'carousel' ? (
+      {view === 'carousel' ? (
         <div className="relative overflow-hidden rounded-3xl border border-ink/10 dark:border-white/10 bg-ink/5 dark:bg-white/5 p-4 sm:p-8">
           <div className="flex min-h-[24rem] items-center justify-center">
             <AnimatePresence mode="wait">

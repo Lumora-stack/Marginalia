@@ -335,16 +335,8 @@
     min-height: 100dvh;
   }
 
-  .viewport-screen {
-    height: 100dvh;
-  }
-
   .hero-viewport {
     min-height: 85dvh;
-  }
-
-  .museum-scroll-distance {
-    height: 180dvh;
   }
 
   .viewport-min-60 {

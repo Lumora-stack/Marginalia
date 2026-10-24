@@ -9,7 +9,6 @@ import ScrambleText from '../components/motion/ScrambleText';
 import { useCanvasActivity } from '../components/motion/useCanvasActivity';
 
 const HeroScene = lazy(() => import('../components/three/HeroScene'));
-const MuseumFlythrough = lazy(() => import('../components/three/MuseumFlythrough'));
 const Canvas = lazy(() => import('@react-three/fiber').then(m => ({ default: m.Canvas })));
 const MotionLink = motion.create(Link);
 
@@ -293,12 +292,6 @@ export default function Home() {
           </motion.div>
         </motion.div>
       </section>
-
-      {qualityAtLeast(tier, 'medium') && !shouldReduceMotion && (
-        <Suspense fallback={<div aria-hidden="true" className="my-14 h-[70vh] rounded-3xl bg-gradient-to-br from-paper via-paper to-[#e8e0cf] dark:from-[#17140c] dark:via-[#0d0d0f] dark:to-[#211a0e]" />}>
-          <MuseumFlythrough quality={tier} />
-        </Suspense>
-      )}
 
       <div aria-hidden="true" className="collection-marquee my-8 -mx-6 overflow-hidden border-y border-accent/15 py-4">
         <div className="collection-marquee-track w-max whitespace-nowrap font-serif text-3xl text-accent sm:text-5xl">
