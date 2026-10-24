@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { Upload, X, Loader2, Sparkles, Check, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { compressImage } from '../lib/image-utils';
-import { CATEGORIES } from '../lib/categories';
+import { ARTWORK_SECTIONS } from '../lib/categories';
 
 type FileMeta = { title: string; section: string; description: string; year: string };
 
@@ -381,9 +381,9 @@ export default function UploadFAB() {
                           className="p-2.5 rounded-xl bg-white dark:bg-black/30 border border-ink/10 dark:border-white/10 outline-none focus:border-accent text-xs font-sans w-full cursor-pointer"
                           disabled={uploading}
                         >
-                          {CATEGORIES.map(cat => (
-                            <option key={cat.id} value={cat.id}>
-                              {cat.label}
+                          {ARTWORK_SECTIONS.map(section => (
+                            <option key={section.id} value={section.id}>
+                              {section.label}
                             </option>
                           ))}
                         </select>

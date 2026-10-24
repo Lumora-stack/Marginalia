@@ -7,16 +7,18 @@ import { CATEGORIES } from '../lib/categories';
 const HeroScene = lazy(() => import('../components/HeroScene'));
 const Canvas = lazy(() => import('@react-three/fiber').then(m => ({ default: m.Canvas })));
 
-// Spans for a mathematically perfect 3x3 Bento grid without collisions:
+// Spans for the collection bento grid:
 // Row 1: [Pencil,  Pencil,  Pixel]
 // Row 2: [Pencil,  Pencil,  Sketches]
 // Row 3: [Doodles, DIY,     DIY]
+// Row 4: [Games,   Games,   Games]
 const categorySpans: Record<string, string> = {
   'pencil-arts': 'md:col-span-2 md:row-span-2',
   'pixel-arts':  'md:col-span-1 md:row-span-1',
   'sketches':    'md:col-span-1 md:row-span-1',
   'doodles':     'md:col-span-1 md:row-span-1',
   'diy-crafts':  'md:col-span-2 md:row-span-1',
+  'games':       'md:col-span-3 md:row-span-1',
 };
 
 export default function Home() {
@@ -214,7 +216,7 @@ export default function Home() {
 
       {/* ─── BENTO CATEGORIES GRID ─── */}
       <section className="pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 md:grid-rows-3 auto-rows-[280px] md:auto-rows-auto md:h-[900px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 md:grid-rows-4 auto-rows-[280px] md:auto-rows-auto md:h-[1200px]">
           {CATEGORIES.map((section, i) => (
             <motion.div
               key={section.id}

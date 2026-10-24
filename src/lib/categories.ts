@@ -4,6 +4,7 @@ export interface Category {
   num: string;
   desc: string;
   img: string;
+  gameModes?: { id: string; label: string; desc: string }[];
 }
 
 export const CATEGORIES: Category[] = [
@@ -42,7 +43,35 @@ export const CATEGORIES: Category[] = [
     desc: 'Handmade creations from the heart.',
     img: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=2000&auto=format&fit=crop',
   },
+  {
+    id: 'games',
+    label: 'Games',
+    num: '06',
+    desc: 'Interactive worlds to explore alone or with others.',
+    img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2000&auto=format&fit=crop',
+    gameModes: [
+      {
+        id: 'singleplayer',
+        label: 'Singleplayer',
+        desc: 'Solo adventures, stories, and experiences.',
+      },
+      {
+        id: 'multiplayer',
+        label: 'Multiplayer',
+        desc: 'Games to enjoy together with friends.',
+      },
+    ],
+  },
 ];
+
+export const ARTWORK_SECTIONS = CATEGORIES.flatMap(category =>
+  category.gameModes
+    ? category.gameModes.map(mode => ({
+        id: `${category.id}-${mode.id}`,
+        label: `${category.label} — ${mode.label}`,
+      }))
+    : [{ id: category.id, label: category.label }],
+);
 
 export const getCategoryById = (id: string): Category | undefined =>
   CATEGORIES.find(c => c.id === id);

@@ -2,15 +2,16 @@ import { useParams, Link } from 'react-router-dom';
 import Gallery from '../components/Gallery';
 import { motion } from 'framer-motion';
 import { getCategoryById, CATEGORIES } from '../lib/categories';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, Sparkles } from 'lucide-react';
 
 export default function Section() {
-  const { id } = useParams();
+  const { id, mode } = useParams();
   if (!id) return null;
 
   const category = getCategoryById(id);
+  const selectedMode = category?.gameModes?.find(gameMode => gameMode.id === mode);
 
-  if (!category) {
+  if (!category || (mode && !selectedMode)) {
     return (
       <div className="py-24 text-center space-y-6">
         <h2 className="text-3xl font-serif">Collection Not Found</h2>
@@ -25,6 +26,9 @@ export default function Section() {
       </div>
     );
   }
+
+  const isGameCollection = !!category.gameModes;
+  const artworkSectionId = selectedMode ? `${category.id}-${selectedMode.id}` : id;
 
   return (
     <motion.div
@@ -49,17 +53,17 @@ export default function Section() {
         <div className="flex items-center gap-3 mb-4">
           <Sparkles size={14} className="text-accent" />
           <p className="text-xs font-mono tracking-[0.3em] uppercase text-accent font-semibold">
-            Collection {category.num} / 05
+            Collection {category.num} / {String(CATEGORIES.length).padStart(2, '0')}
           </p>
         </div>
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif capitalize tracking-tight leading-none">
-              {category.label}
+              {selectedMode?.label || category.label}
             </h1>
             <p className="mt-4 text-base md:text-lg opacity-60 font-serif italic max-w-xl">
-              {category.desc}
+              {selectedMode?.desc || category.desc}
             </p>
           </div>
 
@@ -84,8 +88,37 @@ export default function Section() {
         <div className="mt-8 h-px bg-gradient-to-r from-accent via-accent/30 to-transparent" />
       </div>
 
-      {/* Gallery Render */}
-      <Gallery sectionId={id} />
+      {isGameCollection && !selectedMode ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {category.gameModes?.map(gameMode => (
+            <Link
+              key={gameMode.id}
+              to={`/section/${category.id}/${gameMode.id}`}
+              className="group relative min-h-64 overflow-hidden rounded-3xl border border-ink/10 dark:border-white/10 bg-ink p-7 md:p-9 flex flex-col justify-between"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-accent/20 via-transparent to-transparent opacity-60 transition-opacity group-hover:opacity-100" />
+              <div className="relative flex items-start justify-between gap-4">
+                <span className="text-xs font-mono tracking-[0.2em] uppercase text-white/50">
+                  {category.num} / {gameMode.id === 'singleplayer' ? 'A' : 'B'}
+                </span>
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-all group-hover:bg-accent group-hover:text-white">
+                  <ArrowUpRight size={16} />
+                </span>
+              </div>
+              <div className="relative">
+                <h2 className="mb-2 text-3xl font-serif text-white transition-colors group-hover:text-accent">
+                  {gameMode.label}
+                </h2>
+                <p className="max-w-sm text-sm leading-relaxed text-white/60">
+                  {gameMode.desc}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <Gallery sectionId={artworkSectionId} />
+      )}
     </motion.div>
   );
 }
