@@ -294,6 +294,7 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
               exit={{ opacity: 0, transition: { duration: 0.15 } }}
               transition={{ duration: 0.4, delay: Math.min(i, 6) * 0.05, ease: 'easeOut' }}
               className="break-inside-avoid mb-3 md:mb-5 cursor-zoom-in group transform-gpu"
+              data-cursor-label="VIEW"
               onClick={() => setLightboxIndex(i)}
             >
               <div

@@ -56,27 +56,8 @@
 }
 
 @layer utilities {
-  /* Film grain overlay - desktop only to ensure 60/120fps on mobile */
   .bg-grain {
     position: relative;
-  }
-
-  @media (min-width: 768px) {
-    .bg-grain::before {
-      content: "";
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      pointer-events: none;
-      z-index: 9999;
-      opacity: 0.035;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-      background-size: 200px 200px;
-      transform: translateZ(0);
-    }
-    .dark .bg-grain::before {
-      opacity: 0.025;
-      filter: invert(1);
-    }
   }
 
   /* Glassmorphism */
@@ -191,15 +172,8 @@
     animation: pencil-draw 2.8s cubic-bezier(0.2, 0.7, 0.1, 1) 400ms forwards;
   }
 
-  .liquid-route-wipe {
-    filter: url(#liquid-wipe);
-    background:
-      radial-gradient(ellipse at 32% 38%, rgba(255, 239, 180, 0.9), transparent 18%),
-      linear-gradient(115deg, #8b6820, #e6c452 45%, #16130c);
-  }
-
-  .route-wipe-medium {
-    filter: none;
+  .route-gold-curtain {
+    background: linear-gradient(115deg, #80601c 0%, #d4af37 43%, #fff0b5 52%, #9a7b1f 100%);
   }
 
   .memory-card-sweep {

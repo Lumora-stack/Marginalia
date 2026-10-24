@@ -4,40 +4,64 @@ import Navbar from './Navbar';
 import InstallPrompt from './InstallPrompt';
 import Footer from './Footer';
 import ScrollProgress from './ScrollProgress';
-import CustomCursor from './CustomCursor';
 import MuseumPreloader from './motion/MuseumPreloader';
 import VisualFilters from './motion/VisualFilters';
 import RouteWipe from './motion/RouteWipe';
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+import { LayoutGroup, useReducedMotion } from 'framer-motion';
+import { useQuality } from '../lib/quality-context';
+import { qualityAtLeast } from '../lib/quality-types';
+import { useThemeColors } from '../lib/useThemeColors';
 
 const UploadFAB = lazy(() => import('./UploadFAB'));
+const ClickSpark = lazy(() => import('./ClickSpark'));
+const TargetCursor = lazy(() => import('./TargetCursor'));
+const Noise = lazy(() => import('./Noise'));
 
 export default function Layout() {
   const location = useLocation();
   const isHome = location.pathname === '/';
+  const { tier } = useQuality();
+  const colors = useThemeColors();
+  const shouldReduceMotion = useReducedMotion();
 
-  return (
+  const content = (
     <div className="min-h-screen flex flex-col relative bg-grain selection:bg-accent/30 selection:text-ink dark:selection:text-white">
       <ScrollProgress />
       <VisualFilters />
-      <CustomCursor />
+      {tier !== 'low' && !shouldReduceMotion && (
+        <Suspense fallback={null}>
+          <TargetCursor
+            targetSelector="a, button, [role='button'], input, select, textarea, .cursor-zoom-in, [data-cursor-label]"
+            cursorColor={colors.accent}
+            cursorColorOnTarget={colors.isDark ? '#fff2bd' : '#29271f'}
+            spinDuration={2.6}
+            size={32}
+            padding={5}
+            blendMode="normal"
+            showLabel
+          />
+        </Suspense>
+      )}
+      {qualityAtLeast(tier, 'medium') && !shouldReduceMotion && (
+        <Suspense fallback={null}>
+          <Noise
+            fixed
+            opacity={0.025}
+            size={1}
+            fps={tier === 'medium' ? 4 : tier === 'high' ? 7 : 10}
+            blendMode={colors.isDark ? 'overlay' : 'multiply'}
+            contrast={0.32}
+            zIndex={30}
+          />
+        </Suspense>
+      )}
       <RouteWipe />
       <MuseumPreloader />
       <Navbar />
 
       <main className={`flex-1 w-full ${isHome ? 'max-w-7xl mx-auto px-6' : 'max-w-7xl mx-auto px-6 py-12'}`}>
         <LayoutGroup id="museum-routes">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 12, clipPath: 'inset(0 0 8% 0)' }}
-              animate={{ opacity: 1, y: 0, clipPath: 'inset(0 0 0% 0)' }}
-              exit={{ opacity: 0, y: -8, clipPath: 'inset(0 0 100% 0)' }}
-              transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          <Outlet />
         </LayoutGroup>
       </main>
 
@@ -47,5 +71,23 @@ export default function Layout() {
       </Suspense>
       <InstallPrompt />
     </div>
+  );
+
+  return (
+    <Suspense fallback={content}>
+      <ClickSpark
+        sparkColor={[colors.accent, colors.isDark ? '#fff2bd' : '#5e4812']}
+        sparkSize={7}
+        sparkRadius={28}
+        sparkCount={tier === 'ultra' ? 9 : 6}
+        sparkWidth={1.5}
+        duration={420}
+        glow={0.35}
+        disabled={tier === 'low' || !!shouldReduceMotion}
+        className="min-h-screen"
+      >
+        {content}
+      </ClickSpark>
+    </Suspense>
   );
 }

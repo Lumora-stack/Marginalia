@@ -430,6 +430,7 @@ export default function Home() {
             }
           }}
           data-cursor="drag"
+          data-cursor-label="DRAG"
           aria-label="Curated rooms, horizontally scrollable"
         >
           {CATEGORIES.map((section, i) => (
@@ -445,6 +446,7 @@ export default function Home() {
                 to={`/section/${section.id}`}
                 layoutId={`room-cover-${section.id}`}
                 aria-label={`Explore ${section.label} exhibition`}
+                data-cursor-label="DRAG"
                 className="group block h-full w-full overflow-hidden rounded-3xl border border-ink/10 bg-ink shadow-lg dark:border-white/10"
                 onClick={e => {
                   if (dragging.current.moved) {

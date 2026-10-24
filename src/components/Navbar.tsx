@@ -1,9 +1,15 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
-import { Menu, X, LogOut, Sparkles } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { LogOut, Sparkles } from 'lucide-react';
+import { lazy, Suspense, useCallback, useState, useEffect, useRef, type MouseEvent as ReactMouseEvent } from 'react';
 import { CATEGORIES } from '../lib/categories';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
+import { useQuality } from '../lib/quality-context';
+import { useThemeColors } from '../lib/useThemeColors';
+import type { StaggeredMenuItem } from './StaggeredMenu';
+
+const StaggeredMenu = lazy(() => import('./StaggeredMenu'));
+const DecryptedText = lazy(() => import('./DecryptedText'));
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,10 +17,16 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const lastScrollY = useRef(0);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const menuTriggerRef = useRef<HTMLButtonElement>(null);
-  const closeMenuRef = useRef<HTMLButtonElement>(null);
+  const { tier } = useQuality();
+  const colors = useThemeColors();
+  const shouldReduceMotion = useReducedMotion();
   const navigate = useNavigate();
+  const openMenu = useCallback(() => setIsOpen(true), []);
+  const closeMenu = useCallback(() => setIsOpen(false), []);
+  const navigateFromMenu = useCallback((event: ReactMouseEvent<HTMLAnchorElement>, item: StaggeredMenuItem) => {
+    event.preventDefault();
+    navigate(item.link);
+  }, [navigate]);
 
   // Scroll detection for dynamic blur
   useEffect(() => {
@@ -69,41 +81,31 @@ export default function Navbar() {
     navigate('/');
   };
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const menuTrigger = menuTriggerRef.current;
-    closeMenuRef.current?.focus();
-    const menu = menuRef.current;
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-        return;
-      }
-      if (event.key !== 'Tab' || !menu) return;
-      const focusable = Array.from(menu.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      ));
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-    menu?.addEventListener('keydown', handleKeyDown);
-    return () => {
-      menu?.removeEventListener('keydown', handleKeyDown);
-      menuTrigger?.focus();
-    };
-  }, [isOpen]);
-
   const navClass = scrolled
     ? 'bg-paper/85 dark:bg-[#0c0c0e]/85 backdrop-blur-xl shadow-sm border-b border-ink/8 dark:border-white/8'
     : 'bg-transparent border-b border-transparent';
+  const menuItems: StaggeredMenuItem[] = [
+    ...CATEGORIES.map(section => ({
+      label: section.label,
+      ariaLabel: `Open ${section.label} exhibition`,
+      link: `/section/${section.id}`,
+    })),
+    { label: 'About', ariaLabel: 'About the artist', link: '/about' },
+  ];
+  const renderNavLabel = (text: string) => shouldReduceMotion || tier === 'low'
+    ? <span>{text}</span>
+    : (
+      <Suspense fallback={<span>{text}</span>}>
+        <DecryptedText
+          text={text}
+          animateOn="hover"
+          effect="scramble"
+          speed={32}
+          maxIterations={8}
+          scrambleColor={colors.accent}
+        />
+      </Suspense>
+    );
 
   return (
     <>
@@ -130,6 +132,7 @@ export default function Navbar() {
               <NavLink
                 key={s.id}
                 to={`/section/${s.id}`}
+                aria-label={s.label}
                 className={({ isActive }) =>
                   `relative text-xs font-mono tracking-[0.14em] uppercase transition-colors duration-200 py-1 ${
                     isActive ? 'text-accent font-semibold' : 'opacity-65 hover:opacity-100 hover:text-accent'
@@ -138,7 +141,7 @@ export default function Navbar() {
               >
                 {({ isActive }) => (
                   <>
-                    {s.label}
+                    {renderNavLabel(s.label)}
                     {isActive && (
                       <motion.div
                         layoutId="nav-indicator"
@@ -153,6 +156,7 @@ export default function Navbar() {
 
             <NavLink
               to="/about"
+              aria-label="About"
               className={({ isActive }) =>
                 `relative text-xs font-mono tracking-[0.14em] uppercase transition-colors duration-200 py-1 ${
                   isActive ? 'text-accent font-semibold' : 'opacity-65 hover:opacity-100 hover:text-accent'
@@ -161,7 +165,7 @@ export default function Navbar() {
             >
               {({ isActive }) => (
                 <>
-                  About
+                  {renderNavLabel('About')}
                   {isActive && (
                     <motion.div
                       layoutId="nav-indicator"
@@ -202,113 +206,30 @@ export default function Navbar() {
                 <LogOut size={18} />
               </button>
             )}
-            <button
-              ref={menuTriggerRef}
-              onClick={() => setIsOpen(!isOpen)}
-              aria-label={isOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={isOpen}
-              aria-controls="mobile-exhibition-menu"
-              className="p-2.5 rounded-full hover:bg-ink/5 dark:hover:bg-white/5 transition-colors"
-            >
-              {isOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
+            <div className="relative h-11 w-11">
+              <Suspense fallback={<button type="button" aria-label="Open menu" className="h-11 w-11 rounded-full border border-accent/30 text-accent">Menu</button>}>
+                <StaggeredMenu
+                  className="mobile-staggered-menu"
+                  isFixed={false}
+                  items={menuItems}
+                  colors={colors.isDark ? ['#0d0d0f', '#8a6a20', '#d4af37'] : ['#f7f5f1', '#9a7b1f', '#e0c76c']}
+                  displaySocials={false}
+                  displayItemNumbering
+                  menuButtonColor={colors.accent}
+                  openMenuButtonColor={colors.isDark ? '#f0ede6' : '#29271f'}
+                  accentColor={colors.accent}
+                  panelBackground={colors.background}
+                  panelTextColor={colors.isDark ? '#f0ede6' : '#29271f'}
+                  onMenuOpen={openMenu}
+                  onMenuClose={closeMenu}
+                  onItemClick={navigateFromMenu}
+                />
+              </Suspense>
+            </div>
           </div>
         </div>
       </motion.header>
 
-      {/* Fullscreen Mobile Exhibition Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            ref={menuRef}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-50 md:hidden bg-paper dark:bg-[#0c0c0e] flex flex-col justify-between px-8 py-10 overflow-y-auto"
-            id="mobile-exhibition-menu"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Mobile navigation"
-          >
-            {/* Header in modal */}
-            <div className="flex items-center justify-between border-b border-ink/10 dark:border-white/10 pb-6">
-              <span className="font-serif text-xl tracking-tight">Artville</span>
-              <button
-                ref={closeMenuRef}
-                onClick={() => setIsOpen(false)}
-                className="p-2 rounded-full border border-ink/10 dark:border-white/10 text-ink dark:text-white"
-                aria-label="Close menu"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Links List */}
-            <div className="py-8 space-y-5">
-              <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-accent">
-                Collections & Rooms
-              </p>
-              {CATEGORIES.map((s, i) => (
-                <motion.div
-                  key={s.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 * i, duration: 0.4 }}
-                >
-                  <NavLink
-                    to={`/section/${s.id}`}
-                    onClick={() => setIsOpen(false)}
-                    className={({ isActive }) =>
-                      `flex items-baseline justify-between py-2 border-b border-ink/5 dark:border-white/5 group ${
-                        isActive ? 'text-accent' : 'text-ink dark:text-white'
-                      }`
-                    }
-                  >
-                    <span className="text-2xl font-serif tracking-tight group-hover:translate-x-1.5 transition-transform duration-300">
-                      {s.label}
-                    </span>
-                    <span className="font-mono text-xs opacity-40 group-hover:text-accent">
-                      {s.num}
-                    </span>
-                  </NavLink>
-                </motion.div>
-              ))}
-
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.05 * CATEGORIES.length, duration: 0.4 }}
-              >
-                <NavLink
-                  to="/about"
-                  onClick={() => setIsOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-baseline justify-between py-2 border-b border-ink/5 dark:border-white/5 group ${
-                      isActive ? 'text-accent' : 'text-ink dark:text-white'
-                    }`
-                  }
-                >
-                  <span className="text-2xl font-serif tracking-tight group-hover:translate-x-1.5 transition-transform duration-300">
-                    About the Artist
-                  </span>
-                  <span className="font-mono text-xs opacity-40 group-hover:text-accent">
-                    ✦
-                  </span>
-                </NavLink>
-              </motion.div>
-            </div>
-
-            {/* Footer in mobile modal */}
-            <div className="pt-6 border-t border-ink/10 dark:border-white/10 text-xs font-mono opacity-60 space-y-1">
-              <p className="font-serif italic text-sm text-accent opacity-90">
-                "Creating art from tiny feelings..."
-              </p>
-              <p>Chennai, India</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 }
