@@ -2,20 +2,10 @@ import { Link } from 'react-router-dom';
 import { CATEGORIES } from '../lib/categories';
 import { ArrowUp, Mail, Phone, AtSign, Sparkles } from 'lucide-react';
 import { lazy, Suspense } from 'react';
-import { useQuality } from '../lib/quality-context';
-import type { QualityTier } from '../lib/quality-types';
-import { useMuseumSound } from '../lib/sound-context';
 
 const ScrollVelocity = lazy(() => import('./ScrollVelocity'));
 
 export default function Footer() {
-  const { tier, setOverride } = useQuality();
-  const sound = useMuseumSound();
-  const cycleQuality = () => {
-    const order: (QualityTier | null)[] = ['high', 'ultra', 'medium', 'low', null];
-    const nextIndex = (order.indexOf(tier) + 1) % order.length;
-    setOverride(order[nextIndex]);
-  };
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -31,9 +21,9 @@ export default function Footer() {
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center gap-2">
               <Sparkles size={18} className="text-accent" />
-              <span className="font-serif text-2xl tracking-tight">Artville</span>
+              <span className="font-accent text-2xl tracking-tight">Artville</span>
             </div>
-            <p className="text-sm font-mono tracking-widest text-accent uppercase">
+            <p className="text-sm font-accent italic tracking-wide text-accent">
               Gallery of Imagination
             </p>
             <p className="text-sm font-serif italic opacity-70 leading-relaxed max-w-sm">
@@ -145,24 +135,6 @@ export default function Footer() {
             <div className="w-7 h-7 rounded-full border border-ink/20 dark:border-white/20 flex items-center justify-center group-hover:border-accent group-hover:bg-accent/10 transition-all">
               <ArrowUp size={12} className="group-hover:-translate-y-0.5 transition-transform" />
             </div>
-          </button>
-          <button
-            type="button"
-            onClick={cycleQuality}
-            aria-label={`Visual effects quality: ${tier}. Change quality`}
-            title="Cycle visual effects quality"
-            className="rounded-full border border-accent/30 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-accent transition-colors hover:bg-accent/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
-          >
-            FX: {tier[0].toUpperCase()}{tier.slice(1)}
-          </button>
-          <button
-            type="button"
-            onClick={sound.toggle}
-            aria-label={sound.enabled ? 'Turn ambient sound off' : 'Turn ambient sound on'}
-            aria-pressed={sound.enabled}
-            className="rounded-full border border-accent/30 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-accent transition-colors hover:bg-accent/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
-          >
-            Sound: {sound.enabled ? 'On' : 'Off'}
           </button>
         </div>
       </div>

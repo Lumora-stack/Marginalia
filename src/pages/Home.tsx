@@ -9,7 +9,6 @@ import { useThemeColors } from '../lib/useThemeColors';
 import { useCanvasActivity } from '../components/motion/useCanvasActivity';
 
 const Aurora = lazy(() => import('../components/Aurora'));
-const Particles = lazy(() => import('../components/Particles'));
 const SplitText = lazy(() => import('../components/SplitText'));
 const ShinyText = lazy(() => import('../components/ShinyText'));
 const BlurText = lazy(() => import('../components/BlurText'));
@@ -21,6 +20,33 @@ const ScrollReveal = lazy(() => import('../components/ScrollReveal'));
 const RoomScrollVelocity = lazy(() => import('../components/ScrollVelocity'));
 const DecryptedText = lazy(() => import('../components/DecryptedText'));
 const MotionLink = motion.create(Link);
+
+function RoomCardContent({ section }: { section: (typeof CATEGORIES)[number] }) {
+  return (
+    <div className="absolute inset-0 z-[1] flex flex-col justify-between bg-gradient-to-t from-ink/95 via-ink/40 to-transparent p-6 sm:p-8">
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-xs tracking-[0.25em] text-white/50 transition-colors group-hover:text-accent">
+          {section.num}
+        </span>
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/70 transition-all duration-300 group-hover:scale-110 group-hover:bg-accent group-hover:text-white">
+          <ArrowUpRight size={14} />
+        </span>
+      </div>
+      <div className="relative">
+        <span aria-hidden="true" className={`room-signature room-signature-${section.id} room-depth-number absolute bottom-0 right-0 font-serif text-[8rem] leading-none text-white/10 md:text-[12rem]`}>
+          {section.num}
+        </span>
+        <h3 className={`room-signature room-signature-${section.id} relative mb-2 font-serif text-2xl leading-tight text-white transition-colors duration-300 group-hover:text-accent md:text-3xl`}>
+          {section.label}
+        </h3>
+        <p className="relative line-clamp-1 font-sans text-xs leading-relaxed text-white/60 sm:text-sm">
+          {section.desc}
+        </p>
+        <span aria-hidden="true" className="mt-4 block h-0.5 w-0 bg-accent transition-all duration-500 ease-out group-hover:w-10" />
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const shouldReduceMotion = useReducedMotion();
@@ -43,7 +69,9 @@ export default function Home() {
   const [heroEffectsReady, setHeroEffectsReady] = useState(false);
   const heroSectionRef = useRef<HTMLElement>(null);
   const heroEffectsActive = useCanvasActivity(heroSectionRef);
-  const [isTouch, setIsTouch] = useState(false);
+  const [isTouch, setIsTouch] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(hover: none), (pointer: coarse)').matches,
+  );
 
   useEffect(() => {
     const touchQuery = window.matchMedia('(hover: none), (pointer: coarse)');
@@ -101,6 +129,31 @@ export default function Home() {
       </div>
     </div>
   );
+  const exploreLink = (
+    <Link to="/section/pencil-arts" aria-label="Explore Exhibition">
+      <StarBorder
+        as="span"
+        color={colors.accent}
+        trailColor={colors.isDark ? '#fff0b5' : '#5f4a12'}
+        theme={colors.isDark ? 'dark' : 'light'}
+        backgroundColor={colors.background}
+        textColor={colors.isDark ? '#f0ede6' : '#28251d'}
+        borderColor={colors.accent}
+        className="group px-8 py-3.5 font-sans text-xs font-semibold uppercase tracking-widest"
+      >
+        <span>Explore Exhibition</span>
+        <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+      </StarBorder>
+    </Link>
+  );
+  const aboutLink = (
+    <Link
+      to="/about"
+      className="inline-flex rounded-full border border-ink/20 px-8 py-3.5 font-sans text-xs font-semibold uppercase tracking-widest transition-colors hover:border-accent hover:text-accent dark:border-white/20"
+    >
+      About the Artist
+    </Link>
+  );
 
   return (
     <div className="flex flex-col gap-0">
@@ -125,43 +178,17 @@ export default function Home() {
                   : ['#9a7b1f', '#ccb05d', '#80641c']}
                 amplitude={0.9}
                 blend={0.48}
-                speed={shouldReduceMotion ? 0 : tier === 'ultra' ? 0.72 : 0.42}
+                speed={shouldReduceMotion ? 0 : 0.42}
                 height={0.55}
                 scale={1.2}
                 glow={0.28}
                 brightness={colors.isDark ? 0.7 : 0.5}
-                layers={tier === 'ultra' ? 2 : 1}
+                layers={1}
                 lightMode={!colors.isDark}
                 paused={!heroEffectsActive || !!shouldReduceMotion}
-                dpr={Math.min(window.devicePixelRatio || 1, tier === 'ultra' ? 1.5 : 1)}
-                className="absolute inset-0"
-              />
-              <Particles
-                particleCount={tier === 'ultra' ? 1800 : tier === 'high' ? 1100 : 450}
-                particleSpread={9}
-                speed={0.12}
-                particleColors={[colors.particle, colors.accent]}
-                moveParticlesOnHover
-                particleHoverFactor={0.7}
-                alphaParticles
-                particleBaseSize={2}
-                sizeRandomness={1.4}
-                disableRotation
-                pixelRatio={Math.min(window.devicePixelRatio || 1, tier === 'ultra' ? 1.5 : 1)}
-                shape="sparkle"
-                glow={0.15}
-                twinkle={0.35}
-                depthOfField={0}
-                connections={false}
-                hoverEffect="repel"
-                hoverRadius={1.8}
-                clickBurst
-                drift="up"
-                driftSpeed={0.04}
-                intro={!shouldReduceMotion}
-                opacity={0.72}
-                lightMode={!colors.isDark}
-                paused={!heroEffectsActive || !!shouldReduceMotion}
+                dpr={1}
+                fps={isTouch ? 30 : undefined}
+                mouseInteraction={!isTouch}
                 className="absolute inset-0"
               />
             </Suspense>
@@ -183,7 +210,7 @@ export default function Home() {
             </span>
           </motion.div>
 
-          <Suspense fallback={<h1 className="hero-wordmark text-6xl sm:text-7xl md:text-8xl lg:text-[9.5rem] font-serif leading-none tracking-tighter mb-4 text-gradient">Artville</h1>}>
+          <Suspense fallback={<h1 className="hero-wordmark font-serif leading-none tracking-tighter mb-4 text-gradient">Artville</h1>}>
             <SplitText
               text="Artville"
               tag="h1"
@@ -192,13 +219,13 @@ export default function Home() {
               trigger="load"
               duration={0.85}
               delay={45}
-              className="hero-wordmark text-6xl sm:text-7xl md:text-8xl lg:text-[9.5rem] font-serif leading-none tracking-tighter mb-4 text-gradient"
+              className="hero-wordmark font-serif leading-none tracking-tighter mb-4 text-gradient"
               color={colors.accent}
               accentColor={colors.accent}
             />
           </Suspense>
 
-          <Suspense fallback={<h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-serif italic text-accent leading-none tracking-tight mb-8">Gallery of Imagination</h2>}>
+          <Suspense fallback={<h2 className="hero-subtitle font-accent italic text-accent leading-none tracking-tight mb-8">Gallery of Imagination</h2>}>
             <ShinyText
               text="Gallery of Imagination"
               color={colors.accent}
@@ -206,7 +233,7 @@ export default function Home() {
               speed={4}
               delay={0.8}
               trigger="loop"
-              className="mb-8 block text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-serif italic leading-none tracking-tight"
+              className="hero-subtitle mb-8 block font-accent italic leading-none tracking-tight"
             />
           </Suspense>
 
@@ -230,31 +257,16 @@ export default function Home() {
             className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-6"
           >
             <Suspense fallback={<Link to="/section/pencil-arts" className="rounded-full bg-accent px-8 py-3.5 text-xs font-semibold uppercase tracking-widest text-white">Explore Exhibition</Link>}>
-              <Magnet padding={60} magnetStrength={2.2} maxOffset={12} className="pointer-events-auto">
-                <Link to="/section/pencil-arts" aria-label="Explore Exhibition">
-                  <StarBorder
-                    as="span"
-                    color={colors.accent}
-                    trailColor={colors.isDark ? '#fff0b5' : '#5f4a12'}
-                    theme={colors.isDark ? 'dark' : 'light'}
-                    backgroundColor={colors.background}
-                    textColor={colors.isDark ? '#f0ede6' : '#28251d'}
-                    borderColor={colors.accent}
-                    className="group px-8 py-3.5 font-sans text-xs font-semibold uppercase tracking-widest"
-                  >
-                    <span>Explore Exhibition</span>
-                    <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                  </StarBorder>
-                </Link>
-              </Magnet>
-              <Magnet padding={60} magnetStrength={1.6} maxOffset={9} className="pointer-events-auto">
-                <Link
-                  to="/about"
-                  className="inline-flex rounded-full border border-ink/20 px-8 py-3.5 font-sans text-xs font-semibold uppercase tracking-widest transition-colors hover:border-accent hover:text-accent dark:border-white/20"
-                >
-                  About the Artist
-                </Link>
-              </Magnet>
+              {isTouch ? exploreLink : (
+                <Magnet padding={60} magnetStrength={2.2} maxOffset={12} className="pointer-events-auto">
+                  {exploreLink}
+                </Magnet>
+              )}
+              {isTouch ? aboutLink : (
+                <Magnet padding={60} magnetStrength={1.6} maxOffset={9} className="pointer-events-auto">
+                  {aboutLink}
+                </Magnet>
+              )}
             </Suspense>
           </motion.div>
         </div>
@@ -396,7 +408,21 @@ export default function Home() {
                     </div>
                   }
                 >
-                  <TiltedCard
+                  {isTouch ? (
+                    <div className="room-cover-card relative h-full w-full overflow-hidden rounded-3xl">
+                      <img
+                        src={section.img}
+                        alt=""
+                        onError={e => {
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?q=80&w=1000&auto=format&fit=crop';
+                        }}
+                        className="absolute inset-0 h-full w-full object-cover opacity-75"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <RoomCardContent section={section} />
+                    </div>
+                  ) : <TiltedCard
                     imageSrc={section.img}
                     altText={section.label}
                     onImageError={e => {
@@ -409,7 +435,7 @@ export default function Home() {
                     rotateAmplitude={
                       isTouch || shouldReduceMotion || tier === 'low'
                         ? 0
-                        : tier === 'medium' ? 5 : tier === 'ultra' ? 12 : 8
+                        : tier === 'medium' ? 5 : 8
                     }
                     scaleOnHover={isTouch || shouldReduceMotion || tier === 'low' ? 1 : 1.025}
                     smoothness={0.72}
@@ -423,29 +449,9 @@ export default function Home() {
                     radius="1.5rem"
                     className="room-cover-card h-full w-full"
                   >
-                    <div className="absolute inset-0 z-[1] flex flex-col justify-between bg-gradient-to-t from-ink/95 via-ink/40 to-transparent p-6 sm:p-8">
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-xs tracking-[0.25em] text-white/50 transition-colors group-hover:text-accent">
-                          {section.num}
-                        </span>
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/70 transition-all duration-300 group-hover:scale-110 group-hover:bg-accent group-hover:text-white">
-                          <ArrowUpRight size={14} />
-                        </span>
-                      </div>
-                      <div className="relative">
-                        <span aria-hidden="true" className="room-depth-number absolute bottom-0 right-0 font-serif text-[8rem] leading-none text-white/10 md:text-[12rem]">
-                          {section.num}
-                        </span>
-                        <h3 className="relative mb-2 font-serif text-2xl leading-tight text-white transition-colors duration-300 group-hover:text-accent md:text-3xl">
-                          {section.label}
-                        </h3>
-                        <p className="relative line-clamp-1 font-sans text-xs leading-relaxed text-white/60 sm:text-sm">
-                          {section.desc}
-                        </p>
-                        <span aria-hidden="true" className="mt-4 block h-0.5 w-0 bg-accent transition-all duration-500 ease-out group-hover:w-10" />
-                      </div>
-                    </div>
+                    <RoomCardContent section={section} />
                   </TiltedCard>
+                  }
                 </Suspense>
               </MotionLink>
             </motion.div>

@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import InstallPrompt from './InstallPrompt';
 import Footer from './Footer';
@@ -23,12 +23,22 @@ export default function Layout() {
   const { tier } = useQuality();
   const colors = useThemeColors();
   const shouldReduceMotion = useReducedMotion();
+  const [finePointer, setFinePointer] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches,
+  );
+
+  useEffect(() => {
+    const media = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const update = () => setFinePointer(media.matches);
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
 
   const content = (
     <div className="min-h-screen flex flex-col relative bg-grain selection:bg-accent/30 selection:text-ink dark:selection:text-white">
       <ScrollProgress />
       <VisualFilters />
-      {tier !== 'low' && !shouldReduceMotion && (
+      {finePointer && tier !== 'low' && !shouldReduceMotion && (
         <Suspense fallback={null}>
           <TargetCursor
             targetSelector="a, button, [role='button'], input, select, textarea, .cursor-zoom-in, [data-cursor-label]"
@@ -42,7 +52,7 @@ export default function Layout() {
           />
         </Suspense>
       )}
-      {qualityAtLeast(tier, 'medium') && !shouldReduceMotion && (
+      {finePointer && qualityAtLeast(tier, 'medium') && !shouldReduceMotion && (
         <Suspense fallback={null}>
           <Noise
             fixed
@@ -74,20 +84,21 @@ export default function Layout() {
   );
 
   return (
-    <Suspense fallback={content}>
-      <ClickSpark
-        sparkColor={[colors.accent, colors.isDark ? '#fff2bd' : '#5e4812']}
-        sparkSize={7}
-        sparkRadius={28}
-        sparkCount={tier === 'ultra' ? 9 : 6}
-        sparkWidth={1.5}
-        duration={420}
-        glow={0.35}
-        disabled={tier === 'low' || !!shouldReduceMotion}
-        className="min-h-screen"
-      >
-        {content}
-      </ClickSpark>
-    </Suspense>
+    finePointer && tier !== 'low' && !shouldReduceMotion ? (
+      <Suspense fallback={content}>
+        <ClickSpark
+          sparkColor={[colors.accent, colors.isDark ? '#fff2bd' : '#5e4812']}
+          sparkSize={7}
+          sparkRadius={28}
+          sparkCount={6}
+          sparkWidth={1.5}
+          duration={420}
+          glow={0.35}
+          className="min-h-screen"
+        >
+          {content}
+        </ClickSpark>
+      </Suspense>
+    ) : content
   );
 }

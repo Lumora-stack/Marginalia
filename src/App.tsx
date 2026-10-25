@@ -5,8 +5,6 @@ import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 import SmoothScroll from './components/motion/SmoothScroll';
 import { QualityProvider } from './lib/quality';
-import { SoundProvider } from './lib/sound';
-import FrameStats from './components/motion/FrameStats';
 
 const Home = lazy(() => import('./pages/Home'));
 const Section = lazy(() => import('./pages/Section'));
@@ -123,26 +121,23 @@ function App() {
   return (
     <BrowserRouter>
       <QualityProvider>
-        <SoundProvider>
-          <MotionConfig reducedMotion="user">
-            <SmoothScroll />
-            <ScrollTriggerRefresh />
-            <ScrollToTop />
-            {import.meta.env.DEV && <FrameStats />}
-            <RouteErrorBoundary>
-              <Routes>
-                <Route path="/" element={<Layout />}>
-                  <Route index element={<Suspense fallback={<RouteLoading />}><Home /></Suspense>} />
-                  <Route path="section/:id" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
-                  <Route path="section/:id/:mode" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
-                  <Route path="about" element={<Suspense fallback={<RouteLoading />}><About /></Suspense>} />
-                  <Route path="admin" element={<Suspense fallback={<RouteLoading />}><Admin /></Suspense>} />
-                  <Route path="*" element={<Suspense fallback={<RouteLoading />}><NotFound /></Suspense>} />
-                </Route>
-              </Routes>
-            </RouteErrorBoundary>
-          </MotionConfig>
-        </SoundProvider>
+        <MotionConfig reducedMotion="user">
+          <SmoothScroll />
+          <ScrollTriggerRefresh />
+          <ScrollToTop />
+          <RouteErrorBoundary>
+            <Routes>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Suspense fallback={<RouteLoading />}><Home /></Suspense>} />
+                <Route path="section/:id" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
+                <Route path="section/:id/:mode" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
+                <Route path="about" element={<Suspense fallback={<RouteLoading />}><About /></Suspense>} />
+                <Route path="admin" element={<Suspense fallback={<RouteLoading />}><Admin /></Suspense>} />
+                <Route path="*" element={<Suspense fallback={<RouteLoading />}><NotFound /></Suspense>} />
+              </Route>
+            </Routes>
+          </RouteErrorBoundary>
+        </MotionConfig>
       </QualityProvider>
     </BrowserRouter>
   );

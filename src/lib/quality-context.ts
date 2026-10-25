@@ -3,7 +3,6 @@ import type { QualityTier } from './quality-types'
 
 export interface QualityContextValue {
   tier: QualityTier
-  setOverride: (tier: QualityTier | null) => void
 }
 
 export const QualityContext = createContext<QualityContextValue | null>(null)

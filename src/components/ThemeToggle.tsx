@@ -31,7 +31,9 @@ export default function ThemeToggle({ className = '' }: { className?: string }) 
     const transitionDocument = document as Document & {
       startViewTransition?: (callback: () => void) => void;
     };
-    if (transitionDocument.startViewTransition) {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    if (!reduceMotion && !coarsePointer && transitionDocument.startViewTransition) {
       transitionDocument.startViewTransition(applyTheme);
     } else {
       applyTheme();

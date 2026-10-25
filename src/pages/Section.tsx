@@ -85,7 +85,7 @@ export default function Section() {
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif capitalize tracking-tight leading-none">
+            <h1 className={`section-room-title room-signature room-signature-${id} font-serif capitalize tracking-tight leading-none`}>
               {selectedMode?.label || category.label}
             </h1>
             <p className="mt-4 text-base md:text-lg opacity-60 font-serif italic max-w-xl">
@@ -156,7 +156,7 @@ export default function Section() {
                   </span>
                 </div>
                 <div className="relative">
-                  <h2 className="mb-2 text-3xl font-serif text-white transition-colors group-hover:text-accent">
+                  <h2 className={`room-signature room-signature-${category.id} mb-2 text-3xl font-serif text-white transition-colors group-hover:text-accent`}>
                     {gameMode.label}
                   </h2>
                   <p className="max-w-sm text-sm leading-relaxed text-white/60">

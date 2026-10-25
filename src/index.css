@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,6 +5,10 @@
 @layer base {
   :root {
     color-scheme: light;
+    --font-display: "Fraunces Variable", "Fraunces Fallback", Georgia, serif;
+    --font-body: "Manrope Variable", "Manrope Fallback", Arial, sans-serif;
+    --font-mono: "JetBrains Mono Variable", "SFMono-Regular", Consolas, monospace;
+    --font-accent: "Fraunces Variable", "Fraunces Fallback", Georgia, serif;
     --container-width: 1280px;
     --container-gutter: clamp(20px, 5vw, 64px);
     --section-space: clamp(64px, 8vw, 120px);
@@ -41,6 +43,9 @@
 
   body {
     @apply bg-paper text-ink font-sans;
+    font-size: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
+    line-height: 1.6;
+    font-feature-settings: "kern", "liga", "calt";
     transition: background-color 0.25s ease, color 0.25s ease;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -54,6 +59,57 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif;
+    text-wrap: balance;
+    font-feature-settings: "kern", "liga", "onum";
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  .hero-wordmark {
+    font-size: clamp(3.5rem, 10vw, 9rem);
+    letter-spacing: -0.065em;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(2rem, 6vw, 5rem);
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+  }
+
+  .section-room-title {
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    letter-spacing: -0.045em;
+  }
+
+  .room-signature-pixel-arts {
+    font-family: "Pixelify Sans", var(--font-display);
+  }
+
+  .room-signature-sketches {
+    font-family: "Reenie Beanie", var(--font-display);
+  }
+
+  .room-signature-doodles {
+    font-family: "Gochi Hand", var(--font-display);
+  }
+
+  .room-signature-diy-crafts {
+    font-family: "Permanent Marker", var(--font-display);
+  }
+
+  .room-signature-games {
+    font-family: "Orbitron", var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  .section-room-title.room-signature-games {
+    font-family: var(--font-display);
+  }
+
+  .room-signature-pencil-arts {
+    font-family: "Caveat", var(--font-display);
   }
 
   /* Custom scrollbar on desktop */
@@ -150,17 +206,11 @@
     --art-scale: 1;
     transform: scale(var(--art-scale));
     transition: transform 550ms cubic-bezier(0.2, 1, 0.2, 1), filter 500ms ease;
-    will-change: transform;
   }
 
-  html[data-fx="medium"] .group:hover .artwork-image,
-  html[data-fx="high"] .group:hover .artwork-image,
-  html[data-fx="ultra"] .group:hover .artwork-image {
-    --art-scale: 1.045;
-  }
-
-  html[data-fx="high"] .group:hover .artwork-image,
-  html[data-fx="ultra"] .group:hover .artwork-image {
+  html[data-quality="medium"] .group:hover .artwork-image,
+  html[data-quality="high"] .group:hover .artwork-image,
+  html[data-quality="high"] .group:hover .artwork-image {
     filter: url(#liquid-image) saturate(1.18);
   }
 
@@ -179,8 +229,7 @@
     transition: opacity 400ms ease;
   }
 
-  html[data-fx="high"] .section-room-pixel-arts::after,
-  html[data-fx="ultra"] .section-room-pixel-arts::after {
+  html[data-quality="high"] .section-room-pixel-arts::after {
     opacity: 0.48;
   }
 
@@ -189,8 +238,7 @@
     stroke-dashoffset: 900;
   }
 
-  html[data-fx="high"] .pencil-room-stroke path,
-  html[data-fx="ultra"] .pencil-room-stroke path {
+  html[data-quality="high"] .pencil-room-stroke path {
     animation: pencil-draw 2.8s cubic-bezier(0.2, 0.7, 0.1, 1) 400ms forwards;
   }
 
@@ -312,6 +360,28 @@
 
     .room-card-link:hover {
       transform: none;
+    }
+
+    .glass,
+    .backdrop-blur-sm,
+    .backdrop-blur,
+    .backdrop-blur-md,
+    .backdrop-blur-lg,
+    .backdrop-blur-xl,
+    .backdrop-blur-2xl {
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+    }
+
+    .group:hover .artwork-image {
+      --art-scale: 1;
+      filter: none;
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .group:hover .artwork-image {
+      will-change: transform;
     }
   }
 

@@ -31,7 +31,10 @@ const samples: Artwork[] = [
   makeArtwork('1', 'Afterglow', 'pencil-arts', ['#332619', '#120f16'], 'M180 480 Q400 120 620 480 T180 480'),
   makeArtwork('2', 'Quiet Orbit', 'pencil-arts', ['#182c32', '#11121b'], 'M250 360 C500 180 600 720 300 620 C120 560 270 250 520 380'),
   makeArtwork('3', 'Golden Hour', 'pencil-arts', ['#563b23', '#1a1319'], 'M400 245 L470 420 L655 430 L510 545 L560 720 L400 615 L240 720 L290 545 L145 430 L330 420 Z'),
+  { ...makeArtwork('4', 'Museum Dash', 'games', ['#332619', '#120f16'], 'M180 480 Q400 120 620 480 T180 480'), link_url: 'https://example.com' },
+  makeArtwork('5', 'Quiet Quest', 'games', ['#182c32', '#11121b'], 'M250 360 C500 180 600 720 300 620 C120 560 270 250 520 380'),
 ]
 
 export const getMockArtworks = (section: string): Artwork[] =>
-  samples.map((artwork) => ({ ...artwork, section }))
+  (section.startsWith('games') ? samples.slice(3) : samples.slice(0, 3))
+    .map((artwork) => ({ ...artwork, section }))

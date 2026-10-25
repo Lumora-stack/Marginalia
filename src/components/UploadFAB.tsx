@@ -4,8 +4,9 @@ import { Upload, X, Loader2, Sparkles, Check, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { compressImage } from '../lib/image-utils';
 import { ARTWORK_SECTIONS } from '../lib/categories';
+import { validateGameLink } from '../lib/game-link';
 
-type FileMeta = { title: string; section: string; description: string; year: string };
+type FileMeta = { title: string; section: string; description: string; year: string; link_url: string };
 const extensionForMimeType = (mimeType: string, fallback: string) => {
   const extensions: Record<string, string> = {
     'image/webp': 'webp',
@@ -24,6 +25,7 @@ export default function UploadFAB() {
   const [files, setFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [metadata, setMetadata] = useState<Record<number, FileMeta>>({});
+  const [linkErrors, setLinkErrors] = useState<Record<number, string>>({});
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string>('');
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -76,9 +78,11 @@ export default function UploadFAB() {
         section: 'pencil-arts',
         description: '',
         year: currentYear,
+        link_url: '',
       };
     });
     setMetadata(initialMeta);
+    setLinkErrors({});
   };
 
   const removeFile = (index: number) => {
@@ -94,15 +98,24 @@ export default function UploadFAB() {
         section: 'pencil-arts',
         description: '',
         year: new Date().getFullYear().toString(),
+        link_url: '',
       };
     });
     setFiles(newFiles);
     setPreviewUrls(newUrls);
     setMetadata(newMeta);
+    setLinkErrors({});
   };
 
   const updateMeta = (index: number, key: keyof FileMeta, value: string) => {
     setMetadata(prev => ({ ...prev, [index]: { ...prev[index], [key]: value } }));
+    if (key === 'link_url') {
+      setLinkErrors(prev => {
+        const next = { ...prev };
+        delete next[index];
+        return next;
+      });
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -140,6 +153,21 @@ export default function UploadFAB() {
       setUploadError('Uploads are temporarily unavailable because Supabase is not configured.');
       return;
     }
+    const normalizedGameLinks: Record<number, string | null> = {};
+    const errors: Record<number, string> = {};
+    files.forEach((_, index) => {
+      const meta = metadata[index];
+      if (meta?.section.startsWith('games-')) {
+        const result = validateGameLink(meta.link_url, true);
+        if (result.ok) normalizedGameLinks[index] = result.value;
+        else errors[index] = result.error;
+      }
+    });
+    setLinkErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setUploadError('Fix the game link errors before publishing.');
+      return;
+    }
     setUploadError(null);
     setUploading(true);
 
@@ -168,6 +196,7 @@ export default function UploadFAB() {
           section: 'pencil-arts',
           description: '',
           year: new Date().getFullYear().toString(),
+          link_url: '',
         };
 
         setUploadProgress(`Uploading ${i + 1} of ${files.length}: "${meta.title || file.name}"...`);
@@ -251,6 +280,7 @@ export default function UploadFAB() {
           width?: number;
           height?: number;
           year?: string;
+          link_url?: string | null;
         } = {
           section: meta.section || 'pencil-arts',
           title: meta.title?.trim() || file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ') || 'Untitled Artwork',
@@ -259,6 +289,7 @@ export default function UploadFAB() {
           thumbnail_url: thumbnailUrl,
           user_id: user.id,
           ...(dimensions ? { width: dimensions.width, height: dimensions.height } : {}),
+          ...(meta.section.startsWith('games-') ? { link_url: normalizedGameLinks[i] ?? null } : {}),
         };
 
         if (meta.year?.trim()) {
@@ -447,6 +478,40 @@ export default function UploadFAB() {
                           className="p-2.5 rounded-xl bg-white dark:bg-black/30 border border-ink/10 dark:border-white/10 outline-none focus:border-accent text-xs font-sans w-full"
                           disabled={uploading}
                         />
+
+                        {metadata[i]?.section.startsWith('games-') && (
+                          <div className="sm:col-span-3">
+                            <label htmlFor={`game-link-${i}`} className="mb-1 block text-[11px] font-mono uppercase tracking-wider text-accent">
+                              Game link <span aria-hidden="true">*</span>
+                            </label>
+                            <input
+                              id={`game-link-${i}`}
+                              type="url"
+                              inputMode="url"
+                              autoComplete="url"
+                              placeholder="https://..."
+                              value={metadata[i]?.link_url || ''}
+                              onChange={e => updateMeta(i, 'link_url', e.target.value)}
+                              onBlur={() => {
+                                const result = validateGameLink(metadata[i]?.link_url || '', true);
+                                if (result.ok && result.value) updateMeta(i, 'link_url', result.value);
+                                else setLinkErrors(prev => ({ ...prev, [i]: result.ok ? 'Enter a game link to publish this game.' : result.error }));
+                              }}
+                              aria-invalid={!!linkErrors[i]}
+                              aria-describedby={`game-link-help-${i}${linkErrors[i] ? ` game-link-error-${i}` : ''}`}
+                              className="w-full rounded-xl border border-ink/10 bg-white p-2.5 text-xs font-sans outline-none focus:border-accent dark:border-white/10 dark:bg-black/30"
+                              disabled={uploading}
+                            />
+                            <p id={`game-link-help-${i}`} className="mt-1 text-[10px] opacity-55">
+                              Required for Games. A bare domain will use https:// automatically.
+                            </p>
+                            {linkErrors[i] && (
+                              <p id={`game-link-error-${i}`} role="alert" className="mt-1 text-xs text-red-500">
+                                {linkErrors[i]}
+                              </p>
+                            )}
+                          </div>
+                        )}
 
                         <select
                           value={metadata[i]?.section || 'pencil-arts'}

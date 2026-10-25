@@ -22,6 +22,7 @@ export type Artwork = {
   description?: string
   image_url: string
   thumbnail_url: string
+  link_url?: string | null
   year?: string
   medium?: string
   width?: number

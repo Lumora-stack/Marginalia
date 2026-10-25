@@ -140,6 +140,7 @@ const Noise = ({
     scratches: clamp(scratches, 0, 1)
   };
   const settingsRef = useRef(settings);
+  const needsCanvas = settings.dust > 0 || settings.scratches > 0;
   useEffect(() => {
     settingsRef.current = settings;
   });
@@ -315,7 +316,7 @@ const Noise = ({
           backgroundSize: `${TILE * settings.size}px ${TILE * settings.size}px`
         }}
       />
-      <canvas ref={dustRef} className={DUST} />
+      {needsCanvas && <canvas ref={dustRef} className={DUST} />}
       {scanlines > 0 && (
         <div ref={linesRef} className={LINES} style={{ opacity: clamp(scanlines, 0, 1), mixBlendMode: blend }} />
       )}

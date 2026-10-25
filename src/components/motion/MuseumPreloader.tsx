@@ -7,13 +7,14 @@ export default function MuseumPreloader() {
   const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
-    const duration = shouldReduceMotion ? 180 : 850;
+    const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    const duration = shouldReduceMotion ? 180 : coarsePointer ? 420 : 850;
     const timeout = window.setTimeout(() => setVisible(false), duration);
     const failsafe = window.setTimeout(() => setVisible(false), 1500);
     const startedAt = performance.now();
     const interval = window.setInterval(() => {
       setProgress(Math.min(100, Math.round(((performance.now() - startedAt) / duration) * 100)));
-    }, 30);
+    }, 60);
     return () => {
       window.clearTimeout(timeout);
       window.clearTimeout(failsafe);
@@ -26,7 +27,7 @@ export default function MuseumPreloader() {
       {visible && (
         <motion.div
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: shouldReduceMotion ? 0.1 : 0.45 } }}
+          exit={{ opacity: 0, transition: { duration: shouldReduceMotion ? 0.1 : 0.2 } }}
           className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-[#0c0c0e] text-[#f0ede6]"
           aria-label="Opening the museum"
           role="status"

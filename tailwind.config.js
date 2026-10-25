@@ -14,9 +14,10 @@ export default {
         'accent-light': 'rgb(var(--accent-light-rgb) / <alpha-value>)',
       },
       fontFamily: {
-        serif: ['"Playfair Display"', 'serif'],
-        sans: ['"Inter"', 'sans-serif'],
-        mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
+        serif: ['var(--font-display)'],
+        sans: ['var(--font-body)'],
+        mono: ['var(--font-mono)'],
+        accent: ['var(--font-accent)'],
       },
       animation: {
         blob: "blob 12s infinite",

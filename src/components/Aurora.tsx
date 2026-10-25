@@ -20,6 +20,7 @@ export interface AuroraProps {
   lightMode?: boolean;
   paused?: boolean;
   dpr?: number;
+  fps?: number;
   className?: string;
   style?: CSSProperties;
 }
@@ -42,6 +43,7 @@ type Settings = {
   lightMode: boolean;
   paused: boolean;
   dpr?: number;
+  fps?: number;
 };
 
 type Program = { program: WebGLProgram; uniforms: Record<string, WebGLUniformLocation | null> };
@@ -278,6 +280,7 @@ const Aurora = ({
   lightMode = false,
   paused = false,
   dpr,
+  fps,
   className = '',
   style
 }: AuroraProps) => {
@@ -302,7 +305,8 @@ const Aurora = ({
     opacity: clamp(opacity, 0, 1),
     lightMode,
     paused,
-    dpr
+    dpr,
+    fps
   };
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
@@ -394,6 +398,11 @@ const Aurora = ({
       raf = 0;
       if (!visible || document.hidden) return;
       const s = settingsRef.current;
+      const frameInterval = s.fps ? 1000 / s.fps : 0;
+      if (last && frameInterval && now - last < frameInterval) {
+        raf = requestAnimationFrame(frame);
+        return;
+      }
       const dt = last ? clamp((now - last) / 1000, 0.0005, 0.05) : 1 / 60;
       last = now;
       if (s.paused) {
@@ -473,11 +482,13 @@ const Aurora = ({
       }
     });
     intersection.observe(container);
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('pointerdown', onPointerMove, { passive: true });
-    window.addEventListener('pointerup', onPointerUp, { passive: true });
-    window.addEventListener('pointercancel', onPointerUp, { passive: true });
-    document.documentElement.addEventListener('pointerleave', onPointerLeave);
+    if (settingsRef.current.mouseInteraction) {
+      window.addEventListener('pointermove', onPointerMove, { passive: true });
+      window.addEventListener('pointerdown', onPointerMove, { passive: true });
+      window.addEventListener('pointerup', onPointerUp, { passive: true });
+      window.addEventListener('pointercancel', onPointerUp, { passive: true });
+      document.documentElement.addEventListener('pointerleave', onPointerLeave);
+    }
     document.addEventListener('visibilitychange', onVisibility);
     resize();
 

@@ -3,7 +3,8 @@ import { useEffect } from 'react';
 export default function SmoothScroll() {
   useEffect(() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reducedMotion) return;
+    const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    if (reducedMotion || coarsePointer) return;
 
     let active = true;
     let cleanup = () => {};

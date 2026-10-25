@@ -17,6 +17,7 @@ CREATE TABLE public.artworks (
 
 ALTER TABLE public.artworks ADD COLUMN IF NOT EXISTS width INTEGER;
 ALTER TABLE public.artworks ADD COLUMN IF NOT EXISTS height INTEGER;
+ALTER TABLE public.artworks ADD COLUMN IF NOT EXISTS link_url TEXT;
 
 -- Enable Row Level Security
 ALTER TABLE public.artworks ENABLE ROW LEVEL SECURITY;

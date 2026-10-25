@@ -1,8 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { RotateCcw, Volume2, VolumeX } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import type { GameMode } from '../lib/categories';
-import { useMuseumSound } from '../lib/sound-context';
 const Counter = lazy(() => import('./Counter'));
 type MemoryCard = { pair: number; symbol: string };
 
@@ -16,10 +15,6 @@ const WINNING_LINES = [
   [0, 3, 6], [1, 4, 7], [2, 5, 8],
   [0, 4, 8], [2, 4, 6],
 ];
-
-function useGameSound() {
-  return useMuseumSound();
-}
 
 function shuffledDeck() {
   const deck = [...MEMORY_DECK];
@@ -39,7 +34,6 @@ function MemoryMatch() {
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [combo, setCombo] = useState(0);
   const [matchBurst, setMatchBurst] = useState(0);
-  const sound = useGameSound();
   const isComplete = matched.length === MEMORY_SYMBOLS.length;
 
   useEffect(() => {
@@ -73,7 +67,6 @@ function MemoryMatch() {
     setStartedAt(current => current ?? Date.now());
     const nextFlipped = [...flipped, index];
     setFlipped(nextFlipped);
-    sound.play('tick');
     if (nextFlipped.length === 2) {
       setMoves(current => current + 1);
       if (cards[nextFlipped[0]].pair === cards[nextFlipped[1]].pair) {
@@ -81,7 +74,6 @@ function MemoryMatch() {
         setFlipped([]);
         setCombo(current => current + 1);
         setMatchBurst(current => current + 1);
-        sound.play('match');
       } else {
         setCombo(0);
       }
@@ -128,15 +120,6 @@ function MemoryMatch() {
             </span>
             {combo > 1 && <motion.span key={combo} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="ml-2 inline-block text-accent">COMBO ×{combo}</motion.span>}
           </div>
-          <button
-            type="button"
-            onClick={sound.toggle}
-            aria-label={sound.enabled ? 'Turn sound off' : 'Turn sound on'}
-            aria-pressed={sound.enabled}
-            className="rounded-full border border-ink/10 dark:border-white/10 p-2 text-accent"
-          >
-            {sound.enabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
-          </button>
           <button
             type="button"
             onClick={restart}
@@ -214,14 +197,12 @@ function TicTacToe() {
       rotate: Math.atan2(deltaY, deltaX) * (180 / Math.PI),
     };
   })() : undefined;
-  const sound = useGameSound();
 
   const play = (index: number) => {
     if (board[index] || winner || isDraw) return;
     const nextBoard = [...board];
     nextBoard[index] = nextMark;
     setBoard(nextBoard);
-    sound.play('tick');
     setNextMark(nextMark === 'X' ? 'O' : 'X');
   };
 
@@ -241,16 +222,6 @@ function TicTacToe() {
           <p className="text-xs font-mono uppercase tracking-[0.2em] text-accent">Tic-Tac-Toe</p>
           <p className="mt-1 text-sm opacity-60">Two players, one board. Take turns on this device.</p>
         </div>
-        <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={sound.toggle}
-          aria-label={sound.enabled ? 'Turn sound off' : 'Turn sound on'}
-          aria-pressed={sound.enabled}
-          className="rounded-full border border-ink/10 dark:border-white/10 p-2 text-accent"
-        >
-          {sound.enabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
-        </button>
         <button
           type="button"
           onClick={restart}
@@ -258,7 +229,6 @@ function TicTacToe() {
         >
           <RotateCcw size={14} /> New game
         </button>
-        </div>
       </div>
 
       <p className="mb-4 text-center font-serif text-lg" aria-live="polite">
