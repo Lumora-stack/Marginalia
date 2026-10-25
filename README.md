@@ -25,10 +25,10 @@ The gallery is divided into curated exhibition rooms:
 
 ## ✨ Experience Highlights
 
-- **🌌 Interactive 3D Ambient Hero** — Real-time Three.js floating sculptures and golden particles responding to your cursor.
+- **🌌 Interactive Ambient Hero** — Real-time WebGL Aurora and golden particles responding to your cursor.
 - **🖼️ Fullscreen Touch Lightbox** — Inspect artworks in detail with touch swipe navigation on phones and arrow keys on desktop.
-- **🖌️ Three gallery views** — Browse masonry, carousel, or a lazy-loaded orbitable 3D gallery wall with date sorting.
-- **🏛️ Cinematic museum flow** — A 3D hero, drag-scroll curated rooms, shared room-cover transitions, and smooth scroll on supported devices.
+- **🖌️ Exhibition Gallery Views** — Browse masonry or carousel display modes with date sorting.
+- **🏛️ Cinematic Museum Flow** — Ambient hero, drag-scroll curated rooms, shared room-cover transitions, and smooth scroll on supported devices.
 - **🌓 Dark & Light Atmosphere** — Toggle between a deep cinematic museum theme and a warm paper aesthetic.
 - **📱 Responsive, motion-aware experience** — Mobile-friendly fallbacks, reduced-motion support, and installable PWA support.
 - **🎯 Dynamic Custom Cursor** — Interactive desktop cursor with spring physics and visual cues.
@@ -38,7 +38,7 @@ The gallery is divided into curated exhibition rooms:
 ## 🛠️ Built With
 
 - **Frontend:** React 19, TypeScript, Vite
-- **3D & Motion:** Three.js, React Three Fiber, Drei, Framer Motion, GSAP ScrollTrigger, Lenis
+- **Motion & Shader Effects:** React Bits, Framer Motion, GSAP ScrollTrigger, Lenis
 - **Styling:** Tailwind CSS
 - **Backend & Storage:** Supabase (Auth, Database, Storage)
 - **Deployment:** Vercel

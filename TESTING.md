@@ -17,7 +17,7 @@
 4. Use the footer marquee, FX quality toggle, sound toggle, and back-to-top control. Confirm each remains keyboard accessible.
 5. Switch between dark and light themes on Home, all six collections, Games, About, Admin, and 404. Confirm text, gold accents, card borders, profile card, cursor, focus rings, and navigation remain legible.
 6. Enable reduced motion in the operating system. Confirm the content is visible immediately, motion effects are reduced, and menus, galleries, uploads, and games still work.
-7. In browser dev tools, enable Save-Data or throttle to 3G. Confirm the CSS hero poster displays without loading the hero 3D scene.
+7. In browser dev tools, enable Save-Data or throttle to 3G. Confirm the CSS hero poster displays without loading heavy hero canvas shaders.
 
 ## Navigation, mobile, and responsive layout
 

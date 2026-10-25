@@ -29,6 +29,11 @@
     scroll-behavior: smooth;
   }
 
+  html.lenis,
+  html.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
   body {
     @apply bg-paper text-ink font-sans;
     transition: background-color 0.25s ease, color 0.25s ease;

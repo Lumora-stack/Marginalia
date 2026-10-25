@@ -48,7 +48,7 @@ export default function Home() {
   const dragging = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
 
   useEffect(() => {
-    if (!qualityAtLeast(tier, 'high') || shouldReduceMotion || window.innerWidth < 1024) return
+    if (!qualityAtLeast(tier, 'high') || shouldReduceMotion) return
     let active = true
     let revert = () => {}
     void Promise.all([import('gsap'), import('gsap/ScrollTrigger')])
@@ -59,7 +59,8 @@ export default function Home() {
         gsap.registerPlugin(ScrollTrigger)
         const section = roomsSectionRef.current
         const rail = roomsRef.current
-        const context = gsap.context(() => {
+        const mm = gsap.matchMedia()
+        mm.add('(min-width: 1024px)', () => {
           const getDistance = () => Math.max(0, rail.scrollWidth - window.innerWidth + 56)
           gsap.to(rail, {
             x: () => -getDistance(),
@@ -74,9 +75,9 @@ export default function Home() {
               invalidateOnRefresh: true,
             },
           })
-        }, section)
+        })
         ScrollTrigger.refresh()
-        revert = () => context.revert()
+        revert = () => mm.revert()
       })
       .catch((error: unknown) => {
         if (active) console.error('Could not initialize the curated-rooms scroll animation:', error)
