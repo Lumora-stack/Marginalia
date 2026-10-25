@@ -21,12 +21,12 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative mt-24 border-t border-ink/10 dark:border-white/10 bg-paper/60 dark:bg-[#0c0c0e]/80 backdrop-blur-lg overflow-hidden">
+    <footer className="relative mt-[calc(var(--section-space)*0.25)] border-t border-ink/10 dark:border-white/10 bg-paper/60 dark:bg-[#0c0c0e]/80 backdrop-blur-lg overflow-hidden">
       {/* Decorative ambient glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-28 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-6 pt-16 pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
+      <div className="site-container pt-12 pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-[var(--content-gap)] mb-10">
           {/* Brand & Manifesto */}
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center gap-2">
@@ -120,7 +120,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div aria-hidden="true" className="mb-10 overflow-hidden border-y border-ink/10 dark:border-white/10 py-4">
+        <div aria-hidden="true" className="mb-8 overflow-hidden border-y border-ink/10 dark:border-white/10 py-4">
           <Suspense fallback={<p className="whitespace-nowrap font-serif text-4xl text-accent/25 sm:text-6xl">ART IS A WAY OF SEEING · ART IS A WAY OF SEEING ·</p>}>
             <ScrollVelocity
               texts={['ART IS A WAY OF SEEING']}

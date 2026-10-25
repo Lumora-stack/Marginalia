@@ -129,7 +129,7 @@ const Noise = ({
   const grainRef = useRef<HTMLDivElement>(null);
   const dustRef = useRef<HTMLCanvasElement>(null);
   const linesRef = useRef<HTMLDivElement>(null);
-  const urlRef = useRef('');
+  const urlRef = useRef<string | null>(null);
   const wakeRef = useRef<(() => void) | null>(null);
   const settings = {
     opacity: clamp(opacity, 0, 1),
@@ -140,7 +140,9 @@ const Noise = ({
     scratches: clamp(scratches, 0, 1)
   };
   const settingsRef = useRef(settings);
-  settingsRef.current = settings;
+  useEffect(() => {
+    settingsRef.current = settings;
+  });
   const blend = BLENDS.includes(blendMode) ? blendMode : 'normal';
 
   useEffect(() => {
@@ -157,6 +159,10 @@ const Noise = ({
     });
     return () => {
       alive = false;
+      if (urlRef.current) {
+        URL.revokeObjectURL(urlRef.current);
+        urlRef.current = null;
+      }
     };
   }, [contrast, colored]);
 
@@ -177,7 +183,7 @@ const Noise = ({
     let height = 1;
 
     const paintDust = (s: typeof settings, step: number) => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (s.dust <= 0 && s.scratches <= 0 && scratchList.length === 0) return;
@@ -235,7 +241,7 @@ const Noise = ({
     };
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       width = Math.max(1, root.clientWidth);
       height = Math.max(1, root.clientHeight);
       canvas.width = Math.round(width * dpr);
@@ -285,7 +291,7 @@ const Noise = ({
       resizeObserver.disconnect();
       visibility.disconnect();
       if (urlRef.current) URL.revokeObjectURL(urlRef.current);
-      urlRef.current = '';
+      urlRef.current = null;
     };
   }, []);
 

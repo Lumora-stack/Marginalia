@@ -1,12 +1,20 @@
 import { Moon, Sun } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-export default function ThemeToggle() {
+export default function ThemeToggle({ className = '' }: { className?: string }) {
   const [isDark, setIsDark] = useState(() =>
     typeof document !== 'undefined'
       ? document.documentElement.classList.contains('dark')
       : false
   );
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   const toggle = (event: React.MouseEvent<HTMLButtonElement>) => {
     const next = !isDark;
@@ -33,7 +41,7 @@ export default function ThemeToggle() {
   return (
     <button 
       onClick={toggle}
-      className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-ink/15 transition-colors hover:bg-ink/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent dark:border-white/15 dark:hover:bg-white/10 ${className}`}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} theme`}
       aria-pressed={isDark}
     >

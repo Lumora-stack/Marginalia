@@ -377,7 +377,7 @@ const ClickSpark = forwardRef<ClickSparkHandle, ClickSparkProps>(
           bottom: Math.min(clientY + reach + fall, window.innerHeight)
         };
         if (box.right - box.left < 1 || box.bottom - box.top < 1) return;
-        const ratio = Math.min(window.devicePixelRatio || 1, 2);
+        const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
         const canvas = document.createElement('canvas');
         canvas.width = Math.ceil((box.right - box.left) * ratio);
         canvas.height = Math.ceil((box.bottom - box.top) * ratio);

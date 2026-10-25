@@ -39,7 +39,7 @@ export default function Section() {
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className={`section-room section-room-${id} pb-12`}
+      className={`section-room section-room-${id}`}
     >
       {/* Breadcrumb / Back */}
       <div className="mb-8">
@@ -75,7 +75,7 @@ export default function Section() {
       </motion.div>
 
       {/* Section Header */}
-      <div className="mb-12 md:mb-16">
+      <div className="mb-[var(--heading-gap)]">
         <div className="flex items-center gap-3 mb-4">
           <Sparkles size={14} className="text-accent" />
           <p className="text-xs font-mono tracking-[0.3em] uppercase text-accent font-semibold">
@@ -132,13 +132,13 @@ export default function Section() {
       )}
 
       {isGameCollection && !selectedMode ? (
-        <Suspense fallback={<div className="grid grid-cols-1 gap-5 md:grid-cols-2"><div className="h-64 rounded-3xl bg-ink/5 dark:bg-white/5" /><div className="h-64 rounded-3xl bg-ink/5 dark:bg-white/5" /></div>}>
+        <Suspense fallback={<div className="grid grid-cols-1 gap-[var(--content-gap)] md:grid-cols-2"><div className="h-64 rounded-3xl bg-ink/5 dark:bg-white/5" /><div className="h-64 rounded-3xl bg-ink/5 dark:bg-white/5" /></div>}>
           <AnimatedContent
             trigger="mount"
             distance={24}
             duration={0.65}
             stagger={0.12}
-            className="grid grid-cols-1 gap-5 md:grid-cols-2"
+            className="grid grid-cols-1 gap-[var(--content-gap)] md:grid-cols-2"
           >
             {category.gameModes?.map(gameMode => (
               <Link

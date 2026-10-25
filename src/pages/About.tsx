@@ -49,11 +49,11 @@ export default function About() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: 'easeOut' }}
-      className="max-w-4xl mx-auto pb-16"
+      className="w-full"
     >
 
       {/* ── PAGE HEADER ── */}
-      <div className="mb-16">
+      <div className="mb-[var(--heading-gap)]">
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -80,7 +80,7 @@ export default function About() {
       </div>
 
       {/* ── INTRO PARAGRAPHS ── */}
-      <section className="mb-20 grid items-center gap-10 md:grid-cols-[minmax(0,1fr)_320px]">
+      <section className="mb-[var(--section-space)] grid items-center gap-[var(--content-gap)] md:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
         <div className="space-y-6">
           {[
             { large: true, text: 'Creating art from tiny feelings, peaceful thoughts, and a little bit of imagination — straight from Chennai 🤍.' },
@@ -124,7 +124,7 @@ export default function About() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.7 }}
-        className="mb-24 p-8 md:p-10 rounded-3xl border border-ink/10 dark:border-white/10 bg-ink/3 dark:bg-white/3 relative overflow-hidden"
+        className="mb-[var(--section-space)] p-8 md:p-10 rounded-3xl border border-ink/10 dark:border-white/10 bg-ink/3 dark:bg-white/3 relative overflow-hidden"
       >
         {/* Background glow */}
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-accent/10 rounded-full blur-3xl" />

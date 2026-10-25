@@ -136,7 +136,7 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
   // Skeleton loading
   if (loading) {
     return (
-      <div className="columns-2 lg:columns-3 gap-3 md:gap-5 space-y-3 md:space-y-5">
+      <div className="columns-2 lg:columns-3 gap-[var(--content-gap)]">
         {[1, 2, 3, 4, 5, 6].map(i => (
           <div
             key={i}
@@ -151,7 +151,7 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
   // Error state
   if (error) {
     return (
-      <div className="py-24 text-center space-y-4">
+      <div className="py-[calc(var(--section-space)*0.75)] text-center space-y-4">
         <AlertCircle size={32} className="mx-auto text-red-400 opacity-80" />
         <p className="font-serif text-lg">{error}</p>
         <button
@@ -170,7 +170,7 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="py-28 flex flex-col items-center justify-center text-center gap-6"
+        className="py-[calc(var(--section-space)*0.75)] flex flex-col items-center justify-center text-center gap-6"
       >
         <div className="w-20 h-20 rounded-full bg-ink/5 dark:bg-white/5 flex items-center justify-center border border-ink/10 dark:border-white/10">
           <ImageOff size={28} className="opacity-30" />
@@ -293,7 +293,7 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, transition: { duration: 0.15 } }}
               transition={{ duration: 0.4, delay: Math.min(i, 6) * 0.05, ease: 'easeOut' }}
-              className="break-inside-avoid mb-3 md:mb-5 cursor-zoom-in group transform-gpu"
+              className="break-inside-avoid mb-[var(--content-gap)] cursor-zoom-in group transform-gpu"
               data-cursor-label="VIEW"
               onClick={() => setLightboxIndex(i)}
             >

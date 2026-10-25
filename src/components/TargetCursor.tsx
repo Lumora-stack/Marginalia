@@ -375,7 +375,7 @@ const TargetCursor = ({
   return createPortal(
     <div
       ref={rootRef}
-      className="pointer-events-none fixed inset-0 z-[2147483647]"
+      className="target-cursor-layer pointer-events-none fixed inset-0 z-[2147483647]"
       style={{ mixBlendMode: blendMode, opacity: 0 }}
       aria-hidden="true"
     >

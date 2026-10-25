@@ -6,7 +6,6 @@ import React, {
   useLayoutEffect,
   useMemo,
   useRef,
-  useState,
   type ReactNode,
   type RefObject
 } from 'react';
@@ -150,10 +149,6 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
       )
     );
   }, [text, splitBy]);
-
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   useIsomorphicLayoutEffect(() => {
     const el = containerRef.current;
@@ -313,7 +308,6 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
 
     return () => mm.revert();
   }, [
-    mounted,
     scrollContainerRef,
     text,
     splitBy,

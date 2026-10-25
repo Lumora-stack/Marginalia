@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
 import { LogOut, Sparkles } from 'lucide-react';
 import { lazy, Suspense, useCallback, useState, useEffect, useRef, type MouseEvent as ReactMouseEvent } from 'react';
@@ -12,7 +12,7 @@ const StaggeredMenu = lazy(() => import('./StaggeredMenu'));
 const DecryptedText = lazy(() => import('./DecryptedText'));
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [menuOpenPath, setMenuOpenPath] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -21,8 +21,10 @@ export default function Navbar() {
   const colors = useThemeColors();
   const shouldReduceMotion = useReducedMotion();
   const navigate = useNavigate();
-  const openMenu = useCallback(() => setIsOpen(true), []);
-  const closeMenu = useCallback(() => setIsOpen(false), []);
+  const location = useLocation();
+  const isOpen = menuOpenPath === location.pathname;
+  const openMenu = useCallback(() => setMenuOpenPath(location.pathname), [location.pathname]);
+  const closeMenu = useCallback(() => setMenuOpenPath(null), []);
   const navigateFromMenu = useCallback((event: ReactMouseEvent<HTMLAnchorElement>, item: StaggeredMenuItem) => {
     event.preventDefault();
     navigate(item.link);
@@ -30,28 +32,33 @@ export default function Navbar() {
 
   // Scroll detection for dynamic blur
   useEffect(() => {
+    let raf = 0;
     const onScroll = () => {
-      const currentScrollY = window.scrollY;
-      setScrolled(currentScrollY > 40);
-      setHidden(currentScrollY > 120 && currentScrollY > lastScrollY.current + 4);
-      if (currentScrollY < 80 || currentScrollY < lastScrollY.current - 4) setHidden(false);
-      lastScrollY.current = currentScrollY;
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const currentScrollY = window.scrollY;
+        const nextScrolled = currentScrollY > 40;
+        setScrolled(prev => (prev !== nextScrolled ? nextScrolled : prev));
+
+        let nextHidden: boolean | null = null;
+        if (currentScrollY > 120 && currentScrollY > lastScrollY.current + 4) {
+          nextHidden = true;
+        } else if (currentScrollY < 80 || currentScrollY < lastScrollY.current - 4) {
+          nextHidden = false;
+        }
+        if (nextHidden !== null) {
+          setHidden(prev => (prev !== nextHidden ? nextHidden : prev));
+        }
+        lastScrollY.current = currentScrollY;
+      });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  // Lock body scroll when mobile menu is active
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
     return () => {
-      document.body.style.overflow = '';
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
     };
-  }, [isOpen]);
+  }, []);
 
   // Auth detection
   useEffect(() => {
@@ -115,24 +122,48 @@ export default function Navbar() {
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         className={`sticky top-0 z-40 w-full transition-all duration-500 ${navClass}`}
       >
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="site-container navbar-inner flex items-center justify-between gap-3 pt-[env(safe-area-inset-top)]">
           {/* Logo */}
           <Link
             to="/"
-            className="font-serif text-xl tracking-tight font-medium hover:text-accent transition-colors duration-300 relative group flex items-center gap-2"
+            className="group relative flex min-w-0 shrink items-center gap-2 font-serif text-xl font-medium tracking-tight transition-colors duration-300 hover:text-accent md:shrink-0"
           >
-            <Sparkles size={16} className="text-accent opacity-80 group-hover:rotate-45 transition-transform duration-500" />
-            <span>Artville</span>
+            <Sparkles size={16} className="shrink-0 text-accent opacity-80 transition-transform duration-500 group-hover:rotate-45" />
+            <span className="truncate">Artville</span>
             <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-accent group-hover:w-full transition-all duration-300" />
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-7">
-            {CATEGORIES.map(s => (
+          <div className="flex min-w-0 shrink-0 items-center gap-2">
+            <nav className="hidden items-center gap-5 lg:gap-7 min-[1100px]:flex">
+              {CATEGORIES.map(s => (
+                <NavLink
+                  key={s.id}
+                  to={`/section/${s.id}`}
+                  aria-label={s.label}
+                  className={({ isActive }) =>
+                    `relative whitespace-nowrap text-xs font-mono tracking-[0.14em] uppercase transition-colors duration-200 py-1 ${
+                      isActive ? 'text-accent font-semibold' : 'opacity-65 hover:opacity-100 hover:text-accent'
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      {renderNavLabel(s.label)}
+                      {isActive && (
+                        <motion.div
+                          layoutId="nav-indicator"
+                          className="absolute -bottom-1 left-0 right-0 h-[2px] bg-accent"
+                          transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                        />
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              ))}
+
               <NavLink
-                key={s.id}
-                to={`/section/${s.id}`}
-                aria-label={s.label}
+                to="/about"
+                aria-label="About"
                 className={({ isActive }) =>
                   `relative text-xs font-mono tracking-[0.14em] uppercase transition-colors duration-200 py-1 ${
                     isActive ? 'text-accent font-semibold' : 'opacity-65 hover:opacity-100 hover:text-accent'
@@ -141,7 +172,7 @@ export default function Navbar() {
               >
                 {({ isActive }) => (
                   <>
-                    {renderNavLabel(s.label)}
+                    {renderNavLabel('About')}
                     {isActive && (
                       <motion.div
                         layoutId="nav-indicator"
@@ -152,74 +183,44 @@ export default function Navbar() {
                   </>
                 )}
               </NavLink>
-            ))}
 
-            <NavLink
-              to="/about"
-              aria-label="About"
-              className={({ isActive }) =>
-                `relative text-xs font-mono tracking-[0.14em] uppercase transition-colors duration-200 py-1 ${
-                  isActive ? 'text-accent font-semibold' : 'opacity-65 hover:opacity-100 hover:text-accent'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {renderNavLabel('About')}
-                  {isActive && (
-                    <motion.div
-                      layoutId="nav-indicator"
-                      className="absolute -bottom-1 left-0 right-0 h-[2px] bg-accent"
-                      transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                    />
-                  )}
-                </>
+              {isOwner && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  onClick={handleLogout}
+                  title="Logout"
+                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-red-500/20 px-3 py-1.5 text-xs font-mono tracking-[0.1em] uppercase text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-500"
+                >
+                  <LogOut size={13} />
+                  <span>Logout</span>
+                </motion.button>
               )}
-            </NavLink>
+            </nav>
 
             <ThemeToggle />
 
-            {isOwner && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                onClick={handleLogout}
-                title="Logout"
-                className="flex items-center gap-1.5 text-xs font-mono tracking-[0.1em] uppercase text-red-400 hover:text-red-500 transition-colors px-3 py-1.5 rounded-full hover:bg-red-500/10 border border-red-500/20"
-              >
-                <LogOut size={13} />
-                <span>Logout</span>
-              </motion.button>
-            )}
-          </nav>
-
-          {/* Mobile controls */}
-          <div className="flex md:hidden items-center gap-3">
-            <ThemeToggle />
             {isOwner && (
               <button
                 onClick={handleLogout}
                 title="Logout"
                 aria-label="Log out"
-                className="p-2 text-red-400 hover:text-red-500 transition-colors"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-red-500/20 text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-500 min-[1100px]:hidden"
               >
                 <LogOut size={18} />
               </button>
             )}
-            <div className="relative h-11 w-11">
+
+            <div className="relative h-11 w-11 min-[1100px]:hidden">
               <Suspense fallback={<button type="button" aria-label="Open menu" className="h-11 w-11 rounded-full border border-accent/30 text-accent">Menu</button>}>
                 <StaggeredMenu
-                  className="mobile-staggered-menu"
-                  isFixed={false}
+                  open={isOpen}
                   items={menuItems}
-                  colors={colors.isDark ? ['#0d0d0f', '#8a6a20', '#d4af37'] : ['#f7f5f1', '#9a7b1f', '#e0c76c']}
-                  displaySocials={false}
-                  displayItemNumbering
                   menuButtonColor={colors.accent}
-                  openMenuButtonColor={colors.isDark ? '#f0ede6' : '#29271f'}
                   accentColor={colors.accent}
                   panelBackground={colors.background}
                   panelTextColor={colors.isDark ? '#f0ede6' : '#29271f'}
+                  headerContent={<ThemeToggle />}
                   onMenuOpen={openMenu}
                   onMenuClose={closeMenu}
                   onItemClick={navigateFromMenu}

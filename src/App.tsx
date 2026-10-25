@@ -18,7 +18,7 @@ function RouteLoading() {
   const [timedOut, setTimedOut] = useState(false);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => setTimedOut(true), 8000);
+    const timeout = window.setTimeout(() => setTimedOut(true), 1500);
     return () => window.clearTimeout(timeout);
   }, []);
 

@@ -59,7 +59,7 @@ export default function Layout() {
       <MuseumPreloader />
       <Navbar />
 
-      <main className={`flex-1 w-full ${isHome ? 'max-w-7xl mx-auto px-6' : 'max-w-7xl mx-auto px-6 py-12'}`}>
+      <main className={`site-container flex-1 w-full ${isHome ? '' : 'pt-[var(--section-space)] pb-[calc(var(--section-space)*0.25)]'}`}>
         <LayoutGroup id="museum-routes">
           <Outlet />
         </LayoutGroup>

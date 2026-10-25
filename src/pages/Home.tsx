@@ -43,50 +43,15 @@ export default function Home() {
   const [heroEffectsReady, setHeroEffectsReady] = useState(false);
   const heroSectionRef = useRef<HTMLElement>(null);
   const heroEffectsActive = useCanvasActivity(heroSectionRef);
-  const roomsRef = useRef<HTMLDivElement>(null);
-  const roomsSectionRef = useRef<HTMLElement>(null);
-  const dragging = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
+  const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
-    if (!qualityAtLeast(tier, 'high') || shouldReduceMotion) return
-    let active = true
-    let revert = () => {}
-    void Promise.all([import('gsap'), import('gsap/ScrollTrigger')])
-      .then(([gsapModule, triggerModule]) => {
-        if (!active || !roomsRef.current || !roomsSectionRef.current) return
-        const gsap = gsapModule.default
-        const { ScrollTrigger } = triggerModule
-        gsap.registerPlugin(ScrollTrigger)
-        const section = roomsSectionRef.current
-        const rail = roomsRef.current
-        const mm = gsap.matchMedia()
-        mm.add('(min-width: 1024px)', () => {
-          const getDistance = () => Math.max(0, rail.scrollWidth - window.innerWidth + 56)
-          gsap.to(rail, {
-            x: () => -getDistance(),
-            ease: 'none',
-            scrollTrigger: {
-              trigger: section,
-              start: 'top top',
-              end: () => `+=${getDistance()}`,
-              scrub: 1,
-              pin: true,
-              anticipatePin: 1,
-              invalidateOnRefresh: true,
-            },
-          })
-        })
-        ScrollTrigger.refresh()
-        revert = () => mm.revert()
-      })
-      .catch((error: unknown) => {
-        if (active) console.error('Could not initialize the curated-rooms scroll animation:', error)
-      })
-    return () => {
-      active = false
-      revert()
-    }
-  }, [shouldReduceMotion, tier])
+    const touchQuery = window.matchMedia('(hover: none), (pointer: coarse)');
+    const updateTouch = () => setIsTouch(touchQuery.matches);
+    updateTouch();
+    touchQuery.addEventListener('change', updateTouch);
+    return () => touchQuery.removeEventListener('change', updateTouch);
+  }, []);
 
   useEffect(() => {
     if (!enableHeroEffects) return;
@@ -116,30 +81,8 @@ export default function Home() {
     };
   }, [enableHeroEffects]);
 
-  const startRoomDrag = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.pointerType !== 'mouse' || e.button !== 0 || !roomsRef.current) return;
-    dragging.current = {
-      active: true,
-      startX: e.clientX,
-      scrollLeft: roomsRef.current.scrollLeft,
-      moved: false,
-    };
-  };
-
-  const moveRoomDrag = (e: React.PointerEvent<HTMLDivElement>) => {
-    const drag = dragging.current;
-    if (!drag.active || !roomsRef.current) return;
-    const delta = e.clientX - drag.startX;
-    if (Math.abs(delta) > 5) drag.moved = true;
-    roomsRef.current.scrollLeft = drag.scrollLeft - delta;
-  };
-
-  const stopRoomDrag = () => {
-    dragging.current.active = false;
-  };
-
   const manifesto = (
-    <div className="my-12 grid grid-cols-2 gap-6 border-y border-ink/10 py-12 text-center font-mono text-xs dark:border-white/10 sm:grid-cols-4">
+    <div className="my-[calc(var(--section-space)*0.35)] grid grid-cols-2 gap-6 border-y border-ink/10 py-[calc(var(--section-space)*0.25)] text-center font-mono text-xs dark:border-white/10 sm:grid-cols-4">
       <div>
         <p className="mb-1 font-serif text-2xl text-accent">06</p>
         <p className="text-[10px] uppercase tracking-widest opacity-50">Curated Rooms</p>
@@ -160,13 +103,13 @@ export default function Home() {
   );
 
   return (
-    <div className="flex flex-col gap-0 pb-16">
+    <div className="flex flex-col gap-0">
 
       {/* ─── HERO ─── */}
       <section
         id="home-hero"
         ref={heroSectionRef}
-        className="hero-viewport relative min-h-[85vh] md:min-h-screen flex items-center justify-center -mx-6 overflow-hidden select-none"
+        className="hero-viewport relative min-h-[100dvh] flex items-center justify-center -mx-[var(--container-gutter)] overflow-hidden select-none"
       >
         <div
           aria-hidden="true"
@@ -336,7 +279,7 @@ export default function Home() {
         </motion.div>
       </section>
 
-      <div aria-hidden="true" className="-mx-6 my-8 overflow-hidden border-y border-accent/15 py-4">
+      <div aria-hidden="true" className="-mx-[var(--container-gutter)] my-[calc(var(--section-space)*0.35)] overflow-hidden border-y border-accent/15 py-4">
         <Suspense fallback={<div className="whitespace-nowrap py-1 font-serif text-3xl text-accent sm:text-5xl">PENCIL · PIXEL · SKETCH · DOODLE · CRAFT · PLAY ·</div>}>
           <RoomScrollVelocity
             texts={['PENCIL · PIXEL · SKETCH · DOODLE · CRAFT · PLAY']}
@@ -371,7 +314,7 @@ export default function Home() {
       </Suspense>
 
       {/* ─── SECTION INTRO ─── */}
-      <div id="curated-rooms" className="pt-12 pb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 scroll-mt-24">
+      <div id="curated-rooms" className="pt-[calc(var(--section-space)*0.25)] pb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 scroll-mt-24">
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-8 h-px bg-accent" />
@@ -415,29 +358,15 @@ export default function Home() {
       </div>
 
       {/* ─── BENTO CATEGORIES GRID ─── */}
-      <section ref={roomsSectionRef} className="pb-16">
+      <section className="pb-[var(--section-space)]">
         <div
-          ref={roomsRef}
-          className="museum-room-rail flex gap-4 md:gap-6 overflow-x-auto snap-x snap-mandatory pb-6 cursor-grab active:cursor-grabbing"
-          onPointerDown={qualityAtLeast(tier, 'high') && window.innerWidth >= 1024 ? undefined : startRoomDrag}
-          onPointerMove={qualityAtLeast(tier, 'high') && window.innerWidth >= 1024 ? undefined : moveRoomDrag}
-          onPointerUp={qualityAtLeast(tier, 'high') && window.innerWidth >= 1024 ? undefined : stopRoomDrag}
-          onPointerCancel={qualityAtLeast(tier, 'high') && window.innerWidth >= 1024 ? undefined : stopRoomDrag}
-          onClickCapture={e => {
-            if (dragging.current.moved) {
-              e.preventDefault();
-              e.stopPropagation();
-              dragging.current.moved = false;
-            }
-          }}
-          data-cursor="drag"
-          data-cursor-label="DRAG"
-          aria-label="Curated rooms, horizontally scrollable"
+          className="museum-room-grid grid grid-cols-1 gap-4 min-[768px]:grid-cols-2 min-[1100px]:grid-cols-3 md:gap-6"
+          aria-label="Curated rooms"
         >
           {CATEGORIES.map((section, i) => (
             <motion.div
               key={section.id}
-              className="w-[84vw] sm:w-[66vw] lg:w-[48vw] xl:w-[42vw] max-w-[600px] h-[26rem] md:h-[34rem] flex-none snap-start"
+              className="h-[250px] min-[768px]:h-[300px]"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
@@ -447,14 +376,7 @@ export default function Home() {
                 to={`/section/${section.id}`}
                 layoutId={`room-cover-${section.id}`}
                 aria-label={`Explore ${section.label} exhibition`}
-                data-cursor-label="DRAG"
-                className="group block h-full w-full overflow-hidden rounded-3xl border border-ink/10 bg-ink shadow-lg dark:border-white/10"
-                onClick={e => {
-                  if (dragging.current.moved) {
-                    e.preventDefault();
-                    dragging.current.moved = false;
-                  }
-                }}
+                className="room-card-link group relative isolate block h-full w-full overflow-hidden rounded-3xl border border-ink/10 bg-ink shadow-lg dark:border-white/10"
               >
                 <Suspense
                   fallback={
@@ -485,16 +407,16 @@ export default function Home() {
                     imageWidth="100%"
                     imageHeight="100%"
                     rotateAmplitude={
-                      shouldReduceMotion || tier === 'low'
+                      isTouch || shouldReduceMotion || tier === 'low'
                         ? 0
                         : tier === 'medium' ? 5 : tier === 'ultra' ? 12 : 8
                     }
-                    scaleOnHover={shouldReduceMotion || tier === 'low' ? 1 : 1.025}
+                    scaleOnHover={isTouch || shouldReduceMotion || tier === 'low' ? 1 : 1.025}
                     smoothness={0.72}
-                    glare={shouldReduceMotion || tier === 'low' ? 0 : tier === 'medium' ? 0.16 : 0.28}
+                    glare={isTouch || shouldReduceMotion || tier === 'low' ? 0 : tier === 'medium' ? 0.16 : 0.28}
                     glareColor={colors.accent}
-                    shadow={shouldReduceMotion || tier === 'low' ? 0 : 0.28}
-                    parallax={shouldReduceMotion || tier === 'low' ? 0 : 0.7}
+                    shadow={isTouch || shouldReduceMotion || tier === 'low' ? 0 : 0.28}
+                    parallax={isTouch || shouldReduceMotion || tier === 'low' ? 0 : 0.7}
                     gyroscope={false}
                     intro={false}
                     showTooltip={false}
@@ -517,7 +439,7 @@ export default function Home() {
                         <h3 className="relative mb-2 font-serif text-2xl leading-tight text-white transition-colors duration-300 group-hover:text-accent md:text-3xl">
                           {section.label}
                         </h3>
-                        <p className="relative line-clamp-2 font-sans text-xs leading-relaxed text-white/60 sm:text-sm">
+                        <p className="relative line-clamp-1 font-sans text-xs leading-relaxed text-white/60 sm:text-sm">
                           {section.desc}
                         </p>
                         <span aria-hidden="true" className="mt-4 block h-0.5 w-0 bg-accent transition-all duration-500 ease-out group-hover:w-10" />
