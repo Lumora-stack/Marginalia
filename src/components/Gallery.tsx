@@ -53,7 +53,8 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
   const [linkDraft, setLinkDraft] = useState('');
   const [linkEditError, setLinkEditError] = useState<string | null>(null);
   const [savingLink, setSavingLink] = useState(false);
-  const isGamesGallery = sectionId === 'games' || sectionId.startsWith('games-');
+  const isGamesHub = sectionId === 'games-hub';
+  const isGamesGallery = isGamesHub || sectionId === 'games' || sectionId.startsWith('games-');
   const visibleCount = pagination.sectionId === sectionId && pagination.sortOrder === sortOrder
     ? pagination.count
     : 36;
@@ -92,11 +93,11 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
 
     const fetchArtworks = async () => {
       try {
-        const { data, error: fetchErr } = await supabase
-          .from('artworks')
-          .select('*')
-          .eq('section', sectionId)
-          .order('created_at', { ascending: false });
+        let query = supabase.from('artworks').select('*');
+        query = isGamesHub
+          ? query.in('section', ['games-singleplayer', 'games-multiplayer'])
+          : query.eq('section', sectionId);
+        const { data, error: fetchErr } = await query.order('created_at', { ascending: false });
 
         if (fetchErr) throw fetchErr;
         if (active) setArtworks((data as Artwork[] | null) ?? []);
@@ -113,7 +114,7 @@ export default function Gallery({ sectionId }: { sectionId: string }) {
 
     void fetchArtworks();
     return () => { active = false; };
-  }, [sectionId]);
+  }, [isGamesHub, sectionId]);
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();

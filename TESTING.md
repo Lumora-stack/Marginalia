@@ -28,6 +28,16 @@
 6. Enable reduced motion in the operating system. Confirm the content is visible immediately, motion effects are reduced, and menus, galleries, uploads, and games still work.
 7. In browser dev tools, enable Save-Data or throttle to 3G. Confirm the CSS hero poster displays without loading heavy hero canvas shaders.
 
+## Games hub and game modes
+
+1. Open Games in light and dark themes. Confirm both mode cards render fully, have equal height, readable gold accents, working previews, score chips, and visible keyboard focus.
+2. At desktop width, confirm the cards sit side by side with a subtle TiltedCard hover; at mobile width, confirm they stack and use tap feedback without tilt.
+3. Follow each card by mouse, touch, and keyboard. Confirm Memory Match difficulty options use 4×3, 4×4, and 6×4 boards; matching, move count, timer, restart, win dialog, and Play again all work.
+4. Complete Memory Match records and change difficulty. Confirm the best time and fewest moves persist after refresh; before a record exists, the hub displays “No record yet”.
+5. Play Tic-Tac-Toe through X wins, O wins, and a draw. Confirm names, turns, the animated win line, New round, Reset scores, and the X/O/draw tally work and persist after refresh.
+6. Confirm the Back to games link returns from each game, the hub lists uploaded Games from both modes, and linked uploads open in a new tab.
+7. Enable reduced motion. Confirm previews remain visible as static illustrations and gameplay and navigation remain usable.
+
 ## Navigation, mobile, and responsive layout
 
 1. In both themes at 320px, 375px, and 390px widths, confirm the header has one theme control and one menu trigger, each at least 44px square, with no overlap or horizontal overflow.

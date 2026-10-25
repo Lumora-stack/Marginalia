@@ -455,7 +455,148 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
 
+  .games-memory-preview {
+    display: grid;
+    width: min(100%, 230px);
+    aspect-ratio: 1.45;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+    perspective: 500px;
+  }
+
+  .games-preview-card {
+    display: grid;
+    place-items: center;
+    border: 1px solid rgb(var(--accent-rgb) / 0.3);
+    border-radius: 8px;
+    background: rgb(var(--accent-rgb) / 0.06);
+    color: rgb(var(--accent-rgb));
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    transform-style: preserve-3d;
+    animation: games-preview-flip 4.2s ease-in-out infinite;
+  }
+
+  .games-preview-card-2,
+  .games-preview-card-7 {
+    border-color: rgb(var(--accent-rgb) / 0.72);
+    background: rgb(var(--accent-rgb) / 0.16);
+    box-shadow: 0 0 18px rgb(var(--accent-rgb) / 0.18);
+  }
+
+  .games-preview-card-2 { animation-delay: 0.25s; }
+  .games-preview-card-3 { animation-delay: 0.5s; }
+  .games-preview-card-4 { animation-delay: 0.75s; }
+  .games-preview-card-5 { animation-delay: 1s; }
+  .games-preview-card-6 { animation-delay: 1.25s; }
+  .games-preview-card-7 { animation-delay: 1.5s; }
+  .games-preview-card-8 { animation-delay: 1.75s; }
+  .games-preview-card-9 { animation-delay: 2s; }
+
+  .games-tic-preview {
+    width: 134px;
+    max-width: 100%;
+    overflow: visible;
+    color: rgb(var(--accent-rgb));
+  }
+
+  .games-tic-grid {
+    fill: none;
+    stroke: rgb(var(--accent-rgb) / 0.36);
+    stroke-width: 2;
+  }
+
+  .games-tic-mark,
+  .games-tic-win-line {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 4;
+  }
+
+  .games-tic-x,
+  .games-tic-o {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: games-tic-draw 4.2s ease-in-out infinite;
+  }
+
+  .games-tic-x-two { animation-delay: 0.7s; }
+  .games-tic-o-one { animation-delay: 0.35s; }
+  .games-tic-o-two { animation-delay: 1.05s; }
+
+  .games-tic-win-line {
+    stroke: rgb(var(--accent-rgb));
+    stroke-width: 3;
+    stroke-dasharray: 144;
+    stroke-dashoffset: 144;
+    animation: games-tic-win 4.2s ease-in-out infinite;
+    animation-delay: 1.3s;
+  }
+
+  .games-win-line {
+    stroke-dasharray: 400;
+    stroke-dashoffset: 400;
+    animation: games-win-draw 400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .games-mode-link:active {
+    transform: scale(0.98);
+  }
+
+  .games-mode-link:focus-visible {
+    position: relative;
+    z-index: 1;
+  }
+
+  @keyframes games-preview-flip {
+    0%, 10%, 100% { transform: rotateY(0deg); }
+    15%, 25% { transform: rotateY(180deg); }
+  }
+
+  @keyframes games-tic-draw {
+    0%, 8% { stroke-dashoffset: 100; }
+    18%, 83% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: 100; }
+  }
+
+  @keyframes games-win-draw {
+    from { stroke-dashoffset: 400; }
+    to { stroke-dashoffset: 0; }
+  }
+
+  @keyframes games-tic-win {
+    0%, 32% { stroke-dashoffset: 144; }
+    43%, 78% { stroke-dashoffset: 0; }
+    90%, 100% { stroke-dashoffset: 144; }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .group:hover .games-preview-card,
+    .group:hover .games-tic-mark,
+    .group:hover .games-tic-win-line {
+      animation-duration: 2.1s;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .games-preview-card,
+    .games-tic-mark,
+    .games-tic-win-line {
+      animation: none !important;
+      stroke-dashoffset: 0;
+      transform: none;
+    }
+
+    .games-win-line {
+      animation: none;
+      stroke-dashoffset: 0;
+    }
+  }
+
+@media (prefers-reduced-motion: reduce) {
   .mobile-menu-overlay[data-open="true"] .mobile-menu-item {
     animation-delay: 0s !important;
   }

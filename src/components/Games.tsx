@@ -1,23 +1,61 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { RotateCcw } from 'lucide-react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowLeft, RotateCcw, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import type { GameMode } from '../lib/categories';
-const Counter = lazy(() => import('./Counter'));
-type MemoryCard = { pair: number; symbol: string };
+import type { ReactNode } from 'react';
 
-const MEMORY_SYMBOLS = ['🌙', '⭐', '🌸', '🦋', '🍀', '🎈', '🐚', '🍓'];
-const MEMORY_DECK: MemoryCard[] = MEMORY_SYMBOLS.flatMap((symbol, pair) => [
-  { pair, symbol },
-  { pair, symbol },
-]);
+const Counter = lazy(() => import('./Counter'));
+type Difficulty = 'easy' | 'medium' | 'hard';
+type MemoryCard = { pair: number; symbol: string };
+type MemoryRecord = { time: number; moves: number };
+type MemoryRecords = Partial<Record<Difficulty, MemoryRecord>>;
+type TicScores = { X: number; O: number; draws: number };
+type Mark = 'X' | 'O';
+
+const SYMBOLS = ['🌙', '⭐', '🌸', '🦋', '🍀', '🎈', '🐚', '🍓', '☀️', '🍄', '🪁', '🌿'];
+const DIFFICULTIES: Record<Difficulty, { label: string; columns: number; pairs: number }> = {
+  easy: { label: 'Easy · 4×3', columns: 4, pairs: 6 },
+  medium: { label: 'Medium · 4×4', columns: 4, pairs: 8 },
+  hard: { label: 'Hard · 6×4', columns: 6, pairs: 12 },
+};
+const MEMORY_RECORDS_KEY = 'artville-memory-records-v1';
+const TIC_SCORES_KEY = 'artville-tic-tac-toe-scores-v1';
 const WINNING_LINES = [
-  [0, 1, 2], [3, 4, 5], [6, 7, 8],
-  [0, 3, 6], [1, 4, 7], [2, 5, 8],
-  [0, 4, 8], [2, 4, 6],
+  { cells: [0, 1, 2], path: 'M 18 50 H 282' },
+  { cells: [3, 4, 5], path: 'M 18 150 H 282' },
+  { cells: [6, 7, 8], path: 'M 18 250 H 282' },
+  { cells: [0, 3, 6], path: 'M 50 18 V 282' },
+  { cells: [1, 4, 7], path: 'M 150 18 V 282' },
+  { cells: [2, 5, 8], path: 'M 250 18 V 282' },
+  { cells: [0, 4, 8], path: 'M 28 28 L 272 272' },
+  { cells: [2, 4, 6], path: 'M 272 28 L 28 272' },
 ];
 
-function shuffledDeck() {
-  const deck = [...MEMORY_DECK];
+function readStorage<T>(key: string, fallback: T): T {
+  try {
+    const value = window.localStorage.getItem(key);
+    return value ? { ...fallback, ...JSON.parse(value) } : fallback;
+  } catch (error) {
+    console.warn(`Could not read saved game data for ${key}:`, error);
+    return fallback;
+  }
+}
+
+function writeStorage(key: string, value: unknown) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.warn(`Could not save game data for ${key}:`, error);
+  }
+}
+
+function shuffledDeck(difficulty: Difficulty): MemoryCard[] {
+  const pairCount = DIFFICULTIES[difficulty].pairs;
+  const deck = SYMBOLS.slice(0, pairCount).flatMap((symbol, pair) => [
+    { pair, symbol },
+    { pair, symbol },
+  ]);
   for (let i = deck.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -25,16 +63,46 @@ function shuffledDeck() {
   return deck;
 }
 
+function formatTime(seconds: number) {
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
+function GameFrame({ children }: { children: ReactNode }) {
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+      className="relative rounded-3xl border border-ink/10 bg-ink/[0.025] p-5 dark:border-white/10 dark:bg-white/[0.025] sm:p-8"
+    >
+      {children}
+    </motion.section>
+  );
+}
+
+function BackToGames() {
+  return (
+    <Link
+      to="/section/games"
+      className="inline-flex min-h-11 items-center gap-2 rounded-full border border-accent/40 px-4 font-mono text-[10px] uppercase tracking-wider text-accent transition-colors hover:bg-accent hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+    >
+      <ArrowLeft size={14} /> Back to games
+    </Link>
+  );
+}
+
 function MemoryMatch() {
-  const [cards, setCards] = useState(() => shuffledDeck());
+  const [difficulty, setDifficulty] = useState<Difficulty>('medium');
+  const [cards, setCards] = useState(() => shuffledDeck('medium'));
   const [flipped, setFlipped] = useState<number[]>([]);
   const [matched, setMatched] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [startedAt, setStartedAt] = useState<number | null>(null);
-  const [combo, setCombo] = useState(0);
-  const [matchBurst, setMatchBurst] = useState(0);
-  const isComplete = matched.length === MEMORY_SYMBOLS.length;
+  const [records, setRecords] = useState<MemoryRecords>(() => readStorage(MEMORY_RECORDS_KEY, {}));
+  const mismatchTimeout = useRef<number | null>(null);
+  const isComplete = matched.length === DIFFICULTIES[difficulty].pairs;
 
   useEffect(() => {
     if (startedAt === null || isComplete) return;
@@ -44,195 +112,242 @@ function MemoryMatch() {
     return () => window.clearInterval(interval);
   }, [startedAt, isComplete]);
 
-  useEffect(() => {
-    if (flipped.length !== 2 || cards[flipped[0]].pair === cards[flipped[1]].pair) return;
-    const timeout = window.setTimeout(() => setFlipped([]), 850);
-    return () => window.clearTimeout(timeout);
-  }, [cards, flipped]);
+  useEffect(() => () => {
+    if (mismatchTimeout.current !== null) window.clearTimeout(mismatchTimeout.current);
+  }, []);
 
-  const restart = () => {
-    setCards(shuffledDeck());
+  const restart = (nextDifficulty = difficulty) => {
+    if (mismatchTimeout.current !== null) window.clearTimeout(mismatchTimeout.current);
+    mismatchTimeout.current = null;
+    setDifficulty(nextDifficulty);
+    setCards(shuffledDeck(nextDifficulty));
     setFlipped([]);
     setMatched([]);
     setMoves(0);
     setElapsedSeconds(0);
     setStartedAt(null);
-    setCombo(0);
-    setMatchBurst(0);
   };
 
   const flipCard = (index: number) => {
     if (flipped.length === 2 || flipped.includes(index) || matched.includes(cards[index].pair)) return;
-
     setStartedAt(current => current ?? Date.now());
     const nextFlipped = [...flipped, index];
     setFlipped(nextFlipped);
-    if (nextFlipped.length === 2) {
-      setMoves(current => current + 1);
-      if (cards[nextFlipped[0]].pair === cards[nextFlipped[1]].pair) {
-        setMatched(current => [...current, cards[nextFlipped[0]].pair]);
-        setFlipped([]);
-        setCombo(current => current + 1);
-        setMatchBurst(current => current + 1);
-      } else {
-        setCombo(0);
+    if (nextFlipped.length !== 2) return;
+
+    setMoves(current => current + 1);
+    if (cards[nextFlipped[0]].pair === cards[nextFlipped[1]].pair) {
+      const nextMatched = [...matched, cards[nextFlipped[0]].pair];
+      setMatched(nextMatched);
+      setFlipped([]);
+      if (nextMatched.length === DIFFICULTIES[difficulty].pairs) {
+        const current = { time: elapsedSeconds, moves: moves + 1 };
+        const previous = records[difficulty];
+        if (!previous || current.time < previous.time || (current.time === previous.time && current.moves < previous.moves)) {
+          const updated = { ...records, [difficulty]: current };
+          setRecords(updated);
+          writeStorage(MEMORY_RECORDS_KEY, updated);
+        }
       }
+    } else {
+      mismatchTimeout.current = window.setTimeout(() => {
+        setFlipped([]);
+        mismatchTimeout.current = null;
+      }, 750);
     }
   };
 
+  const best = records[difficulty];
+
   return (
-    <motion.div
-      animate={matchBurst ? { x: [0, -2, 2, -1, 1, 0] } : { x: 0 }}
-      transition={{ duration: 0.28 }}
-      className="relative overflow-hidden rounded-3xl border border-ink/10 dark:border-white/10 bg-ink/5 dark:bg-white/5 p-5 sm:p-8"
-    >
-      {matchBurst > 0 && (
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-          {Array.from({ length: 18 }, (_, index) => (
-            <motion.i
-              key={`${matchBurst}-${index}`}
-              initial={{ opacity: 0, y: 50, x: 0, rotate: 0 }}
-              animate={{
-                opacity: [0, 1, 0],
-                y: [20, -150 - (index % 4) * 30],
-                x: [(index - 9) * 8, (index - 9) * 24],
-                rotate: [0, index % 2 ? 180 : -180],
-              }}
-              transition={{ duration: 1.4, delay: (index % 6) * 0.05 }}
-              className="absolute left-1/2 top-1/2 h-2 w-2 rounded-sm bg-accent"
-              style={{ left: `${10 + (index * 17) % 80}%` }}
-            />
-          ))}
-        </div>
-      )}
+    <GameFrame>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-mono uppercase tracking-[0.2em] text-accent">Memory Match</p>
-          <p className="mt-1 text-sm opacity-60">Find all eight matching pairs.</p>
+          <BackToGames />
+          <h2 className="room-signature-games mt-4 text-2xl sm:text-3xl">Memory Match</h2>
+          <p className="mt-1 text-sm opacity-65">Flip cards, find every pair, beat your best time.</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right text-sm font-mono opacity-70">
-            <span>
-              Moves: <Suspense fallback={moves}>
-                <Counter value={moves} duration={0.4} motionBlur={false} />
-              </Suspense>
-              {' · '}{Math.floor(elapsedSeconds / 60)}:{String(elapsedSeconds % 60).padStart(2, '0')}
-            </span>
-            {combo > 1 && <motion.span key={combo} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="ml-2 inline-block text-accent">COMBO ×{combo}</motion.span>}
-          </div>
-          <button
-            type="button"
-            onClick={restart}
-            className="inline-flex items-center gap-2 rounded-full border border-ink/10 dark:border-white/10 px-4 py-2 text-xs font-mono hover:border-accent hover:text-accent transition-colors"
+        <label className="flex flex-col gap-1.5 font-mono text-[10px] uppercase tracking-wider">
+          Difficulty
+          <select
+            value={difficulty}
+            onChange={event => restart(event.target.value as Difficulty)}
+            className="min-h-11 rounded-full border border-ink/10 bg-paper px-4 text-xs text-ink outline-none focus-visible:border-accent dark:border-white/15 dark:bg-[#111113] dark:text-[#f0ede6]"
           >
-            <RotateCcw size={14} /> Restart
-          </button>
-        </div>
+            {Object.entries(DIFFICULTIES).map(([key, option]) => (
+              <option key={key} value={key}>{option.label}</option>
+            ))}
+          </select>
+        </label>
       </div>
 
-      <div className="mx-auto grid max-w-lg grid-cols-4 gap-2 sm:gap-3 [perspective:1000px]">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-accent/15 bg-accent/[0.04] px-4 py-3">
+        <p className="font-mono text-xs" aria-live="polite">
+          Moves <strong className="text-accent"><Suspense fallback={moves}><Counter value={moves} duration={0.25} motionBlur={false} /></Suspense></strong>
+          <span className="mx-2 opacity-30">·</span>
+          Time <strong className="text-accent">{formatTime(elapsedSeconds)}</strong>
+          <span className="mx-2 opacity-30">·</span>
+          Pairs <strong className="text-accent">{matched.length}/{DIFFICULTIES[difficulty].pairs}</strong>
+        </p>
+        <p className="font-mono text-[10px] uppercase tracking-wider opacity-65">
+          Best {best ? `${formatTime(best.time)} · ${best.moves} moves` : 'No record yet'}
+        </p>
+        <button
+          type="button"
+          onClick={() => restart()}
+          className="inline-flex min-h-10 items-center gap-2 rounded-full border border-ink/10 px-4 text-xs font-mono transition-colors hover:border-accent hover:text-accent dark:border-white/10"
+        >
+          <RotateCcw size={14} /> Restart
+        </button>
+      </div>
+
+      <div
+        className="mx-auto grid max-w-3xl gap-2 sm:gap-3 [perspective:1000px]"
+        style={{ gridTemplateColumns: `repeat(${DIFFICULTIES[difficulty].columns}, minmax(0, 1fr))` }}
+        aria-label={`${DIFFICULTIES[difficulty].label} card grid`}
+      >
         {cards.map((card, index) => {
           const isRevealed = flipped.includes(index) || matched.includes(card.pair);
           return (
             <button
-              key={index}
+              key={`${difficulty}-${index}`}
               type="button"
               onClick={() => flipCard(index)}
               aria-label={isRevealed ? `Card ${card.symbol}` : `Reveal card ${index + 1}`}
               aria-pressed={isRevealed}
-              className="relative aspect-square [transform-style:preserve-3d]"
+              className="relative aspect-square min-h-0 [transform-style:preserve-3d] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
-              <span className={`absolute inset-0 flex items-center justify-center rounded-2xl border text-2xl transition-all duration-500 [backface-visibility:hidden] sm:text-4xl ${
-                isRevealed
-                  ? 'border-accent bg-accent/10 shadow-[0_0_25px_rgba(212,175,55,.4)]'
-                  : 'border-ink/10 bg-paper dark:border-white/10 dark:bg-white/5'
-              }`} style={{ transform: isRevealed ? 'rotateY(180deg) translateZ(-4px)' : 'rotateY(0deg) translateZ(4px)' }}>
-                ?
-                <i aria-hidden="true" className={`memory-card-sweep absolute inset-0 ${isRevealed ? 'memory-card-sweep-active' : ''}`} />
-              </span>
               <span
-                className={`absolute inset-0 flex items-center justify-center rounded-2xl border border-accent bg-accent/10 text-2xl shadow-[0_0_25px_rgba(212,175,55,.25)] transition-all duration-500 [backface-visibility:hidden] sm:text-4xl`}
-                style={{ transform: isRevealed ? 'rotateY(0deg) translateZ(4px)' : 'rotateY(-180deg) translateZ(-4px)' }}
+                className={`absolute inset-0 flex items-center justify-center rounded-xl border text-xl transition-all duration-300 sm:rounded-2xl sm:text-4xl ${
+                  isRevealed
+                    ? 'border-accent bg-accent/10 shadow-[0_0_20px_rgba(154,123,31,.3)]'
+                    : 'border-ink/10 bg-paper dark:border-white/10 dark:bg-white/5'
+                }`}
+                style={{ transform: isRevealed ? 'rotateY(0deg)' : 'rotateY(180deg)', backfaceVisibility: 'hidden' }}
               >
-                {card.symbol}
-                <i aria-hidden="true" className={`memory-card-sweep absolute inset-0 ${isRevealed ? 'memory-card-sweep-active' : ''}`} />
+                {isRevealed ? card.symbol : '?'}
               </span>
             </button>
           );
         })}
       </div>
-      <p className="mt-4 text-center text-xs font-mono uppercase tracking-wider opacity-60">
-        Pairs: <Suspense fallback={matched.length}>
-          <Counter value={matched.length} duration={0.4} motionBlur={false} />
-        </Suspense> / {MEMORY_SYMBOLS.length}
-      </p>
-      {isComplete && (
-        <p className="mt-5 text-center font-serif text-lg text-accent">
-          All pairs matched in {moves} moves. Well played!
-        </p>
-      )}
-    </motion.div>
+
+      <AnimatePresence>
+        {isComplete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-10 flex items-center justify-center rounded-3xl bg-paper/95 p-6 dark:bg-[#0c0c0e]/95"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="memory-win-title"
+          >
+            <div className="text-center">
+              <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-accent">Collection complete</p>
+              <h3 id="memory-win-title" className="mt-2 font-serif text-3xl">A perfect match.</h3>
+              <p className="mt-3 text-sm opacity-70">You found every pair in {moves} moves and {formatTime(elapsedSeconds)}.</p>
+              <button
+                type="button"
+                onClick={() => restart()}
+                className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-accent px-6 font-mono text-xs uppercase tracking-widest text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              >
+                <RotateCcw size={14} /> Play again
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </GameFrame>
   );
 }
 
 function TicTacToe() {
-  const [board, setBoard] = useState<(string | null)[]>(Array(9).fill(null));
-  const [nextMark, setNextMark] = useState('X');
-  const winningLine = WINNING_LINES.find(([a, b, c]) => board[a] && board[a] === board[b] && board[a] === board[c]);
-  const winner = winningLine ? board[winningLine[0]] : null;
+  const [board, setBoard] = useState<(Mark | null)[]>(Array(9).fill(null));
+  const [nextMark, setNextMark] = useState<Mark>('X');
+  const [scores, setScores] = useState<TicScores>(() => readStorage(TIC_SCORES_KEY, { X: 0, O: 0, draws: 0 }));
+  const [playerX, setPlayerX] = useState('');
+  const [playerO, setPlayerO] = useState('');
+  const roundRecorded = useRef(false);
+  const winningLine = WINNING_LINES.find(({ cells }) => {
+    const [first, second, third] = cells;
+    return board[first] && board[first] === board[second] && board[first] === board[third];
+  });
+  const winner = winningLine ? board[winningLine.cells[0]] : null;
   const isDraw = !winner && board.every(Boolean);
-  const lineStyle = winningLine ? (() => {
-    const startRow = Math.floor(winningLine[0] / 3);
-    const endRow = Math.floor(winningLine[2] / 3);
-    const startColumn = winningLine[0] % 3;
-    const endColumn = winningLine[2] % 3;
-    const deltaX = endColumn - startColumn;
-    const deltaY = endRow - startRow;
-    return {
-      left: `${((startColumn + endColumn + 1) / 6) * 100}%`,
-      top: `${((startRow + endRow + 1) / 6) * 100}%`,
-      width: `${(Math.hypot(deltaX, deltaY) / 3) * 100}%`,
-      x: '-50%',
-      y: '-50%',
-      rotate: Math.atan2(deltaY, deltaX) * (180 / Math.PI),
-    };
-  })() : undefined;
+
+  useEffect(() => {
+    if ((!winner && !isDraw) || roundRecorded.current) return;
+    roundRecorded.current = true;
+    const updated = winner
+      ? { ...scores, [winner]: scores[winner] + 1 }
+      : { ...scores, draws: scores.draws + 1 };
+    setScores(updated);
+    writeStorage(TIC_SCORES_KEY, updated);
+  }, [isDraw, scores, winner]);
 
   const play = (index: number) => {
     if (board[index] || winner || isDraw) return;
+    roundRecorded.current = false;
     const nextBoard = [...board];
     nextBoard[index] = nextMark;
     setBoard(nextBoard);
     setNextMark(nextMark === 'X' ? 'O' : 'X');
   };
 
-  const restart = () => {
+  const newRound = () => {
+    roundRecorded.current = false;
     setBoard(Array(9).fill(null));
     setNextMark('X');
   };
 
+  const resetScores = () => {
+    const empty = { X: 0, O: 0, draws: 0 };
+    setScores(empty);
+    writeStorage(TIC_SCORES_KEY, empty);
+    newRound();
+  };
+
+  const labelX = playerX.trim() || 'Player X';
+  const labelO = playerO.trim() || 'Player O';
+
   return (
-    <motion.div
-      animate={winner ? { x: [0, -4, 4, -2, 2, 0] } : { x: 0 }}
-      transition={{ duration: 0.34 }}
-      className="relative overflow-hidden rounded-3xl border border-ink/10 dark:border-white/10 bg-ink/5 dark:bg-white/5 p-5 sm:p-8"
-    >
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <GameFrame>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-mono uppercase tracking-[0.2em] text-accent">Tic-Tac-Toe</p>
-          <p className="mt-1 text-sm opacity-60">Two players, one board. Take turns on this device.</p>
+          <BackToGames />
+          <h2 className="room-signature-games mt-4 text-2xl sm:text-3xl">Tic-Tac-Toe</h2>
+          <p className="mt-1 text-sm opacity-65">Two players, one screen. Claim three in a row.</p>
         </div>
-        <button
-          type="button"
-          onClick={restart}
-          className="inline-flex items-center gap-2 rounded-full border border-ink/10 dark:border-white/10 px-4 py-2 text-xs font-mono hover:border-accent hover:text-accent transition-colors"
-        >
-          <RotateCcw size={14} /> New game
-        </button>
+        <div className="flex gap-2">
+          <button type="button" onClick={newRound} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-ink/10 px-4 text-xs font-mono hover:border-accent hover:text-accent dark:border-white/10">
+            <RotateCcw size={13} /> New round
+          </button>
+          <button type="button" onClick={resetScores} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-ink/10 px-4 text-xs font-mono hover:border-accent hover:text-accent dark:border-white/10">
+            <X size={13} /> Reset scores
+          </button>
+        </div>
+      </div>
+
+      <div className="mb-5 grid gap-3 sm:grid-cols-2">
+        <label className="font-mono text-[10px] uppercase tracking-wider">
+          Player X
+          <input value={playerX} onChange={event => setPlayerX(event.target.value)} maxLength={24} placeholder="Player X" className="mt-1 block min-h-11 w-full rounded-xl border border-ink/10 bg-paper px-3 text-sm font-sans normal-case tracking-normal outline-none focus:border-accent dark:border-white/10 dark:bg-[#111113]" />
+        </label>
+        <label className="font-mono text-[10px] uppercase tracking-wider">
+          Player O
+          <input value={playerO} onChange={event => setPlayerO(event.target.value)} maxLength={24} placeholder="Player O" className="mt-1 block min-h-11 w-full rounded-xl border border-ink/10 bg-paper px-3 text-sm font-sans normal-case tracking-normal outline-none focus:border-accent dark:border-white/10 dark:bg-[#111113]" />
+        </label>
+      </div>
+
+      <div className="mb-5 grid grid-cols-3 gap-2 text-center font-mono text-[10px] uppercase tracking-wider">
+        <p className="rounded-xl border border-accent/20 bg-accent/[0.04] p-3">{labelX}: <strong className="text-accent">{scores.X}</strong></p>
+        <p className="rounded-xl border border-ink/10 p-3 dark:border-white/10">Draws: <strong>{scores.draws}</strong></p>
+        <p className="rounded-xl border border-accent/20 bg-accent/[0.04] p-3">{labelO}: <strong className="text-accent">{scores.O}</strong></p>
       </div>
 
       <p className="mb-4 text-center font-serif text-lg" aria-live="polite">
-        {winner ? `Player ${winner} wins!` : isDraw ? "It's a draw!" : `Player ${nextMark}'s turn`}
+        {winner ? `${winner === 'X' ? labelX : labelO} wins!` : isDraw ? "It's a draw!" : `${nextMark === 'X' ? labelX : labelO}'s turn (${nextMark})`}
       </p>
       <div className="relative mx-auto grid max-w-sm grid-cols-3 gap-2">
         {board.map((mark, index) => (
@@ -241,12 +356,12 @@ function TicTacToe() {
             type="button"
             onClick={() => play(index)}
             aria-label={`Square ${index + 1}${mark ? `, ${mark}` : ', empty'}`}
-            className="aspect-square rounded-2xl border border-ink/10 dark:border-white/10 bg-paper dark:bg-white/5 text-4xl font-serif text-accent hover:border-accent/60 transition-colors"
+            className="aspect-square rounded-2xl border border-ink/10 bg-paper text-4xl font-serif text-accent transition-colors hover:border-accent/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:border-white/10 dark:bg-white/5 sm:text-5xl"
           >
             <motion.span
               initial={false}
-              animate={mark ? { opacity: 1, scale: 1, rotateX: 0, y: 0 } : { opacity: 0, scale: 0.7, rotateX: -75, y: -10 }}
-              transition={{ type: 'spring', stiffness: 340, damping: 22 }}
+              animate={mark ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.7 }}
+              transition={{ duration: 0.18 }}
               className="inline-block"
             >
               {mark}
@@ -254,36 +369,12 @@ function TicTacToe() {
           </button>
         ))}
         {winningLine && (
-          <motion.span
-            aria-hidden="true"
-            initial={{ scaleX: 0, opacity: 0 }}
-            animate={{ scaleX: 1, opacity: 1 }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
-            className="pointer-events-none absolute left-1/2 top-1/2 h-[3px] origin-center rounded-full bg-accent shadow-[0_0_14px_rgba(212,175,55,.95),0_0_28px_rgba(212,175,55,.8)]"
-            style={lineStyle}
-          />
+          <svg aria-hidden="true" viewBox="0 0 300 300" className="pointer-events-none absolute inset-0 h-full w-full overflow-visible">
+            <path d={winningLine.path} fill="none" stroke="rgb(var(--accent-rgb))" strokeWidth="5" strokeLinecap="round" className="games-win-line" />
+          </svg>
         )}
       </div>
-      {winner && (
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-          {Array.from({ length: 14 }, (_, index) => (
-            <motion.i
-              key={index}
-              initial={{ opacity: 0, y: 70, x: 0, rotate: 0 }}
-              animate={{
-                opacity: [0, 1, 0],
-                y: [40, -130 - (index % 3) * 25],
-                x: [(index - 7) * 6, (index - 7) * 22],
-                rotate: [0, index % 2 ? 160 : -160],
-              }}
-              transition={{ duration: 1.25, delay: (index % 5) * 0.04 }}
-              className="absolute left-1/2 top-1/2 h-2 w-2 rounded-full bg-accent"
-              style={{ left: `${10 + (index * 23) % 80}%` }}
-            />
-          ))}
-        </div>
-      )}
-    </motion.div>
+    </GameFrame>
   );
 }
 

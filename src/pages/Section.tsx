@@ -1,12 +1,11 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Gallery from '../components/Gallery';
 import Games from '../components/Games';
+import GamesHub from '../components/GamesHub';
 import { motion } from 'framer-motion';
 import { getCategoryById, CATEGORIES } from '../lib/categories';
-import { ArrowLeft, ArrowUpRight, Sparkles } from 'lucide-react';
-
-const AnimatedContent = lazy(() => import('../components/AnimatedContent'));
+import { ArrowLeft, Sparkles } from 'lucide-react';
 
 export default function Section() {
   const { id, mode } = useParams();
@@ -114,66 +113,28 @@ export default function Section() {
         <div className="mt-8 h-px bg-gradient-to-r from-accent via-accent/30 to-transparent" />
       </div>
 
-      {isGameCollection && (
-        <Suspense fallback={<div className="mb-8 h-20 rounded-2xl bg-accent/5" />}>
-          <AnimatedContent
-            trigger="mount"
-            distance={18}
-            duration={0.55}
-            className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-accent/20 bg-accent/5 px-5 py-4"
-          >
-            <div>
-              <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-accent">The Arcade</p>
-              <p className="mt-1 font-serif text-lg">Choose a world. Take a turn.</p>
-            </div>
-            <span className="text-xs font-mono opacity-50">SINGLEPLAYER · MULTIPLAYER</span>
-          </AnimatedContent>
-        </Suspense>
-      )}
-
-      {isGameCollection && !selectedMode ? (
-        <Suspense fallback={<div className="grid grid-cols-1 gap-[var(--content-gap)] md:grid-cols-2"><div className="h-64 rounded-3xl bg-ink/5 dark:bg-white/5" /><div className="h-64 rounded-3xl bg-ink/5 dark:bg-white/5" /></div>}>
-          <AnimatedContent
-            trigger="mount"
-            distance={24}
-            duration={0.65}
-            stagger={0.12}
-            className="grid grid-cols-1 gap-[var(--content-gap)] md:grid-cols-2"
-          >
-            {category.gameModes?.map(gameMode => (
-              <Link
-                key={gameMode.id}
-                to={`/section/${category.id}/${gameMode.id}`}
-                className="group relative flex min-h-64 flex-col justify-between overflow-hidden rounded-3xl border border-ink/10 bg-ink p-7 dark:border-white/10 md:p-9"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-accent/20 via-transparent to-transparent opacity-60 transition-opacity group-hover:opacity-100" />
-                <div className="relative flex items-start justify-between gap-4">
-                  <span className="text-xs font-mono tracking-[0.2em] uppercase text-white/50">
-                    {category.num} / {gameMode.id === 'singleplayer' ? 'A' : 'B'}
-                  </span>
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/70 transition-all group-hover:bg-accent group-hover:text-white">
-                    <ArrowUpRight size={16} />
-                  </span>
+      {isGameCollection ? (
+        selectedMode ? (
+          <Games mode={selectedMode.id} />
+        ) : (
+          <>
+            <Suspense fallback={<div className="grid grid-cols-1 gap-[var(--content-gap)] md:grid-cols-2"><div className="h-[410px] rounded-3xl border border-accent/20 bg-paper dark:bg-[#111113]" /><div className="h-[410px] rounded-3xl border border-accent/20 bg-paper dark:bg-[#111113]" /></div>}>
+              <GamesHub />
+            </Suspense>
+            <section aria-labelledby="uploaded-games-heading" className="mt-14">
+              <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent">Curated play</p>
+                  <h2 id="uploaded-games-heading" className="mt-1 font-serif text-2xl sm:text-3xl">Uploaded Games</h2>
                 </div>
-                <div className="relative">
-                  <h2 className={`room-signature room-signature-${category.id} mb-2 text-3xl font-serif text-white transition-colors group-hover:text-accent`}>
-                    {gameMode.label}
-                  </h2>
-                  <p className="max-w-sm text-sm leading-relaxed text-white/60">
-                    {gameMode.desc}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </AnimatedContent>
-        </Suspense>
+                <p className="text-sm opacity-60">Explore games from the Artville community.</p>
+              </div>
+              <Gallery sectionId="games-hub" />
+            </section>
+          </>
+        )
       ) : (
-        <>
-          {selectedMode && <Games mode={selectedMode.id} />}
-          <div className={selectedMode ? 'mt-12' : ''}>
-            <Gallery sectionId={artworkSectionId} />
-          </div>
-        </>
+        <Gallery sectionId={artworkSectionId} />
       )}
     </motion.div>
   );
