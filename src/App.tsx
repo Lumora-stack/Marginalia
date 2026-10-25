@@ -16,7 +16,7 @@ function RouteLoading() {
   const [timedOut, setTimedOut] = useState(false);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => setTimedOut(true), 1500);
+    const timeout = window.setTimeout(() => setTimedOut(true), 1000);
     return () => window.clearTimeout(timeout);
   }, []);
 
@@ -36,8 +36,8 @@ function RouteLoading() {
   }
 
   return (
-    <div className="flex min-h-[50vh] items-center justify-center" role="status" aria-label="Opening exhibition">
-      <span className="h-px w-20 animate-pulse bg-accent" />
+    <div className="fixed inset-x-0 top-0 z-[10001] h-px overflow-hidden bg-accent/15" role="status" aria-label="Opening exhibition">
+      <span className="route-loading-progress block h-full w-1/3 bg-accent" />
     </div>
   );
 }

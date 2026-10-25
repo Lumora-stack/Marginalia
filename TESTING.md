@@ -34,11 +34,12 @@
 2. Open the mobile menu. Confirm it fills the visible viewport with safe-area spacing, shows seven vertically stacked collection/About links with at least 48px tap targets, plus theme and close controls. Tap a blank backdrop area, a link, and the close control; also test Escape. Each action closes the menu and returns focus appropriately.
 3. While the menu is open, confirm page scrolling is locked, the cursor and upload control do not cover the panel, and browser back/route changes release the lock.
 4. At 375px, 768px, 1440px, and 1920px widths in both themes, confirm all sections share consistent aligned container edges and spacing, with no blank pinned bands, horizontal page scroll, clipped controls, or overlapping content. Verify Home uses a two-column room grid at 768–1099px and a three-column grid at 1100px and wider.
-5. Navigate between routes. Confirm the gold transition always clears and the destination page is usable, including on a slow connection.
-6. Check Home, all six collections, Games, About, Admin, and 404 at 375px, 768px, and 1440px widths in both themes. Confirm no horizontal page scroll, clipped controls, or overlapping content.
-7. On touch/mobile emulation, confirm the custom cursor, ClickSpark, Magnet, and TiltedCard effects are not mounted. Confirm artwork swipe, gallery carousel controls, tap navigation, and game controls remain usable.
-8. Rotate a mobile device or show/hide the browser toolbar while a gallery and lightbox are open. Confirm content stays within the visible viewport.
-9. Verify the PWA install prompt still appears under its supported conditions and can be dismissed.
+5. Navigate between routes. Confirm the outgoing page fades and moves up slightly, the incoming page fades in from below, and no full-screen color overlay or flash appears. Check the thin gold loading line on a slow connection and confirm a retry message appears if a route takes over one second.
+6. With reduced motion enabled, confirm routes swap instantly. On a phone or touch device, confirm transitions are shorter and have no blur.
+7. Check Home, all six collections, Games, About, Admin, and 404 at 375px, 768px, and 1440px widths in both themes. Confirm no horizontal page scroll, clipped controls, or overlapping content.
+8. On touch/mobile emulation, confirm the custom cursor, ClickSpark, Magnet, and TiltedCard effects are not mounted. Confirm artwork swipe, gallery carousel controls, tap navigation, and game controls remain usable.
+9. Rotate a mobile device or show/hide the browser toolbar while a gallery and lightbox are open. Confirm content stays within the visible viewport.
+10. Verify the PWA install prompt still appears under its supported conditions and can be dismissed.
 
 ## Desktop spacing checklist
 

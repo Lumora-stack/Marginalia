@@ -6,8 +6,7 @@ import Footer from './Footer';
 import ScrollProgress from './ScrollProgress';
 import MuseumPreloader from './motion/MuseumPreloader';
 import VisualFilters from './motion/VisualFilters';
-import RouteWipe from './motion/RouteWipe';
-import { LayoutGroup, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'framer-motion';
 import { useQuality } from '../lib/quality-context';
 import { qualityAtLeast } from '../lib/quality-types';
 import { useThemeColors } from '../lib/useThemeColors';
@@ -23,6 +22,10 @@ export default function Layout() {
   const { tier } = useQuality();
   const colors = useThemeColors();
   const shouldReduceMotion = useReducedMotion();
+  const [compactMotion, setCompactMotion] = useState(() =>
+    typeof window !== 'undefined' &&
+    (window.matchMedia('(max-width: 767px)').matches || window.matchMedia('(pointer: coarse)').matches),
+  );
   const [finePointer, setFinePointer] = useState(() =>
     typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches,
   );
@@ -30,6 +33,13 @@ export default function Layout() {
   useEffect(() => {
     const media = window.matchMedia('(hover: hover) and (pointer: fine)');
     const update = () => setFinePointer(media.matches);
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 767px), (pointer: coarse)');
+    const update = () => setCompactMotion(media.matches);
     media.addEventListener('change', update);
     return () => media.removeEventListener('change', update);
   }, []);
@@ -65,13 +75,40 @@ export default function Layout() {
           />
         </Suspense>
       )}
-      <RouteWipe />
       <MuseumPreloader />
       <Navbar />
 
       <main className={`site-container flex-1 w-full ${isHome ? '' : 'pt-[var(--section-space)] pb-[calc(var(--section-space)*0.25)]'}`}>
         <LayoutGroup id="museum-routes">
-          <Outlet />
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={location.pathname}
+              initial={shouldReduceMotion ? false : {
+                opacity: 0,
+                y: 16,
+                ...(compactMotion ? {} : { filter: 'blur(4px)' }),
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                ...(compactMotion ? {} : { filter: 'blur(0px)' }),
+                transition: {
+                  duration: shouldReduceMotion ? 0 : compactMotion ? 0.25 : 0.35,
+                  ease: [0.22, 1, 0.36, 1],
+                },
+              }}
+              exit={{
+                opacity: 0,
+                y: shouldReduceMotion ? 0 : -12,
+                transition: {
+                  duration: shouldReduceMotion ? 0 : compactMotion ? 0.15 : 0.2,
+                  ease: 'easeIn',
+                },
+              }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </LayoutGroup>
       </main>
 
