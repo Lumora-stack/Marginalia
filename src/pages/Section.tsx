@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useLocation, useParams, Link } from 'react-router-dom';
 import Gallery from '../components/Gallery';
 import Games from '../components/Games';
 import GamesHub from '../components/GamesHub';
@@ -9,6 +9,8 @@ import { ArrowLeft, Sparkles } from 'lucide-react';
 
 export default function Section() {
   const { id, mode } = useParams();
+  const location = useLocation();
+  const inCreativeJourney = location.pathname.startsWith('/creative/');
   if (!id) return null;
 
   const category = getCategoryById(id);
@@ -18,9 +20,9 @@ export default function Section() {
     return (
       <div className="py-24 text-center space-y-6">
         <h2 className="text-3xl font-serif">Collection Not Found</h2>
-        <p className="text-sm opacity-60">The requested category does not exist in Artville.</p>
+        <p className="text-sm opacity-60">The requested collection does not exist.</p>
         <Link
-          to="/"
+          to={inCreativeJourney ? '/creative' : '/'}
           className="inline-flex items-center gap-2 text-xs font-mono tracking-widest text-accent uppercase hover:underline"
         >
           <ArrowLeft size={14} />
@@ -97,7 +99,7 @@ export default function Section() {
             {CATEGORIES.map(c => (
               <Link
                 key={c.id}
-                to={`/section/${c.id}`}
+                to={`${inCreativeJourney ? '/creative' : '/section'}/${c.id}`}
                 className={`text-[11px] font-mono tracking-wider uppercase px-3 py-1.5 rounded-full transition-all ${
                   c.id === id
                     ? 'bg-accent text-white shadow-sm'
@@ -127,7 +129,7 @@ export default function Section() {
                   <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent">Curated play</p>
                   <h2 id="uploaded-games-heading" className="mt-1 font-serif text-2xl sm:text-3xl">Uploaded Games</h2>
                 </div>
-                <p className="text-sm opacity-60">Explore games from the Artville community.</p>
+                <p className="text-sm opacity-60">Explore the games collection.</p>
               </div>
               <Gallery sectionId="games-hub" />
             </section>

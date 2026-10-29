@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useState } from 'react';
-import Navbar from './Navbar';
+import PrimaryNavigation from './PrimaryNavigation';
+import TabBar from './TabBar';
 import InstallPrompt from './InstallPrompt';
 import Footer from './Footer';
 import ScrollProgress from './ScrollProgress';
@@ -19,6 +20,7 @@ const Noise = lazy(() => import('./Noise'));
 export default function Layout() {
   const location = useLocation();
   const isHome = location.pathname === '/';
+  const isAdmin = location.pathname.startsWith('/admin');
   const { tier } = useQuality();
   const colors = useThemeColors();
   const shouldReduceMotion = useReducedMotion();
@@ -76,9 +78,9 @@ export default function Layout() {
         </Suspense>
       )}
       <MuseumPreloader />
-      <Navbar />
+      <PrimaryNavigation />
 
-      <main className={`site-container flex-1 w-full ${isHome ? '' : 'pt-[var(--section-space)] pb-[calc(var(--section-space)*0.25)]'}`}>
+      <main className={`site-container flex-1 w-full ${isAdmin ? '' : isHome ? 'pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0' : 'pt-[var(--section-space)] pb-[calc(var(--section-space)*0.25+5rem+env(safe-area-inset-bottom))] md:pb-[calc(var(--section-space)*0.25)]'}`}>
         <LayoutGroup id="museum-routes">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -113,6 +115,7 @@ export default function Layout() {
       </main>
 
       <Footer />
+      <TabBar />
       <Suspense fallback={null}>
         <UploadFAB />
       </Suspense>

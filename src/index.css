@@ -181,6 +181,38 @@
       linear-gradient(135deg, #f7f5f1, #eee8db 56%, #f7f5f1);
   }
 
+  .home-depth-layer {
+    position: absolute;
+    inset: -4%;
+    pointer-events: none;
+    transform-style: preserve-3d;
+  }
+
+  .home-hero-depth {
+    perspective: 1200px;
+  }
+
+  .home-depth-layer-back {
+    transform: translate3d(var(--hero-back-x, 0px), var(--hero-back-y, 0px), -36px) scale(1.06);
+    transition: transform 380ms cubic-bezier(0.2, 0.75, 0.25, 1);
+    background:
+      radial-gradient(ellipse at 22% 30%, rgb(var(--accent-rgb) / 0.11), transparent 28%),
+      radial-gradient(ellipse at 78% 68%, rgb(var(--accent-rgb) / 0.08), transparent 32%);
+  }
+
+  .home-depth-layer-middle {
+    transform: translate3d(var(--hero-mid-x, 0px), var(--hero-mid-y, 0px), -16px) scale(1.03);
+    transition: transform 320ms cubic-bezier(0.2, 0.75, 0.25, 1);
+    background:
+      linear-gradient(118deg, transparent 14%, rgb(var(--accent-rgb) / 0.035) 48%, transparent 76%),
+      radial-gradient(ellipse at 50% 100%, rgb(var(--accent-rgb) / 0.07), transparent 42%);
+  }
+
+  .home-depth-content {
+    transform: translate3d(var(--hero-content-x, 0px), var(--hero-content-y, 0px), 0);
+    transition: transform 260ms cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+
   .dark .hero-poster {
     background:
       radial-gradient(ellipse at 50% 45%, rgb(var(--accent-rgb) / 0.12), transparent 58%),
@@ -449,6 +481,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .home-depth-layer {
+    transform: none;
+  }
+
+  .home-depth-content {
+    transform: none;
+  }
+
   *, *::before, *::after {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;

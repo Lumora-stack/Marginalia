@@ -1,15 +1,22 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Component, lazy, Suspense, useEffect, useState, type ErrorInfo, type ReactNode } from 'react';
 import { MotionConfig } from 'framer-motion';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 import SmoothScroll from './components/motion/SmoothScroll';
 import { QualityProvider } from './lib/quality';
+import { applyThemePreference, getThemePreference } from './lib/theme';
+import { SITE_NAME } from './lib/site';
 
-const Home = lazy(() => import('./pages/Home'));
+const Home = lazy(() => import('./pages/PublicationHome'));
 const Section = lazy(() => import('./pages/Section'));
 const About = lazy(() => import('./pages/About'));
 const Admin = lazy(() => import('./pages/Admin'));
+const Creative = lazy(() => import('./pages/Creative'));
+const Tech = lazy(() => import('./pages/Tech'));
+const Places = lazy(() => import('./pages/Places'));
+const Watched = lazy(() => import('./pages/Watched'));
+const Settings = lazy(() => import('./pages/Settings'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 function RouteLoading() {
@@ -117,12 +124,27 @@ function ScrollTriggerRefresh() {
   return null;
 }
 
+function SystemThemeSync() {
+  useEffect(() => {
+    document.title = `${SITE_NAME} · A personal publication`;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const sync = () => {
+      if (getThemePreference() === 'system') applyThemePreference('system');
+    };
+    sync();
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
       <QualityProvider>
         <MotionConfig reducedMotion="user">
           <SmoothScroll />
+          <SystemThemeSync />
           <ScrollTriggerRefresh />
           <ScrollToTop />
           <RouteErrorBoundary>
@@ -131,7 +153,19 @@ function App() {
                 <Route index element={<Suspense fallback={<RouteLoading />}><Home /></Suspense>} />
                 <Route path="section/:id" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
                 <Route path="section/:id/:mode" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
-                <Route path="about" element={<Suspense fallback={<RouteLoading />}><About /></Suspense>} />
+                <Route path="creative" element={<Suspense fallback={<RouteLoading />}><Creative /></Suspense>} />
+                <Route path="creative/:id" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
+                <Route path="creative/:id/:mode" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
+                <Route path="tech" element={<Suspense fallback={<RouteLoading />}><Tech /></Suspense>} />
+                <Route path="tech/:slug" element={<Suspense fallback={<RouteLoading />}><Tech /></Suspense>} />
+                <Route path="places" element={<Navigate to="/places/food" replace />} />
+                <Route path="places/food" element={<Suspense fallback={<RouteLoading />}><Places /></Suspense>} />
+                <Route path="places/travel" element={<Suspense fallback={<RouteLoading />}><Places /></Suspense>} />
+                <Route path="watched" element={<Suspense fallback={<RouteLoading />}><Watched /></Suspense>} />
+                <Route path="watched/:slug" element={<Suspense fallback={<RouteLoading />}><Watched /></Suspense>} />
+                <Route path="settings" element={<Suspense fallback={<RouteLoading />}><Settings /></Suspense>} />
+                <Route path="settings/about" element={<Suspense fallback={<RouteLoading />}><About /></Suspense>} />
+                <Route path="about" element={<Navigate to="/settings/about" replace />} />
                 <Route path="admin" element={<Suspense fallback={<RouteLoading />}><Admin /></Suspense>} />
                 <Route path="*" element={<Suspense fallback={<RouteLoading />}><NotFound /></Suspense>} />
               </Route>
