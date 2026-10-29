@@ -1,4 +1,4 @@
-import { ArrowUpRight, AtSign, BriefcaseBusiness, Code2, Mail, Phone, SunMoon, UserRound } from 'lucide-react';
+import { ArrowUpRight, SunMoon, UserRound } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ContentPage } from '../components/ContentPage';
@@ -10,14 +10,6 @@ const preferences: { id: ThemePreference; label: string; detail: string }[] = [
   { id: 'light', label: 'Light', detail: 'Warm paper' },
   { id: 'dark', label: 'Dark', detail: 'Evening gallery' },
   { id: 'acid-lime', label: 'Acid Lime', detail: 'Midnight, cobalt & lime' },
-];
-
-const contactItems = [
-  { label: 'Email', detail: 'An easy way to say hello', Icon: Mail },
-  { label: 'Phone', detail: 'Contact number', Icon: Phone },
-  { label: 'Instagram', detail: 'Photos and small moments', Icon: AtSign },
-  { label: 'LinkedIn', detail: 'Professional profile', Icon: BriefcaseBusiness },
-  { label: 'GitHub', detail: 'Code and projects', Icon: Code2 },
 ];
 
 export default function Settings() {
@@ -80,23 +72,6 @@ export default function Settings() {
         </span>
         <ArrowUpRight size={18} className="shrink-0 text-accent transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
       </Link>
-
-      <section className="rounded-[1.75rem] border border-ink/10 p-5 dark:border-white/10 sm:p-7">
-        <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-accent">Ways to connect</p>
-        <h2 className="mt-2 font-serif text-2xl">The profile can grow here.</h2>
-        <p className="mt-2 text-xs leading-relaxed opacity-55">These contact fields are ready for the artist’s chosen public details.</p>
-        <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {contactItems.map(({ label, detail, Icon }) => (
-            <div key={label} className="flex items-center gap-3 rounded-2xl bg-ink/[0.025] p-3 dark:bg-white/[0.03]">
-              <Icon size={16} className="shrink-0 text-accent" />
-              <span>
-                <span className="block text-xs">{label}</span>
-                <span className="block text-[10px] opacity-45">{detail}</span>
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
 
       <div className="mt-8 flex justify-end">
         <Link to="/admin" className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-[10px] font-mono uppercase tracking-[0.16em] opacity-45 transition hover:bg-ink/5 hover:text-accent hover:opacity-100 dark:hover:bg-white/5">
