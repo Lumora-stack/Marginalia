@@ -8,35 +8,35 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative mt-[calc(var(--section-space)*0.25)] border-t border-ink/10 bg-paper/60 pb-[calc(5.75rem+env(safe-area-inset-bottom))] backdrop-blur-lg dark:border-white/10 dark:bg-[#0c0c0e]/80 md:pb-0 overflow-hidden">
+    <footer className="relative mt-[calc(var(--section-space)*0.25)] border-t border-ink/10 bg-paper/60 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-lg dark:border-white/10 dark:bg-[#0c0c0e]/80 md:pb-0 overflow-hidden">
       {/* Decorative ambient glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-28 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="site-container pt-12 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-[var(--content-gap)] mb-10">
+      <div className="site-container pt-4 pb-2 sm:pt-12 sm:pb-8">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-4 mb-4 sm:gap-[var(--content-gap)] sm:mb-10 md:grid-cols-12">
           {/* Brand & Manifesto */}
-          <div className="md:col-span-5 space-y-4">
+          <div className="col-span-2 md:col-span-5 space-y-2 sm:space-y-4">
             <div className="flex items-center gap-2">
               <Sparkles size={18} className="text-accent" />
               <span className="font-accent text-2xl tracking-tight">{SITE_NAME}</span>
             </div>
-            <p className="text-sm font-accent italic tracking-wide text-accent">
+            <p className="text-xs font-accent italic tracking-wide text-accent sm:text-sm">
               {SITE_TAGLINE}
             </p>
-            <p className="text-sm font-serif italic opacity-70 leading-relaxed max-w-sm">
+            <p className="hidden text-sm font-serif italic opacity-70 leading-relaxed max-w-sm sm:block">
               "Creating art from tiny feelings, peaceful thoughts, and a little bit of imagination — straight from Chennai 🤍."
             </p>
-            <div className="pt-2 text-xs font-mono opacity-50">
+            <div className="hidden pt-2 text-xs font-mono opacity-50 sm:block">
               Curated by Praveenkumar G
             </div>
           </div>
 
           {/* Collections */}
-          <div className="md:col-span-4 space-y-4">
-            <p className="text-xs font-mono tracking-[0.25em] uppercase text-accent">
+          <div className="md:col-span-4 space-y-2 sm:space-y-4">
+            <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-accent sm:text-xs sm:tracking-[0.25em]">
               Collections
             </p>
-            <ul className="grid grid-cols-2 gap-2.5">
+            <ul className="grid grid-cols-2 gap-x-2 gap-y-1.5 sm:grid-cols-2 sm:gap-2.5">
               {[
                 { label: 'Home', to: '/' },
                 { label: 'Creative Journey', to: '/creative' },
@@ -49,7 +49,7 @@ export default function Footer() {
                 <li key={area.to}>
                   <Link
                     to={area.to}
-                    className="text-sm opacity-70 hover:opacity-100 hover:text-accent transition-colors flex items-center gap-2 group"
+                    className="text-xs opacity-70 hover:opacity-100 hover:text-accent transition-colors flex items-center gap-1.5 group sm:gap-2 sm:text-sm"
                   >
                     <span className="text-[10px] font-mono text-accent group-hover:text-accent">{String(index + 1).padStart(2, '0')}</span>
                     <span>{area.label}</span>
@@ -60,11 +60,11 @@ export default function Footer() {
           </div>
 
           {/* Connect */}
-          <div className="md:col-span-3 space-y-4">
-            <p className="text-xs font-mono tracking-[0.25em] uppercase text-accent">
+          <div className="md:col-span-3 space-y-2 sm:space-y-4">
+            <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-accent sm:text-xs sm:tracking-[0.25em]">
               Let's Connect
             </p>
-            <ul className="space-y-3 text-sm">
+            <ul className="space-y-2 text-xs sm:space-y-3 sm:text-sm">
               <li>
                 <a
                   href="mailto:quantumvoyager2005@gmail.com"
@@ -99,7 +99,7 @@ export default function Footer() {
         </div>
 
         {/* Separator and Bottom Bar */}
-        <div className="pt-8 border-t border-ink/10 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono opacity-60">
+        <div className="pt-3 sm:pt-8 border-t border-ink/10 dark:border-white/10 flex flex-row items-center justify-between gap-2 text-[9px] font-mono opacity-60 sm:gap-4 sm:text-xs">
           <div>
             &copy; {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
           </div>
