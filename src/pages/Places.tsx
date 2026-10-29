@@ -52,9 +52,9 @@ export default function Places() {
           <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(0deg,transparent_24%,rgba(133,101,13,.08)_25%,rgba(133,101,13,.08)_26%,transparent_27%,transparent_74%,rgba(133,101,13,.08)_75%,rgba(133,101,13,.08)_76%,transparent_77%),linear-gradient(90deg,transparent_24%,rgba(133,101,13,.08)_25%,rgba(133,101,13,.08)_26%,transparent_27%,transparent_74%,rgba(133,101,13,.08)_75%,rgba(133,101,13,.08)_76%,transparent_77%)] [background-size:46px_46px]" />
           <div className="relative flex items-center justify-between">
             <span className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-paper/60 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-accent dark:bg-black/20">
-              <MapPinned size={13} /> Map finder
+              <MapPinned size={13} /> Google Maps
             </span>
-            <span className="font-mono text-[9px] uppercase tracking-wider opacity-45">OpenStreetMap</span>
+            <span className="font-mono text-[9px] uppercase tracking-wider opacity-45">Search & save places</span>
           </div>
           <div aria-hidden="true" className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-accent/25 bg-paper/65 text-accent shadow-[0_0_70px_rgba(212,175,55,.12)] dark:bg-black/30">
             <span className="absolute h-2 w-2 rounded-full bg-accent shadow-[0_0_16px_rgba(212,175,55,.9)]" />
@@ -80,27 +80,24 @@ export default function Places() {
                 disabled={!mapQuery.trim()}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 text-xs font-medium text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-45"
               >
-                Find on map <ArrowUpRight size={14} />
+                Search Google Maps <ArrowUpRight size={14} />
               </button>
             </div>
             {submittedQuery && (
               <p className="mt-3 text-xs leading-relaxed">
                 <a
-                  href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(submittedQuery)}`}
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(submittedQuery)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-accent underline decoration-accent/40 underline-offset-4 hover:decoration-accent"
                 >
-                  Open map results for “{submittedQuery}” <ArrowUpRight size={12} />
+                  Search Google Maps for “{submittedQuery}” <ArrowUpRight size={12} />
                 </a>
               </p>
             )}
           </form>
           <p className="relative mt-4 flex flex-wrap items-center justify-between gap-2 text-[10px] leading-relaxed opacity-55">
-            <span>Searches open in a new tab; your collection stays private and list-first.</span>
-            <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
-              © OpenStreetMap contributors
-            </a>
+            <span>Open the result in Google Maps and use Save to add it to one of your Maps lists.</span>
           </p>
         </div>
         <div className="flex flex-col justify-between rounded-[1.75rem] border border-ink/10 bg-ink/[0.025] p-6 dark:border-white/10 dark:bg-white/[0.025] sm:p-8">

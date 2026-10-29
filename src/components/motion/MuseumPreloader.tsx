@@ -7,10 +7,9 @@ export default function MuseumPreloader() {
   const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
-    const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
-    const duration = shouldReduceMotion ? 180 : coarsePointer ? 420 : 850;
+    const duration = shouldReduceMotion ? 120 : 260;
     const timeout = window.setTimeout(() => setVisible(false), duration);
-    const failsafe = window.setTimeout(() => setVisible(false), 1500);
+    const failsafe = window.setTimeout(() => setVisible(false), 500);
     const startedAt = performance.now();
     const interval = window.setInterval(() => {
       setProgress(Math.min(100, Math.round(((performance.now() - startedAt) / duration) * 100)));

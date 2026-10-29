@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Compass, Film, Home, Palette, Settings, Terminal } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { preloadRoute } from '../lib/preloadRoute';
 
 const tabs = [
   { label: 'Home', to: '/', Icon: Home },
@@ -31,6 +32,8 @@ export default function TabBar() {
             <NavLink
               key={to}
               to={to}
+              onPointerEnter={() => { void preloadRoute(to); }}
+              onFocus={() => { void preloadRoute(to); }}
               aria-current={active ? 'page' : undefined}
               className={`relative flex min-h-14 flex-col items-center justify-center gap-1 px-0.5 pt-2 text-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent ${
                 active ? 'text-accent' : 'opacity-55 hover:opacity-100'

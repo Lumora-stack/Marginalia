@@ -15,7 +15,7 @@ The app is organized into five areas:
 - **Home** — An editorial introduction and links into each area.
 - **Creative Journey** — Pencil Arts, Pixel Arts, Sketches, Doodles, DIY Crafts, and Games, with the existing gallery and game routes preserved.
 - **Tech** — A space for personal topic notes and articles.
-- **Explored Places** — Separate Food & Cafes and Travel collections, with a search form that opens map results in OpenStreetMap.
+- **Explored Places** — Separate Food & Cafes and Travel collections, with a search form that opens Google Maps.
 - **Watched** — A space for movie and series reviews.
 - **Settings & About** — Theme preferences and the artist profile.
 - **Owner portal** — The existing Supabase sign-in and artwork upload flow.
@@ -27,12 +27,13 @@ Tech, Places, and Watched currently provide the publication UI and empty states;
 ## ✨ Experience Highlights
 
 - **🌌 Interactive Ambient Hero** — Real-time WebGL Aurora with a static fallback for reduced-motion and lower-capability devices.
+- **✍️ Editorial type** — Expressive variable Fraunces display lettering paired with clean Manrope body copy and monospaced details.
 - **🖼️ Fullscreen Touch Lightbox** — Inspect artworks in detail with touch swipe navigation on phones and arrow keys on desktop.
 - **🖌️ Exhibition Gallery Views** — Browse masonry or carousel display modes with date sorting.
 - **🏛️ Cinematic Museum Flow** — Ambient hero, collection cards, shared room-cover transitions, and smooth scroll on supported devices.
 - **📱 App-style navigation** — Responsive desktop navigation and a safe-area-aware mobile tab bar.
 - **🔎 Global section search** — Quickly find areas and existing creative collections.
-- **🗺️ OpenStreetMap finder** — Search for a cafe, restaurant, landmark, or destination without adding an API key.
+- **🗺️ Google Maps finder** — Search for a cafe, restaurant, landmark, or destination, then save it to a Maps list.
 - **🌓 Four Theme Options** — Choose System, warm Light, classic Dark, or Acid Lime with midnight black, cobalt blue, and vivid lime.
 - **📱 Responsive, motion-aware experience** — Mobile-friendly fallbacks, reduced-motion support, and installable PWA support.
 

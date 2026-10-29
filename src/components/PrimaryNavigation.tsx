@@ -3,6 +3,7 @@ import { ArrowUpRight, Search, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { CATEGORIES } from '../lib/categories';
+import { preloadRoute } from '../lib/preloadRoute';
 import { SITE_NAME } from '../lib/site';
 import ThemeToggle from './ThemeToggle';
 
@@ -156,6 +157,8 @@ export default function PrimaryNavigation() {
               <NavLink
                 key={link.to}
                 to={link.to}
+                onPointerEnter={() => { void preloadRoute(link.to); }}
+                onFocus={() => { void preloadRoute(link.to); }}
                 className={`relative rounded-full px-3 py-2 text-[10px] font-mono uppercase tracking-[0.12em] transition-colors ${
                   active ? 'text-accent' : 'opacity-65 hover:opacity-100 hover:text-accent'
                 }`}

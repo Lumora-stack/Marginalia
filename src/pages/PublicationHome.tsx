@@ -146,7 +146,7 @@ export default function PublicationHome() {
             initial={reduceMotion ? false : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.08 }}
-            className="max-w-4xl font-serif text-[clamp(4rem,14vw,10rem)] leading-[0.83] tracking-[-0.075em] text-gradient"
+            className="editorial-wordmark max-w-4xl font-serif text-[clamp(4rem,14vw,10rem)] text-gradient"
           >
             {SITE_NAME}
           </motion.h1>
