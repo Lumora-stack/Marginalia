@@ -162,7 +162,7 @@ export default function PublicationHome() {
             A living collection of things I make, things I learn, places I find, and stories I carry with me.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3">
-            <Link to="/creative" className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-accent-light">
+            <Link to="/creative" className="inline-flex items-center gap-2 rounded-full border border-ink/15 px-6 py-3 text-[10px] font-mono uppercase tracking-[0.16em] transition hover:border-accent/50 hover:text-accent dark:border-white/15">
               Begin exploring <ArrowUpRight size={14} />
             </Link>
             <Link to="/settings/about" className="rounded-full border border-ink/15 px-6 py-3 text-[10px] font-mono uppercase tracking-[0.16em] transition hover:border-accent/50 hover:text-accent dark:border-white/15">
