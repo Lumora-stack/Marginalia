@@ -15,6 +15,7 @@ const areas = [
     title: 'Creative Journey',
     detail: 'Pencil, pixel, sketches, crafts, and games.',
     to: '/creative',
+    image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=85&w=1000&auto=format&fit=crop',
     Icon: Palette,
     style: 'from-amber-500/15 via-orange-400/5 to-transparent',
   },
@@ -23,6 +24,7 @@ const areas = [
     title: 'Tech',
     detail: 'Topics I am learning, in my own words.',
     to: '/tech',
+    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=85&w=1000&auto=format&fit=crop',
     Icon: Terminal,
     style: 'from-sky-500/15 via-indigo-400/5 to-transparent',
   },
@@ -31,6 +33,7 @@ const areas = [
     title: 'Explored Places',
     detail: 'Food worth finding and places worth keeping.',
     to: '/places/food',
+    image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=85&w=1000&auto=format&fit=crop',
     Icon: Compass,
     style: 'from-emerald-500/15 via-teal-400/5 to-transparent',
   },
@@ -39,6 +42,7 @@ const areas = [
     title: 'Watched',
     detail: 'Films and series, with notes from the credits.',
     to: '/watched',
+    image: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=85&w=1000&auto=format&fit=crop',
     Icon: Film,
     style: 'from-fuchsia-500/15 via-rose-400/5 to-transparent',
   },
@@ -47,6 +51,7 @@ const areas = [
     title: 'Settings & About',
     detail: 'The artist, the details, and your atmosphere.',
     to: '/settings',
+    image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=85&w=1000&auto=format&fit=crop',
     Icon: Sparkles,
     style: 'from-violet-500/15 via-purple-400/5 to-transparent',
   },
@@ -189,18 +194,27 @@ export default function PublicationHome() {
             >
               <Link
                 to={area.to}
-                className={`group relative flex min-h-52 flex-col justify-between overflow-hidden rounded-[1.65rem] border border-ink/10 bg-gradient-to-br ${area.style} p-6 transition duration-300 hover:-translate-y-0.5 hover:border-accent/35 dark:border-white/10 sm:min-h-56 sm:p-7`}
+                className={`publication-card group relative flex min-h-52 flex-col justify-between overflow-hidden rounded-[1.65rem] border border-white/10 bg-gradient-to-br ${area.style} p-6 text-white transition duration-300 hover:-translate-y-0.5 hover:border-accent/50 sm:min-h-56 sm:p-7`}
               >
-                <span className="flex items-center justify-between">
+                <img
+                  src={area.image}
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover opacity-65 transition duration-500 group-hover:scale-[1.04] group-hover:opacity-85"
+                />
+                <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-black/35 via-black/45 to-black/85" />
+                <span className="relative z-10 flex items-center justify-between">
                   <span className="font-mono text-[9px] tracking-[0.2em] text-accent">{area.number}</span>
-                  <area.Icon size={19} className="text-accent/80 transition-transform group-hover:scale-110" />
+                  <area.Icon size={19} className="text-accent transition-transform group-hover:scale-110" />
                 </span>
-                <span>
+                <span className="relative z-10">
                   <span className="flex items-center justify-between gap-3">
                     <span className="font-serif text-2xl tracking-tight">{area.title}</span>
                     <ArrowUpRight size={15} className="shrink-0 text-accent opacity-0 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100" />
                   </span>
-                  <span className="mt-2 block text-xs leading-relaxed opacity-55">{area.detail}</span>
+                  <span className="mt-2 block text-xs leading-relaxed text-white/75">{area.detail}</span>
                 </span>
               </Link>
             </motion.div>

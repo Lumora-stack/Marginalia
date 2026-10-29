@@ -29,7 +29,7 @@ export default function Creative() {
             >
               <Link
                 to={`/creative/${category.id}`}
-                className="group relative flex min-h-52 flex-col justify-between overflow-hidden rounded-[1.75rem] border border-ink/10 bg-gradient-to-br from-accent/10 via-transparent to-ink/[0.03] p-6 transition-colors hover:border-accent/35 dark:border-white/10 dark:to-white/[0.03] sm:min-h-60 sm:p-7"
+                className="publication-card group relative flex min-h-52 flex-col justify-between overflow-hidden rounded-[1.75rem] border border-white/15 bg-gradient-to-br from-accent/10 via-transparent to-ink/[0.03] p-6 text-white transition duration-300 hover:border-accent/50 sm:min-h-60 sm:p-7"
               >
                 <img
                   src={category.img}
@@ -37,9 +37,9 @@ export default function Creative() {
                   aria-hidden="true"
                   loading="lazy"
                   decoding="async"
-                  className="absolute inset-0 h-full w-full object-cover opacity-[0.14] transition duration-500 group-hover:scale-[1.03] group-hover:opacity-[0.22]"
+                  className="absolute inset-0 h-full w-full object-cover opacity-65 transition duration-500 group-hover:scale-[1.04] group-hover:opacity-85"
                 />
-                <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-paper/60 via-paper/30 to-paper/75 dark:from-[#0c0c0e]/65 dark:via-[#0c0c0e]/55 dark:to-[#0c0c0e]/80" />
+                <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/45 to-black/85" />
                 <div className="relative z-10 flex items-center justify-between">
                   <span className="font-mono text-[10px] tracking-[0.22em] text-accent">{category.num}</span>
                   <span className="flex h-10 w-10 items-center justify-center rounded-full border border-accent/20 bg-paper/60 text-accent transition duration-300 group-hover:scale-105 group-hover:bg-accent group-hover:text-white dark:bg-black/20">

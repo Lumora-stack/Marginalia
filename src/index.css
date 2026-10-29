@@ -153,6 +153,31 @@
     padding-inline-end: max(var(--container-gutter), env(safe-area-inset-right));
   }
 
+  .publication-card {
+    isolation: isolate;
+    box-shadow: 0 0 0 1px rgb(var(--accent-rgb) / 0.06);
+    transition: box-shadow 280ms ease, border-color 280ms ease, transform 280ms ease;
+  }
+
+  .publication-card:hover,
+  .publication-card:focus-visible {
+    box-shadow:
+      0 0 0 1px rgb(var(--accent-rgb) / 0.38),
+      0 0 28px rgb(var(--accent-rgb) / 0.2);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .publication-card,
+    .publication-card img {
+      transition: none !important;
+    }
+
+    .publication-card:hover,
+    .publication-card:hover img {
+      transform: none !important;
+    }
+  }
+
   .navbar-inner {
     min-height: calc(5rem + env(safe-area-inset-top));
   }
