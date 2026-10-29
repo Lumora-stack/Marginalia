@@ -1,6 +1,7 @@
 import { Code2, Search, SlidersHorizontal } from 'lucide-react';
 import { useState } from 'react';
-import { ContentPage, EmptyCollection } from '../components/ContentPage';
+import { ContentPage } from '../components/ContentPage';
+import PublicationEntries from '../components/PublicationEntries';
 
 const topics = ['All topics', 'DevSecOps', 'CI/CD', 'Cloud security', 'Tooling'];
 
@@ -46,10 +47,10 @@ export default function Tech() {
           </button>
         ))}
       </div>
-      <EmptyCollection
-        number="02"
-        title="The notebook is open."
-        description="Published topic cards and full articles will appear here once the content store is connected. Search and topic filters are ready for the collection."
+      <PublicationEntries
+        kind="tech"
+        searchText={query}
+        categoryFilter={topic === 'All topics' ? '' : topic}
       />
       <div className="mt-6 flex flex-wrap items-center gap-2 text-[10px] opacity-45">
         <Code2 size={14} className="text-accent" />

@@ -1,6 +1,7 @@
 import { ArrowUpRight, MapPin, MapPinned, Utensils, Compass } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { ContentPage, EmptyCollection } from '../components/ContentPage';
+import { ContentPage } from '../components/ContentPage';
+import PublicationEntries from '../components/PublicationEntries';
 import { useState, type FormEvent } from 'react';
 
 const placeTabs = [
@@ -116,11 +117,7 @@ export default function Places() {
         </div>
       </div>
 
-      <EmptyCollection
-        number={isTravel ? 'T' : 'F'}
-        title={isTravel ? 'The travel journal is waiting.' : 'A table for future finds.'}
-        description="Place cards, photo galleries, and coordinates will appear here when the content store is connected. The map stays optional, with a list-first fallback."
-      />
+      <PublicationEntries kind={isTravel ? 'travel' : 'food'} />
     </ContentPage>
   );
 }

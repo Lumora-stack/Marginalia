@@ -1,6 +1,7 @@
 import { Film, SlidersHorizontal, Star } from 'lucide-react';
 import { useState } from 'react';
-import { ContentPage, EmptyCollection } from '../components/ContentPage';
+import { ContentPage } from '../components/ContentPage';
+import PublicationEntries from '../components/PublicationEntries';
 
 const genres = ['All genres', 'Drama', 'Comedy', 'Sci-Fi', 'Thriller', 'Animation'];
 
@@ -33,10 +34,9 @@ export default function Watched() {
           </button>
         ))}
       </div>
-      <EmptyCollection
-        number="04"
-        title="A screen-side collection."
-        description="Movie and series posters, genres, ratings, rewatch notes, and spoiler-safe reviews will live here. No sample titles are shown as personal reviews."
+      <PublicationEntries
+        kind="watched"
+        categoryFilter={genre === 'All genres' ? '' : genre}
       />
       <div className="mt-6 flex flex-wrap items-center gap-5 text-[10px] opacity-45">
         <span className="inline-flex items-center gap-2"><Film size={14} className="text-accent" /> Movies & series</span>

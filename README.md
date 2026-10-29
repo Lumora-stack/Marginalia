@@ -18,9 +18,15 @@ The app is organized into five areas:
 - **Explored Places** — Separate Food & Cafes and Travel collections, with a search form that opens Google Maps.
 - **Watched** — A space for movie and series reviews.
 - **Settings & About** — Theme preferences and the artist profile.
-- **Owner portal** — The existing Supabase sign-in and artwork upload flow.
+- **Owner portal** — Supabase sign-in, Creative artwork uploads, and publication content management.
 
-Tech, Places, and Watched currently provide the publication UI and empty states; their content management and Supabase-backed records require a separately reviewed staging migration and authorization setup.
+Tech, Places, and Watched support curator-managed entries backed by Supabase. Each section keeps its own fields and filters while sharing the same publication controls.
+
+## Publishing content
+
+Sign in at `/admin` with the curator account. Creative Journey artwork continues to use the floating upload button. For Tech, Food & Cafes, Travel, and Watched, open the relevant page and use its **Add** button to publish an entry. The curator can edit or delete their entries; published entries are readable without signing in.
+
+Publication entries are stored in `public.publication_entries`. The migration in `supabase/migrations/` enables row-level security and limits writes to the configured curator email. Configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for the intended Supabase environment; never put a service-role key in the browser app.
 
 ---
 
