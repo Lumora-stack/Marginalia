@@ -57,17 +57,17 @@ export default defineConfig({
       workbox: {
         globIgnores: ['**/*.gz', '**/*.br', '**/bundle-analysis-*.json'],
       },
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'pwa-icon.svg'],
       manifest: {
-        name: 'Artville Gallery of Imagination',
+        name: 'Artville — A Personal Publication',
         short_name: 'Artville',
-        description: 'Living Digital Art Gallery & Archive',
-        theme_color: '#0C0C0D',
-        background_color: '#0C0C0D',
+        description: 'A personal world of creativity, curiosity, and places explored.',
+        theme_color: '#030407',
+        background_color: '#030407',
         display: 'standalone',
         icons: [
           {
-            src: 'favicon.svg',
+            src: 'pwa-icon.svg',
             sizes: 'any',
             type: 'image/svg+xml',
             purpose: 'any maskable'

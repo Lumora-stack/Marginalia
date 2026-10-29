@@ -1,80 +1,141 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Download, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SITE_NAME } from '../lib/site';
 
 interface BeforeInstallPromptEvent extends Event {
-  readonly platforms?: string[];
   readonly userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
   prompt(): Promise<void>;
+}
+
+const DISMISSED_KEY = 'pwa-prompt-dismissed';
+
+function isAppInstalled() {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+    ('standalone' in navigator && navigator.standalone === true);
 }
 
 export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
+  const [installing, setInstalling] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      // Only show if we haven't dismissed it recently
-      if (!localStorage.getItem('pwa-prompt-dismissed')) {
+    const displayMode = window.matchMedia('(display-mode: standalone)');
+    const syncInstalledState = () => {
+      if (!isAppInstalled()) return;
+      setDeferredPrompt(null);
+      setShowPrompt(false);
+    };
+    const handleBeforeInstall = (event: Event) => {
+      event.preventDefault();
+      const promptEvent = event as BeforeInstallPromptEvent;
+      setDeferredPrompt(promptEvent);
+      setError('');
+      if (!isAppInstalled() && !sessionStorage.getItem(DISMISSED_KEY)) {
         setShowPrompt(true);
       }
     };
+    const handleInstalled = () => {
+      setDeferredPrompt(null);
+      setShowPrompt(false);
+      setInstalling(false);
+      sessionStorage.removeItem(DISMISSED_KEY);
+    };
 
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    syncInstalledState();
+    displayMode.addEventListener('change', syncInstalledState);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('appinstalled', handleInstalled);
+    return () => {
+      displayMode.removeEventListener('change', syncInstalledState);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('appinstalled', handleInstalled);
+    };
   }, []);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
+    if (!deferredPrompt || installing) return;
+    setInstalling(true);
+    setError('');
+    try {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
       setDeferredPrompt(null);
       setShowPrompt(false);
+      if (outcome === 'dismissed') sessionStorage.setItem(DISMISSED_KEY, 'true');
+    } catch (installError) {
+      console.error('Could not start the app installation prompt:', installError);
+      setError('The install dialog could not be opened. Try installing from your browser menu.');
+      setDeferredPrompt(null);
+    } finally {
+      setInstalling(false);
     }
   };
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    localStorage.setItem('pwa-prompt-dismissed', 'true');
+    sessionStorage.setItem(DISMISSED_KEY, 'true');
   };
 
   return (
     <AnimatePresence>
       {showPrompt && (
-        <motion.div
-          initial={{ y: 100, opacity: 0 }}
+        <motion.section
+          role="dialog"
+          aria-label={`Install ${SITE_NAME}`}
+          initial={{ y: 32, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
-          className="fixed bottom-6 left-6 right-6 md:left-auto md:w-96 bg-paper dark:bg-ink border border-ink/10 dark:border-white/10 shadow-2xl rounded-2xl p-6 z-50 flex gap-4 items-start"
+          exit={{ y: 32, opacity: 0 }}
+          className="fixed bottom-6 left-4 right-4 z-50 mx-auto grid max-w-md grid-cols-[auto_1fr_auto] items-start gap-4 rounded-2xl border border-ink/10 bg-paper p-5 text-ink shadow-2xl dark:border-white/15 dark:bg-[#101114] dark:text-white sm:bottom-8 sm:right-8 sm:left-auto sm:mx-0"
         >
-          <div className="bg-accent/10 text-accent p-3 rounded-xl flex-shrink-0">
-            <Download size={24} />
+          <div className="mt-1 flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent">
+            <Download size={21} aria-hidden="true" />
           </div>
-          <div className="flex-1">
-            <h3 className="font-serif text-lg mb-1">Install Portfolio App</h3>
-            <p className="text-sm opacity-70 mb-4">Add this portfolio to your home screen for fast, offline access.</p>
-            <div className="flex gap-3">
-              <button 
-                onClick={handleInstall}
-                className="flex-1 bg-ink text-paper dark:bg-paper dark:text-ink py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
-              >
-                Install
-              </button>
-              <button 
+          <div className="min-w-0">
+            <h2 className="font-serif text-lg leading-tight">{`Install ${SITE_NAME}`}</h2>
+            <p className="mt-1 text-sm leading-relaxed opacity-70">
+              Add Artville to your home screen for quick access and offline viewing.
+            </p>
+            {error && <p role="alert" className="mt-2 text-xs text-red-600 dark:text-red-400">{error}</p>}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {deferredPrompt ? (
+                <button
+                  type="button"
+                  onClick={handleInstall}
+                  disabled={installing}
+                  className="rounded-lg bg-ink px-5 py-2 text-sm font-medium text-paper transition hover:opacity-85 disabled:cursor-wait disabled:opacity-60 dark:bg-paper dark:text-ink"
+                >
+                  {installing ? 'Opening…' : 'Install'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleDismiss}
+                  className="rounded-lg bg-ink px-5 py-2 text-sm font-medium text-paper transition hover:opacity-85 dark:bg-paper dark:text-ink"
+                >
+                  Got it
+                </button>
+              )}
+              <button
+                type="button"
                 onClick={handleDismiss}
-                className="px-4 py-2 bg-ink/5 dark:bg-white/5 rounded-lg text-sm font-medium hover:bg-ink/10 dark:hover:bg-white/10 transition-colors"
+                className="rounded-lg px-4 py-2 text-sm font-medium opacity-70 transition hover:bg-ink/5 hover:opacity-100 dark:hover:bg-white/10"
               >
                 Not now
               </button>
             </div>
           </div>
-          <button onClick={handleDismiss} className="absolute top-4 right-4 opacity-50 hover:opacity-100">
-            <X size={16} />
+          <button
+            type="button"
+            onClick={handleDismiss}
+            aria-label="Dismiss install prompt"
+            className="rounded-full p-1.5 opacity-55 transition hover:bg-ink/5 hover:opacity-100 dark:hover:bg-white/10"
+          >
+            <X size={16} aria-hidden="true" />
           </button>
-        </motion.div>
+        </motion.section>
       )}
     </AnimatePresence>
   );

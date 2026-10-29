@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowDown, ArrowUpRight, Compass, Film, MapPin, Palette, Sparkles, Terminal } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, Compass, Film, Palette, Sparkles, Terminal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCanvasActivity } from '../components/motion/useCanvasActivity';
 import { useQuality } from '../lib/quality-context';
@@ -208,32 +208,6 @@ export default function PublicationHome() {
         </div>
       </section>
 
-      <section className="mb-6 grid gap-4 lg:grid-cols-[0.75fr_1.25fr]">
-        <div className="rounded-[1.65rem] border border-accent/20 bg-accent/[0.04] p-6 sm:p-8">
-          <p className="font-mono text-[9px] uppercase tracking-[0.24em] text-accent">Currently</p>
-          <h2 className="mt-3 font-serif text-3xl">The present tense.</h2>
-          <p className="mt-3 text-sm leading-relaxed opacity-55">A small rotating note about what I am watching, learning, and where I have been.</p>
-          <p className="mt-6 inline-flex items-center gap-2 text-[9px] font-mono uppercase tracking-[0.15em] opacity-40">
-            <MapPin size={13} className="text-accent" /> Updates appear here when published
-          </p>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {[
-            { label: 'Watching', description: 'What is on screen now', Icon: Film },
-            { label: 'Learning', description: 'A new idea taking shape', Icon: Terminal },
-            { label: 'Last explored', description: 'A place I still remember', Icon: Compass },
-          ].map(({ label, description, Icon }) => (
-            <div key={label} className="flex flex-col justify-between rounded-[1.5rem] border border-ink/10 p-5 dark:border-white/10">
-              <Icon size={17} className="text-accent" />
-              <span className="mt-8">
-                <span className="block font-serif text-lg">{label}</span>
-                <span className="mt-1 block text-[10px] leading-relaxed opacity-45">{description}</span>
-                <span className="mt-3 block text-[9px] font-mono uppercase tracking-wider opacity-35">No update yet</span>
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
       <div className="mb-6 flex justify-end">
         <ContentPageFooter />
       </div>
