@@ -33,9 +33,8 @@ Tech, Places, and Watched currently provide the publication UI and empty states;
 - **📱 App-style navigation** — Responsive desktop navigation and a safe-area-aware mobile tab bar.
 - **🔎 Global section search** — Quickly find areas and existing creative collections.
 - **🗺️ OpenStreetMap finder** — Search for a cafe, restaurant, landmark, or destination without adding an API key.
-- **🌓 Dark & Light Atmosphere** — Toggle between a deep cinematic museum theme and a warm paper aesthetic.
+- **🌓 Four Theme Options** — Choose System, warm Light, classic Dark, or Acid Lime with midnight black, cobalt blue, and vivid lime.
 - **📱 Responsive, motion-aware experience** — Mobile-friendly fallbacks, reduced-motion support, and installable PWA support.
-- **🎯 Dynamic Custom Cursor** — Interactive desktop cursor with spring physics and visual cues.
 
 ---
 

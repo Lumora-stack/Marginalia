@@ -13,11 +13,17 @@
     <script>
       (function() {
         var theme = localStorage.getItem('theme');
-        if (theme === 'dark' || ((theme === 'system' || !theme) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if (theme === 'acid-lime') {
+          document.documentElement.dataset.theme = theme;
+          document.documentElement.classList.add('dark');
+        } else if (theme === 'light' || theme === 'dark' || theme === 'system') {
+          document.documentElement.dataset.theme = theme;
+        }
+        if (theme === 'dark' || theme === 'acid-lime' || ((theme === 'system' || !theme) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark');
         }
         var isDark = document.documentElement.classList.contains('dark');
-        document.querySelector('meta[name="theme-color"]').setAttribute('content', isDark ? '#0C0C0E' : '#F7F5F1');
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', theme === 'acid-lime' ? '#030407' : isDark ? '#0C0C0E' : '#F7F5F1');
         document.querySelector('meta[name="color-scheme"]').setAttribute('content', isDark ? 'dark' : 'light');
       })();
     </script>

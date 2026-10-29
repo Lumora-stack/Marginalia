@@ -9,6 +9,7 @@ const preferences: { id: ThemePreference; label: string; detail: string }[] = [
   { id: 'system', label: 'System', detail: 'Follow your device' },
   { id: 'light', label: 'Light', detail: 'Warm paper' },
   { id: 'dark', label: 'Dark', detail: 'Evening gallery' },
+  { id: 'acid-lime', label: 'Acid Lime', detail: 'Midnight, cobalt & lime' },
 ];
 
 const contactItems = [
@@ -42,7 +43,7 @@ export default function Settings() {
           </div>
           <span className="flex h-10 w-10 items-center justify-center rounded-full border border-accent/20 text-accent"><SunMoon size={18} /></span>
         </div>
-        <div className="mt-6 grid gap-2 sm:grid-cols-3" role="group" aria-label="Theme preference">
+        <div className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-4" role="group" aria-label="Theme preference">
           {preferences.map(item => (
             <button
               key={item.id}

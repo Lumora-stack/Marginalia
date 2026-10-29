@@ -14,16 +14,30 @@
     --section-space: clamp(64px, 8vw, 120px);
     --content-gap: clamp(24px, 2.2vw, 32px);
     --heading-gap: clamp(32px, 3.2vw, 48px);
+    --paper-rgb: 247 245 241;
+    --ink-rgb: 12 12 13;
     --accent-rgb: 133 101 13;
     --accent-light-rgb: 112 84 8;
+    --cobalt-rgb: 21 88 201;
     --shimmer-highlight: #705408;
   }
 
   :root.dark {
     color-scheme: dark;
+    --paper-rgb: 12 12 14;
+    --ink-rgb: 240 237 230;
     --accent-rgb: 212 175 55;
     --accent-light-rgb: 232 200 74;
     --shimmer-highlight: #fff2bd;
+  }
+
+  :root[data-theme="acid-lime"] {
+    color-scheme: dark;
+    --paper-rgb: 3 4 7;
+    --ink-rgb: 242 245 250;
+    --accent-rgb: 212 255 36;
+    --accent-light-rgb: 21 88 201;
+    --shimmer-highlight: #d4ff24;
   }
 
   *, *::before, *::after {
@@ -54,7 +68,7 @@
   }
 
   .dark body {
-    @apply bg-[#0c0c0e] text-[#f0ede6];
+    @apply bg-paper text-ink;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -116,8 +130,8 @@
   @media (min-width: 768px) {
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.35); border-radius: 99px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(212,175,55,0.7); }
+    ::-webkit-scrollbar-thumb { background: rgb(var(--accent-rgb) / 0.35); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgb(var(--accent-rgb) / 0.7); }
   }
 }
 
@@ -219,6 +233,25 @@
       linear-gradient(135deg, #0d0d0f, #15120a 56%, #0d0d0f);
   }
 
+  :root[data-theme="acid-lime"] .hero-poster,
+  :root[data-theme="acid-lime"] .dark .hero-poster {
+    background:
+      radial-gradient(ellipse at 68% 42%, rgb(var(--cobalt-rgb) / 0.36), transparent 58%),
+      linear-gradient(135deg, #030407, #07122a 56%, #030407);
+  }
+
+  :root[data-theme="acid-lime"] .home-depth-layer-back {
+    background:
+      radial-gradient(ellipse at 22% 30%, rgb(var(--cobalt-rgb) / 0.3), transparent 28%),
+      radial-gradient(ellipse at 78% 68%, rgb(var(--accent-rgb) / 0.18), transparent 32%);
+  }
+
+  :root[data-theme="acid-lime"] .home-depth-layer-middle {
+    background:
+      linear-gradient(118deg, transparent 14%, rgb(var(--cobalt-rgb) / 0.16) 48%, transparent 76%),
+      radial-gradient(ellipse at 50% 100%, rgb(var(--accent-rgb) / 0.12), transparent 42%);
+  }
+
   .room-depth-number {
     pointer-events: none;
     transform: translateZ(-8px);
@@ -257,7 +290,7 @@
     z-index: 4;
     pointer-events: none;
     opacity: 0;
-    background: repeating-linear-gradient(to bottom, rgba(212, 175, 55, 0.075) 0, rgba(212, 175, 55, 0.075) 1px, transparent 1px, transparent 4px);
+    background: repeating-linear-gradient(to bottom, rgb(var(--accent-rgb) / 0.075) 0, rgb(var(--accent-rgb) / 0.075) 1px, transparent 1px, transparent 4px);
     transition: opacity 400ms ease;
   }
 

@@ -8,8 +8,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: '#0C0C0D',
-        paper: '#F7F5F1',
+        ink: 'rgb(var(--ink-rgb) / <alpha-value>)',
+        paper: 'rgb(var(--paper-rgb) / <alpha-value>)',
         accent: 'rgb(var(--accent-rgb) / <alpha-value>)',
         'accent-light': 'rgb(var(--accent-light-rgb) / <alpha-value>)',
       },

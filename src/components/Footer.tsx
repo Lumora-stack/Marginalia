@@ -1,9 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowUp, Mail, Phone, AtSign, Sparkles } from 'lucide-react';
-import { lazy, Suspense } from 'react';
 import { SITE_NAME, SITE_TAGLINE } from '../lib/site';
-
-const ScrollVelocity = lazy(() => import('./ScrollVelocity'));
 
 export default function Footer() {
   const scrollToTop = () => {
@@ -99,18 +96,6 @@ export default function Footer() {
               </li>
             </ul>
           </div>
-        </div>
-
-        <div aria-hidden="true" className="mb-8 overflow-hidden border-y border-ink/10 dark:border-white/10 py-4">
-          <Suspense fallback={<p className="whitespace-nowrap font-serif text-4xl text-accent/25 sm:text-6xl">ART IS A WAY OF SEEING · ART IS A WAY OF SEEING ·</p>}>
-            <ScrollVelocity
-              texts={['ART IS A WAY OF SEEING']}
-              velocity={18}
-              numCopies={4}
-              className="font-serif text-4xl text-accent/25 sm:text-6xl"
-              draggable={false}
-            />
-          </Suspense>
         </div>
 
         {/* Separator and Bottom Bar */}

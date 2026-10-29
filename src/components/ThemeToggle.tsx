@@ -1,5 +1,6 @@
 import { Moon, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { setThemePreference } from '../lib/theme';
 
 export default function ThemeToggle({ className = '' }: { className?: string }) {
   const [isDark, setIsDark] = useState(() =>
@@ -22,10 +23,7 @@ export default function ThemeToggle({ className = '' }: { className?: string }) 
     document.documentElement.style.setProperty('--theme-x', `${bounds.left + bounds.width / 2}px`);
     document.documentElement.style.setProperty('--theme-y', `${bounds.top + bounds.height / 2}px`);
     const applyTheme = () => {
-      document.documentElement.classList.toggle('dark', next);
-      localStorage.setItem('theme', next ? 'dark' : 'light');
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', next ? '#0C0C0E' : '#F7F5F1');
-      document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', next ? 'dark' : 'light');
+      setThemePreference(next ? 'dark' : 'light');
       setIsDark(next);
     };
     const transitionDocument = document as Document & {

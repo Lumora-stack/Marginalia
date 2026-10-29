@@ -13,8 +13,6 @@ import { qualityAtLeast } from '../lib/quality-types';
 import { useThemeColors } from '../lib/useThemeColors';
 
 const UploadFAB = lazy(() => import('./UploadFAB'));
-const ClickSpark = lazy(() => import('./ClickSpark'));
-const TargetCursor = lazy(() => import('./TargetCursor'));
 const Noise = lazy(() => import('./Noise'));
 
 export default function Layout() {
@@ -50,20 +48,6 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col relative bg-grain selection:bg-accent/30 selection:text-ink dark:selection:text-white">
       <ScrollProgress />
       <VisualFilters />
-      {finePointer && tier !== 'low' && !shouldReduceMotion && (
-        <Suspense fallback={null}>
-          <TargetCursor
-            targetSelector="a, button, [role='button'], input, select, textarea, .cursor-zoom-in, [data-cursor-label]"
-            cursorColor={colors.accent}
-            cursorColorOnTarget={colors.isDark ? '#fff2bd' : '#29271f'}
-            spinDuration={2.6}
-            size={32}
-            padding={5}
-            blendMode="normal"
-            showLabel
-          />
-        </Suspense>
-      )}
       {finePointer && qualityAtLeast(tier, 'medium') && !shouldReduceMotion && (
         <Suspense fallback={null}>
           <Noise
@@ -123,22 +107,5 @@ export default function Layout() {
     </div>
   );
 
-  return (
-    finePointer && tier !== 'low' && !shouldReduceMotion ? (
-      <Suspense fallback={content}>
-        <ClickSpark
-          sparkColor={[colors.accent, colors.isDark ? '#fff2bd' : '#5e4812']}
-          sparkSize={7}
-          sparkRadius={28}
-          sparkCount={6}
-          sparkWidth={1.5}
-          duration={420}
-          glow={0.35}
-          className="min-h-screen"
-        >
-          {content}
-        </ClickSpark>
-      </Suspense>
-    ) : content
-  );
+  return content;
 }
