@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { ArrowUp, Mail, Phone, AtSign, Sparkles } from 'lucide-react';
 import { SITE_NAME, SITE_TAGLINE } from '../lib/site';
 
@@ -15,7 +14,7 @@ export default function Footer() {
       <div className="site-container pt-4 pb-2 sm:pt-12 sm:pb-8">
         <div className="grid grid-cols-2 gap-x-4 gap-y-4 mb-4 sm:gap-[var(--content-gap)] sm:mb-10 md:grid-cols-12">
           {/* Brand & Manifesto */}
-          <div className="col-span-2 md:col-span-5 space-y-2 sm:space-y-4">
+          <div className="col-span-2 md:col-span-7 space-y-2 sm:space-y-4">
             <div className="flex items-center gap-2">
               <Sparkles size={18} className="text-accent" />
               <span className="font-accent text-2xl tracking-tight">{SITE_NAME}</span>
@@ -31,36 +30,8 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Collections */}
-          <div className="md:col-span-4 space-y-2 sm:space-y-4">
-            <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-accent sm:text-xs sm:tracking-[0.25em]">
-              Collections
-            </p>
-            <ul className="grid grid-cols-2 gap-x-2 gap-y-1.5 sm:grid-cols-2 sm:gap-2.5">
-              {[
-                { label: 'Home', to: '/' },
-                { label: 'Creative Journey', to: '/creative' },
-                { label: 'Tech', to: '/tech' },
-                { label: 'Food & Cafes', to: '/places/food' },
-                { label: 'Travel', to: '/places/travel' },
-                { label: 'Watched', to: '/watched' },
-                { label: 'Settings', to: '/settings' },
-              ].map((area, index) => (
-                <li key={area.to}>
-                  <Link
-                    to={area.to}
-                    className="text-xs opacity-70 hover:opacity-100 hover:text-accent transition-colors flex items-center gap-1.5 group sm:gap-2 sm:text-sm"
-                  >
-                    <span className="text-[10px] font-mono text-accent group-hover:text-accent">{String(index + 1).padStart(2, '0')}</span>
-                    <span>{area.label}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
           {/* Connect */}
-          <div className="md:col-span-3 space-y-2 sm:space-y-4">
+          <div className="col-span-2 md:col-span-5 space-y-2 sm:space-y-4">
             <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-accent sm:text-xs sm:tracking-[0.25em]">
               Let's Connect
             </p>
