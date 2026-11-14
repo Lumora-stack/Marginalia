@@ -71,26 +71,21 @@ function extensionForImage(blob: Blob, fileName: string) {
 }
 
 function getSaveErrorMessage(saveError: unknown) {
+  const error = typeof saveError === 'object' && saveError !== null
+    ? saveError as { code?: unknown; message?: unknown; details?: unknown }
+    : null;
+  const message = typeof error?.message === 'string' ? error.message : '';
+  const details = typeof error?.details === 'string' ? error.details : '';
+  const errorText = `${message} ${details}`;
+
   if (
-    typeof saveError === 'object'
-    && saveError !== null
-    && 'code' in saveError
-    && saveError.code === '42703'
-    && 'message' in saveError
-    && typeof saveError.message === 'string'
-    && /publication_entries\.keywords|keywords.*does not exist/i.test(saveError.message)
+    (error?.code === '42703' || error?.code === 'PGRST204')
+    && /keywords/i.test(errorText)
+    && /publication_entries|schema cache|does not exist|could not find/i.test(errorText)
   ) {
-    return 'Places keywords are not enabled in the database yet. In Supabase SQL Editor, run: ALTER TABLE public.publication_entries ADD COLUMN IF NOT EXISTS keywords text[] NOT NULL DEFAULT \'{}\';';
+    return 'Places keywords are missing from the Supabase database schema. Apply the keywords migration in supabase/migrations/20261114120000_publication_entry_keywords.sql, then retry.';
   }
-  if (saveError instanceof Error) return saveError.message;
-  if (
-    typeof saveError === 'object'
-    && saveError !== null
-    && 'message' in saveError
-    && typeof saveError.message === 'string'
-  ) {
-    return saveError.message;
-  }
+  if (message) return message;
   return 'Could not save this entry. Please try again.';
 }
 
