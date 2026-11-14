@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { BookOpen, ExternalLink, MapPin, Pencil, Plus, Star, Trash2, X } from 'lucide-react';
+import { BookOpen, ExternalLink, ImagePlus, MapPin, Pencil, Plus, Star, Trash2, X } from 'lucide-react';
 import { CURATOR_EMAIL, type PublicationEntry, type PublicationKind } from '../lib/publication';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import { compressImage } from '../lib/image-utils';
 
 type EntryDraft = {
   title: string;
   summary: string;
   content: string;
   category: string;
+  keywords: string;
   location: string;
   map_url: string;
   visited_on: string;
@@ -22,6 +24,7 @@ const emptyDraft = (): EntryDraft => ({
   summary: '',
   content: '',
   category: '',
+  keywords: '',
   location: '',
   map_url: '',
   visited_on: '',
@@ -47,6 +50,26 @@ function isSafeHttpsUrl(value: string) {
   }
 }
 
+function storagePathForUrl(value: string) {
+  const marker = '/portfolio-images/';
+  const path = value.split(marker)[1]?.split('?')[0];
+  if (!path) return null;
+  try {
+    return decodeURIComponent(path);
+  } catch {
+    return null;
+  }
+}
+
+function extensionForImage(blob: Blob, fileName: string) {
+  if (blob.type === 'image/webp') return 'webp';
+  if (blob.type === 'image/jpeg') return 'jpg';
+  if (blob.type === 'image/png') return 'png';
+  if (blob.type === 'image/gif') return 'gif';
+  if (blob.type === 'image/svg+xml') return 'svg';
+  return fileName.split('.').pop()?.toLowerCase() || 'jpg';
+}
+
 export default function PublicationEntries({
   kind,
   searchText = '',
@@ -63,6 +86,7 @@ export default function PublicationEntries({
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<EntryDraft>(emptyDraft);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -130,7 +154,9 @@ export default function PublicationEntries({
         entry.summary,
         entry.content,
         entry.category,
+        ...(entry.keywords ?? []),
         entry.location,
+        entry.map_url,
       ].some(value => value?.toLowerCase().includes(query));
       return matchesCategory && matchesQuery;
     });
@@ -143,6 +169,7 @@ export default function PublicationEntries({
       summary: entry.summary ?? '',
       content: entry.content ?? '',
       category: entry.category ?? '',
+      keywords: entry.keywords?.join(', ') ?? '',
       location: entry.location ?? '',
       map_url: entry.map_url ?? '',
       visited_on: entry.visited_on ?? '',
@@ -151,6 +178,7 @@ export default function PublicationEntries({
       price_range: entry.price_range ?? '',
       image_url: entry.image_url ?? '',
     });
+    setImageFile(null);
     setError('');
     setEditorOpen(true);
   };
@@ -160,6 +188,7 @@ export default function PublicationEntries({
     setEditorOpen(false);
     setEditingId(null);
     setDraft(emptyDraft());
+    setImageFile(null);
     setError('');
   };
 
@@ -173,33 +202,77 @@ export default function PublicationEntries({
       setError('Image and map links must use secure https:// URLs.');
       return;
     }
-
+    if (!editingId && (kind === 'food' || kind === 'travel') && !imageFile && !draft.image_url.trim()) {
+      setError('Add a place photo before publishing.');
+      return;
+    }
+    if ((kind === 'food' || kind === 'travel') && !draft.summary.trim()) {
+      setError('Add a short summary before publishing this place.');
+      return;
+    }
     setSaving(true);
     setError('');
-    const payload = {
-      kind,
-      title: draft.title.trim(),
-      summary: draft.summary.trim() || null,
-      content: draft.content.trim() || null,
-      category: draft.category || null,
-      location: draft.location.trim() || null,
-      map_url: draft.map_url.trim() || null,
-      visited_on: draft.visited_on || null,
-      year: draft.year ? Number(draft.year) : null,
-      rating: draft.rating ? Number(draft.rating) : null,
-      price_range: draft.price_range.trim() || null,
-      image_url: draft.image_url.trim() || null,
-      user_id: userId,
-    };
+    const keywords = [...new Map(
+      draft.keywords
+        .split(/[,\n]/)
+        .map(keyword => keyword.trim())
+        .filter(Boolean)
+        .map(keyword => [keyword.toLocaleLowerCase(), keyword] as const),
+    ).values()];
+    let uploadedImagePath: string | null = null;
+    let imageUrl = draft.image_url.trim() || null;
 
     try {
+      if (imageFile) {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!session?.user) throw new Error('Your owner session has expired. Sign in again and retry.');
+
+        const compressedImage = await compressImage(imageFile, 1600);
+        const extension = extensionForImage(compressedImage, imageFile.name);
+        uploadedImagePath = `${session.user.id}/publication-covers/${Date.now()}-${crypto.randomUUID()}.${extension}`;
+        const { error: storageError } = await supabase.storage
+          .from('portfolio-images')
+          .upload(uploadedImagePath, compressedImage, {
+            contentType: compressedImage.type || imageFile.type || 'application/octet-stream',
+            upsert: false,
+          });
+        if (storageError) throw storageError;
+        imageUrl = supabase.storage.from('portfolio-images').getPublicUrl(uploadedImagePath).data.publicUrl;
+      }
+
+      const payload = {
+        kind,
+        title: draft.title.trim(),
+        summary: draft.summary.trim() || null,
+        content: draft.content.trim() || null,
+        category: draft.category || null,
+        keywords: kind === 'food' || kind === 'travel' ? keywords : [],
+        location: draft.location.trim() || null,
+        map_url: draft.map_url.trim() || null,
+        visited_on: draft.visited_on || null,
+        year: draft.year ? Number(draft.year) : null,
+        rating: draft.rating ? Number(draft.rating) : null,
+        price_range: draft.price_range.trim() || null,
+        image_url: imageUrl,
+        user_id: userId,
+      };
+
       const result = editingId
         ? await supabase.from('publication_entries').update(payload).eq('id', editingId)
         : await supabase.from('publication_entries').insert(payload);
       if (result.error) throw result.error;
+      const previousImagePath = editingId
+        ? storagePathForUrl(entries.find(entry => entry.id === editingId)?.image_url ?? '')
+        : null;
       setEditorOpen(false);
       setEditingId(null);
       setDraft(emptyDraft());
+      setImageFile(null);
+      if (uploadedImagePath && previousImagePath) {
+        const { error: cleanupError } = await supabase.storage.from('portfolio-images').remove([previousImagePath]);
+        if (cleanupError) console.error('Could not remove the replaced publication image:', cleanupError);
+      }
       try {
         setEntries(await fetchEntries());
       } catch (refreshError) {
@@ -207,6 +280,10 @@ export default function PublicationEntries({
         setError('Saved successfully, but the collection could not refresh. Reload the page to see it.');
       }
     } catch (saveError) {
+      if (uploadedImagePath) {
+        const { error: cleanupError } = await supabase.storage.from('portfolio-images').remove([uploadedImagePath]);
+        if (cleanupError) console.error('Could not clean up publication image after save failure:', cleanupError);
+      }
       console.error(`Could not save ${kind} entry:`, saveError);
       setError(saveError instanceof Error ? saveError.message : 'Could not save this entry. Please try again.');
     } finally {
@@ -224,6 +301,14 @@ export default function PublicationEntries({
         .eq('id', entry.id);
       if (deleteError) throw deleteError;
       setEntries(current => current.filter(item => item.id !== entry.id));
+      const imagePath = storagePathForUrl(entry.image_url ?? '');
+      if (imagePath) {
+        const { error: storageError } = await supabase.storage.from('portfolio-images').remove([imagePath]);
+        if (storageError) {
+          console.error('Entry was deleted but its stored image could not be removed:', storageError);
+          setError('Entry deleted, but its stored image could not be removed.');
+        }
+      }
     } catch (deleteError) {
       console.error(`Could not delete ${kind} entry:`, deleteError);
       setError(deleteError instanceof Error ? deleteError.message : 'Could not delete this entry.');
@@ -244,7 +329,7 @@ export default function PublicationEntries({
         <div className="mb-6 flex justify-end">
           <button
             type="button"
-            onClick={() => { setEditingId(null); setDraft(emptyDraft()); setError(''); setEditorOpen(true); }}
+            onClick={() => { setEditingId(null); setDraft(emptyDraft()); setImageFile(null); setError(''); setEditorOpen(true); }}
             className="inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-xs font-medium text-white transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             <Plus size={15} /> Add {kind === 'tech' ? 'topic' : kind === 'watched' ? 'review' : 'place'}
@@ -288,13 +373,17 @@ export default function PublicationEntries({
 
           {(kind === 'food' || kind === 'travel') && (
             <>
+              <label className="grid gap-1.5 text-xs sm:col-span-2">
+                Keywords
+                <input maxLength={500} value={draft.keywords} onChange={event => updateDraft('keywords', event.target.value)} placeholder="Separate keywords with commas, e.g. cozy, brunch, Chennai" className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
+              </label>
               <label className="grid gap-1.5 text-xs">
                 {kind === 'food' ? 'Location / address' : 'Destination'}
                 <input maxLength={240} value={draft.location} onChange={event => updateDraft('location', event.target.value)} className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
               </label>
               <label className="grid gap-1.5 text-xs">
                 {kind === 'food' ? 'Google Maps link' : 'Maps / destination link'}
-                <input type="url" value={draft.map_url} onChange={event => updateDraft('map_url', event.target.value)} placeholder="https://" className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
+                <input type="url" required={!editingId} value={draft.map_url} onChange={event => updateDraft('map_url', event.target.value)} placeholder="https://" className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
               </label>
               <label className="grid gap-1.5 text-xs">
                 {kind === 'food' ? 'Visit date' : 'Travel date'}
@@ -331,7 +420,7 @@ export default function PublicationEntries({
 
           <label className="grid gap-1.5 text-xs sm:col-span-2">
             Short description
-            <textarea rows={2} maxLength={500} value={draft.summary} onChange={event => updateDraft('summary', event.target.value)} className="resize-y rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
+            <textarea required={kind === 'food' || kind === 'travel'} rows={2} maxLength={500} value={draft.summary} onChange={event => updateDraft('summary', event.target.value)} className="resize-y rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
           </label>
 
           <label className="grid gap-1.5 text-xs sm:col-span-2">
@@ -340,7 +429,21 @@ export default function PublicationEntries({
           </label>
 
           <label className="grid gap-1.5 text-xs sm:col-span-2">
-            Cover image URL (optional)
+            Upload a photo or cover image
+            <span className="flex items-center gap-2 rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm dark:border-white/10 dark:bg-black/20">
+              <ImagePlus size={16} className="shrink-0 text-accent" />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={event => setImageFile(event.target.files?.[0] ?? null)}
+                className="min-w-0 flex-1 text-xs file:mr-3 file:rounded-full file:border-0 file:bg-accent/10 file:px-3 file:py-2 file:text-xs file:text-accent"
+              />
+            </span>
+            {imageFile && <span className="text-[11px] opacity-60">Selected: {imageFile.name}</span>}
+            {!imageFile && draft.image_url && (
+              <img src={draft.image_url} alt="Current cover" className="mt-2 max-h-52 w-full rounded-xl object-cover" />
+            )}
+            <span className="text-[11px] opacity-50">Or paste an existing secure image URL below.</span>
             <input type="url" value={draft.image_url} onChange={event => updateDraft('image_url', event.target.value)} placeholder="https://" className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
           </label>
 
@@ -364,7 +467,7 @@ export default function PublicationEntries({
           {visibleEntries.map(entry => (
             <article key={entry.id} className="overflow-hidden rounded-3xl border border-ink/10 bg-ink/[0.02] dark:border-white/10 dark:bg-white/[0.02]">
               {entry.image_url && (
-                <img src={entry.image_url} alt="" loading="lazy" decoding="async" className="aspect-[16/8] w-full object-cover" />
+                <img src={entry.image_url} alt={entry.title} loading="lazy" decoding="async" className="aspect-[16/8] w-full object-cover" />
               )}
               <div className="p-5 sm:p-6">
                 <div className="mb-3 flex flex-wrap items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-accent">
@@ -374,13 +477,20 @@ export default function PublicationEntries({
                   {entry.rating !== null && <span className="inline-flex items-center gap-1"><Star size={11} /> {entry.rating}/5</span>}
                 </div>
                 <h2 className="font-serif text-2xl">{entry.title}</h2>
+                {entry.keywords?.length > 0 && (
+                  <ul aria-label="Keywords" className="mt-3 flex flex-wrap gap-2">
+                    {entry.keywords.map(keyword => (
+                      <li key={keyword} className="rounded-full border border-accent/20 bg-accent/5 px-2.5 py-1 text-[10px] text-accent">{keyword}</li>
+                    ))}
+                  </ul>
+                )}
                 {entry.location && <p className="mt-2 inline-flex items-center gap-1.5 text-xs opacity-60"><MapPin size={13} className="text-accent" />{entry.location}</p>}
                 {entry.summary && <p className="mt-3 text-sm leading-relaxed opacity-70">{entry.summary}</p>}
                 {entry.content && <p className="mt-4 whitespace-pre-line text-sm leading-relaxed opacity-80">{entry.content}</p>}
                 {entry.price_range && <p className="mt-3 text-xs opacity-55">Price: {entry.price_range}</p>}
                 {entry.map_url && (
                   <a href={entry.map_url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-xs text-accent hover:underline">
-                    Open map <ExternalLink size={12} />
+                    {kind === 'food' || kind === 'travel' ? 'Open location' : 'Open link'} <ExternalLink size={12} />
                   </a>
                 )}
                 {isCurator && entry.user_id === userId && (

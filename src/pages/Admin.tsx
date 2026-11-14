@@ -33,9 +33,26 @@ export default function Admin() {
     }
     setLoading(true);
     setError('');
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
-    if (authError) setError(authError.message);
-    setLoading(false);
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      if (authError) {
+        setError(
+          authError.status === 500 && /database error querying schema/i.test(authError.message)
+            ? 'Supabase sign-in is currently failing because the project database is unavailable. Check the project health and Auth logs in the Supabase dashboard.'
+            : authError.message,
+        );
+      }
+    } catch (loginError) {
+      setError(
+        loginError instanceof TypeError && loginError.message === 'Failed to fetch'
+          ? 'Could not reach Supabase. Check that the project URL is correct and the project is active.'
+          : loginError instanceof Error
+            ? loginError.message
+            : 'Sign-in failed unexpectedly. Please try again.',
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogout = async () => {

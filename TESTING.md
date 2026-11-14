@@ -9,6 +9,13 @@
 5. Delete an uploaded artwork as the curator. Confirm the database item and both stored image files are removed; cancel once and confirm nothing is deleted.
 6. Open an artwork with mouse and keyboard. Confirm focus remains inside the lightbox, Tab and Shift+Tab wrap, arrow keys navigate, Escape closes and restores focus, and zoom and swipe controls work.
 
+## Place and watched-entry uploads
+
+1. Apply the publication-keywords migration, sign in as the curator, and open Food & Cafes or Travel. Add an entry with a photo, title, comma-separated keywords, location, HTTPS map link, and summary. Confirm the card displays the uploaded image, title, keyword chips, location, working map link, and summary.
+2. Edit the place and replace its image and keywords. Confirm the new values appear after saving and the replaced image is removed from storage.
+3. Open Watched and add a review with an uploaded cover image, title, genre, year, rating, and spoiler-free review. Confirm the cover and review metadata display and the genre filter still works.
+4. Delete a place and a watched entry. Confirm each entry disappears and its uploaded cover image is removed from storage.
+
 ## Games link upload and curation
 
 1. Sign in as the curator, choose a Games collection, and confirm the required Game link field and helper text appear. Confirm it is absent for every non-Games collection.

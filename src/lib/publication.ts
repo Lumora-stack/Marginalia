@@ -9,6 +9,7 @@ export type PublicationEntry = {
   summary: string | null;
   content: string | null;
   category: string | null;
+  keywords: string[];
   location: string | null;
   map_url: string | null;
   visited_on: string | null;

@@ -24,9 +24,9 @@ Tech, Places, and Watched support curator-managed entries backed by Supabase. Ea
 
 ## Publishing content
 
-Sign in at `/admin` with the curator account. Creative Journey artwork continues to use the floating upload button. For Tech, Food & Cafes, Travel, and Watched, open the relevant page and use its **Add** button to publish an entry. The curator can edit or delete their entries; published entries are readable without signing in.
+Sign in at `/admin` with the curator account. Creative Journey artwork continues to use the floating upload button. For Tech, Food & Cafes, Travel, and Watched, open the relevant page and use its **Add** button to publish an entry with an uploaded cover image. Place entries include comma-separated keywords, a location, a secure map link, and a summary. The curator can edit or delete their entries; published entries are readable without signing in.
 
-Publication entries are stored in `public.publication_entries`. The migration in `supabase/migrations/` enables row-level security and limits writes to the configured curator email. Configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for the intended Supabase environment; never put a service-role key in the browser app.
+Publication entries are stored in `public.publication_entries`. Apply all migrations in `supabase/migrations/`, including the publication keyword migration, to enable row-level security and place keyword storage. Configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for the intended Supabase environment; never put a service-role key in the browser app.
 
 ---
 
