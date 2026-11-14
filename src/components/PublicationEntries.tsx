@@ -70,6 +70,30 @@ function extensionForImage(blob: Blob, fileName: string) {
   return fileName.split('.').pop()?.toLowerCase() || 'jpg';
 }
 
+function getSaveErrorMessage(saveError: unknown) {
+  if (
+    typeof saveError === 'object'
+    && saveError !== null
+    && 'code' in saveError
+    && saveError.code === '42703'
+    && 'message' in saveError
+    && typeof saveError.message === 'string'
+    && /publication_entries\.keywords|keywords.*does not exist/i.test(saveError.message)
+  ) {
+    return 'Places keywords are not enabled in the database yet. In Supabase SQL Editor, run: ALTER TABLE public.publication_entries ADD COLUMN IF NOT EXISTS keywords text[] NOT NULL DEFAULT \'{}\';';
+  }
+  if (saveError instanceof Error) return saveError.message;
+  if (
+    typeof saveError === 'object'
+    && saveError !== null
+    && 'message' in saveError
+    && typeof saveError.message === 'string'
+  ) {
+    return saveError.message;
+  }
+  return 'Could not save this entry. Please try again.';
+}
+
 export default function PublicationEntries({
   kind,
   searchText = '',
@@ -246,14 +270,24 @@ export default function PublicationEntries({
         title: draft.title.trim(),
         summary: draft.summary.trim() || null,
         content: draft.content.trim() || null,
-        category: draft.category || null,
+        category: kind === 'food' || kind === 'travel'
+          ? entries.find(entry => entry.id === editingId)?.category ?? null
+          : draft.category || null,
         keywords: kind === 'food' || kind === 'travel' ? keywords : [],
-        location: draft.location.trim() || null,
+        location: kind === 'food' || kind === 'travel'
+          ? entries.find(entry => entry.id === editingId)?.location ?? null
+          : draft.location.trim() || null,
         map_url: draft.map_url.trim() || null,
-        visited_on: draft.visited_on || null,
+        visited_on: kind === 'food' || kind === 'travel'
+          ? entries.find(entry => entry.id === editingId)?.visited_on ?? null
+          : draft.visited_on || null,
         year: draft.year ? Number(draft.year) : null,
-        rating: draft.rating ? Number(draft.rating) : null,
-        price_range: draft.price_range.trim() || null,
+        rating: kind === 'food' || kind === 'travel' || kind === 'watched'
+          ? entries.find(entry => entry.id === editingId)?.rating ?? null
+          : draft.rating ? Number(draft.rating) : null,
+        price_range: kind === 'food' || kind === 'travel'
+          ? entries.find(entry => entry.id === editingId)?.price_range ?? null
+          : draft.price_range.trim() || null,
         image_url: imageUrl,
         user_id: userId,
       };
@@ -285,7 +319,7 @@ export default function PublicationEntries({
         if (cleanupError) console.error('Could not clean up publication image after save failure:', cleanupError);
       }
       console.error(`Could not save ${kind} entry:`, saveError);
-      setError(saveError instanceof Error ? saveError.message : 'Could not save this entry. Please try again.');
+      setError(getSaveErrorMessage(saveError));
     } finally {
       setSaving(false);
     }
@@ -351,9 +385,9 @@ export default function PublicationEntries({
             <input required maxLength={140} value={draft.title} onChange={event => updateDraft('title', event.target.value)} className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
           </label>
 
-          {kind !== 'tech' && (
+          {kind === 'watched' && (
             <label className="grid gap-1.5 text-xs">
-              {kind === 'watched' ? 'Genre' : 'Type'}
+              Genre
               <select value={draft.category} onChange={event => updateDraft('category', event.target.value)} className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20">
                 <option value="">Choose one</option>
                 {categoryOptions[kind].map(option => <option key={option} value={option}>{option}</option>)}
@@ -377,56 +411,31 @@ export default function PublicationEntries({
                 Keywords
                 <input maxLength={500} value={draft.keywords} onChange={event => updateDraft('keywords', event.target.value)} placeholder="Separate keywords with commas, e.g. cozy, brunch, Chennai" className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
               </label>
-              <label className="grid gap-1.5 text-xs">
-                {kind === 'food' ? 'Location / address' : 'Destination'}
-                <input maxLength={240} value={draft.location} onChange={event => updateDraft('location', event.target.value)} className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
-              </label>
-              <label className="grid gap-1.5 text-xs">
+              <label className="grid gap-1.5 text-xs sm:col-span-2">
                 {kind === 'food' ? 'Google Maps link' : 'Maps / destination link'}
                 <input type="url" required={!editingId} value={draft.map_url} onChange={event => updateDraft('map_url', event.target.value)} placeholder="https://" className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
               </label>
-              <label className="grid gap-1.5 text-xs">
-                {kind === 'food' ? 'Visit date' : 'Travel date'}
-                <input type="date" value={draft.visited_on} onChange={event => updateDraft('visited_on', event.target.value)} className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
-              </label>
-              {kind === 'food' && (
-                <label className="grid gap-1.5 text-xs">
-                  Price range
-                  <input maxLength={50} value={draft.price_range} onChange={event => updateDraft('price_range', event.target.value)} placeholder="e.g. ₹₹" className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
-                </label>
-              )}
             </>
           )}
 
           {kind === 'watched' && (
-            <>
-              <label className="grid gap-1.5 text-xs">
-                Year
-                <input type="number" min="1888" max="2100" value={draft.year} onChange={event => updateDraft('year', event.target.value)} className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
-              </label>
-              <label className="grid gap-1.5 text-xs">
-                Personal rating (0–5)
-                <input type="number" min="0" max="5" step="0.5" value={draft.rating} onChange={event => updateDraft('rating', event.target.value)} className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
-              </label>
-            </>
-          )}
-
-          {(kind === 'food' || kind === 'travel') && (
             <label className="grid gap-1.5 text-xs">
-              Personal rating (0–5)
-              <input type="number" min="0" max="5" step="0.5" value={draft.rating} onChange={event => updateDraft('rating', event.target.value)} className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
+              Year
+              <input type="number" min="1888" max="2100" value={draft.year} onChange={event => updateDraft('year', event.target.value)} className="rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
             </label>
           )}
 
           <label className="grid gap-1.5 text-xs sm:col-span-2">
-            Short description
+            {kind === 'food' || kind === 'travel' ? 'Summary' : 'Short description'}
             <textarea required={kind === 'food' || kind === 'travel'} rows={2} maxLength={500} value={draft.summary} onChange={event => updateDraft('summary', event.target.value)} className="resize-y rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
           </label>
 
-          <label className="grid gap-1.5 text-xs sm:col-span-2">
-            {kind === 'watched' ? 'Spoiler-free review' : kind === 'tech' ? 'Notes / article' : 'Visit notes'}
-            <textarea rows={5} maxLength={12000} value={draft.content} onChange={event => updateDraft('content', event.target.value)} className="resize-y rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm leading-relaxed outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
-          </label>
+          {kind !== 'food' && kind !== 'travel' && (
+            <label className="grid gap-1.5 text-xs sm:col-span-2">
+              {kind === 'watched' ? 'Spoiler-free review' : 'Notes / article'}
+              <textarea rows={5} maxLength={12000} value={draft.content} onChange={event => updateDraft('content', event.target.value)} className="resize-y rounded-xl border border-ink/10 bg-paper px-4 py-3 text-sm leading-relaxed outline-none focus:border-accent/60 dark:border-white/10 dark:bg-black/20" />
+            </label>
+          )}
 
           <label className="grid gap-1.5 text-xs sm:col-span-2">
             Upload a photo or cover image
