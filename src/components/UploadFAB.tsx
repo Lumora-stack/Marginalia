@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { compressImage } from '../lib/image-utils';
 import { ARTWORK_SECTIONS } from '../lib/categories';
 import { validateGameLink } from '../lib/game-link';
+import { isCreativeCategoryVisible, useSectionVisibility } from '../lib/section-visibility';
 
 type FileMeta = { title: string; section: string; description: string; year: string; link_url: string };
 const extensionForMimeType = (mimeType: string, fallback: string) => {
@@ -20,6 +21,7 @@ const extensionForMimeType = (mimeType: string, fallback: string) => {
 };
 
 export default function UploadFAB() {
+  const { visibility, isVisible } = useSectionVisibility();
   const [isOwner, setIsOwner] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
@@ -31,6 +33,12 @@ export default function UploadFAB() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const availableArtworkSections = ARTWORK_SECTIONS.filter(section =>
+    section.id.startsWith('games-')
+      ? isVisible('games')
+      : isCreativeCategoryVisible(visibility, section.id),
+  );
+  const defaultArtworkSection = availableArtworkSections[0]?.id ?? 'pencil-arts';
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -75,7 +83,7 @@ export default function UploadFAB() {
       const cleanTitle = f.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
       initialMeta[i] = {
         title: cleanTitle,
-        section: 'pencil-arts',
+        section: defaultArtworkSection,
         description: '',
         year: currentYear,
         link_url: '',
@@ -95,7 +103,7 @@ export default function UploadFAB() {
       const oldIdx = i >= index ? i + 1 : i;
       newMeta[i] = metadata[oldIdx] || {
         title: '',
-        section: 'pencil-arts',
+        section: defaultArtworkSection,
         description: '',
         year: new Date().getFullYear().toString(),
         link_url: '',
@@ -157,6 +165,10 @@ export default function UploadFAB() {
     const errors: Record<number, string> = {};
     files.forEach((_, index) => {
       const meta = metadata[index];
+      if (!availableArtworkSections.some(section => section.id === meta?.section)) {
+        errors[index] = 'That Creative collection is currently hidden. Choose an enabled collection.';
+        return;
+      }
       if (meta?.section.startsWith('games-')) {
         const result = validateGameLink(meta.link_url, true);
         if (result.ok) normalizedGameLinks[index] = result.value;
@@ -165,7 +177,7 @@ export default function UploadFAB() {
     });
     setLinkErrors(errors);
     if (Object.keys(errors).length > 0) {
-      setUploadError('Fix the game link errors before publishing.');
+      setUploadError('Fix the highlighted collection or game link issues before publishing.');
       return;
     }
     setUploadError(null);
@@ -186,14 +198,14 @@ export default function UploadFAB() {
         return;
       }
 
-      const firstSection = metadata[0]?.section || 'pencil-arts';
+      const firstSection = metadata[0]?.section || defaultArtworkSection;
 
       // 2. Process and upload each file
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const meta = metadata[i] || {
           title: file.name.replace(/\.[^/.]+$/, ''),
-          section: 'pencil-arts',
+          section: defaultArtworkSection,
           description: '',
           year: new Date().getFullYear().toString(),
           link_url: '',
@@ -282,7 +294,7 @@ export default function UploadFAB() {
           year?: string;
           link_url?: string | null;
         } = {
-          section: meta.section || 'pencil-arts',
+          section: meta.section || defaultArtworkSection,
           title: meta.title?.trim() || file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ') || 'Untitled Artwork',
           description: meta.description?.trim() || '',
           image_url: publicUrl,
@@ -334,7 +346,7 @@ export default function UploadFAB() {
     }
   };
 
-  if (!isOwner) return null;
+  if (!isOwner || availableArtworkSections.length === 0) return null;
 
   return (
     <>
@@ -514,12 +526,12 @@ export default function UploadFAB() {
                         )}
 
                         <select
-                          value={metadata[i]?.section || 'pencil-arts'}
+                          value={metadata[i]?.section || defaultArtworkSection}
                           onChange={e => updateMeta(i, 'section', e.target.value)}
                           className="p-2.5 rounded-xl bg-white dark:bg-black/30 border border-ink/10 dark:border-white/10 outline-none focus:border-accent text-xs font-sans w-full cursor-pointer"
                           disabled={uploading}
                         >
-                          {ARTWORK_SECTIONS.map(section => (
+                          {availableArtworkSections.map(section => (
                             <option key={section.id} value={section.id}>
                               {section.label}
                             </option>

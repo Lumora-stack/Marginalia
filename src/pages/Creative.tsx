@@ -3,10 +3,16 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ContentPage } from '../components/ContentPage';
 import { CATEGORIES } from '../lib/categories';
+import { Navigate } from 'react-router-dom';
+import { isCreativeCategoryVisible, useSectionVisibility } from '../lib/section-visibility';
 
 const iconFor = (id: string) => id === 'games' ? Gamepad2 : Palette;
 
 export default function Creative() {
+  const { isVisible, visibility } = useSectionVisibility();
+  const categories = CATEGORIES.filter(category => isCreativeCategoryVisible(visibility, category.id));
+  if (!isVisible('creative')) return <Navigate to="/" replace />;
+
   return (
     <ContentPage
       eyebrow="The archive · 01"
@@ -15,10 +21,10 @@ export default function Creative() {
     >
       <div className="mb-6 flex items-center gap-2 text-xs opacity-55">
         <Sparkles size={14} className="text-accent" />
-        <span>{String(CATEGORIES.length).padStart(2, '0')} collections · legacy galleries preserved</span>
+        <span>{String(categories.length).padStart(2, '0')} collections · legacy galleries preserved</span>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {CATEGORIES.map((category, index) => {
+        {categories.map((category, index) => {
           const Icon = iconFor(category.id);
           return (
             <motion.div

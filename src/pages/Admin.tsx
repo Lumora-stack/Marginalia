@@ -3,6 +3,7 @@ import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { Upload, LogOut, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { SECTION_VISIBILITY_ITEMS, useSectionVisibility, type SectionVisibilityKey } from '../lib/section-visibility';
 
 export default function Admin() {
   const [user, setUser]         = useState<User | null>(null);
@@ -10,6 +11,7 @@ export default function Admin() {
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
+  const { visibility, loading: visibilityLoading, saving: visibilitySaving, error: visibilityError, setVisible } = useSectionVisibility();
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -184,6 +186,87 @@ export default function Admin() {
           Use the ✦ floating upload button in the bottom-right corner to upload artworks to any section.
         </p>
       </div>
+
+      <section aria-labelledby="section-visibility-heading" className="mt-8 rounded-3xl border border-ink/10 bg-ink/[0.025] p-5 dark:border-white/10 dark:bg-white/[0.025] sm:p-8">
+        <div className="mb-6">
+          <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-accent">Publication controls</p>
+          <h2 id="section-visibility-heading" className="mt-2 font-serif text-2xl">Section visibility</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed opacity-60">
+            Turn a section off to hide it from the site. Creative Journey can be disabled as a whole, or individual galleries can be hidden while the rest remain visible.
+          </p>
+        </div>
+        {visibilityError && (
+          <p role="alert" className="mb-5 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-500">
+            {visibilityError}
+          </p>
+        )}
+        {visibilityLoading ? (
+          <p role="status" className="py-4 text-sm opacity-55">Loading section settings…</p>
+        ) : (
+          <>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {SECTION_VISIBILITY_ITEMS.filter(item => item.group === 'main').map(item => (
+                <VisibilityToggle
+                  key={item.id}
+                  id={item.id}
+                  label={item.label}
+                  enabled={visibility[item.id]}
+                  disabled={visibilitySaving}
+                  onChange={setVisible}
+                />
+              ))}
+            </div>
+            <div className="mt-7 border-t border-ink/10 pt-6 dark:border-white/10">
+              <h3 className="mb-3 font-serif text-xl">Creative collections</h3>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {SECTION_VISIBILITY_ITEMS.filter(item => item.group === 'creative').map(item => (
+                  <VisibilityToggle
+                    key={item.id}
+                    id={item.id}
+                    label={item.label}
+                    enabled={visibility[item.id]}
+                    disabled={visibilitySaving}
+                    onChange={setVisible}
+                  />
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </section>
     </motion.div>
+  );
+}
+
+function VisibilityToggle({
+  id,
+  label,
+  enabled,
+  disabled,
+  onChange,
+}: {
+  id: SectionVisibilityKey;
+  label: string;
+  enabled: boolean;
+  disabled: boolean;
+  onChange: (id: SectionVisibilityKey, enabled: boolean) => Promise<void>;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-2xl border border-ink/10 bg-paper/50 px-4 py-3 dark:border-white/10 dark:bg-black/15">
+      <span className="text-sm">{label}</span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={enabled}
+        aria-label={`${label} ${enabled ? 'visible' : 'hidden'}`}
+        disabled={disabled}
+        onClick={() => void onChange(id, !enabled)}
+        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-wait disabled:opacity-60 ${
+          enabled ? 'bg-accent' : 'bg-ink/20 dark:bg-white/20'
+        }`}
+      >
+        <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-6' : 'translate-x-1'}`} />
+      </button>
+    </div>
   );
 }

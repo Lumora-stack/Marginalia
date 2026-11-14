@@ -6,41 +6,58 @@ import { CATEGORIES } from '../lib/categories';
 import { preloadRoute } from '../lib/preloadRoute';
 import { SITE_NAME } from '../lib/site';
 import ThemeToggle from './ThemeToggle';
+import { isCreativeCategoryVisible, useSectionVisibility, type SectionVisibilityKey } from '../lib/section-visibility';
 
-const mainLinks = [
+const mainLinks: Array<{ label: string; to: string; section?: SectionVisibilityKey | 'places' }> = [
   { label: 'Home', to: '/' },
-  { label: 'Creative', to: '/creative' },
-  { label: 'Tech', to: '/tech' },
-  { label: 'Places', to: '/places/food' },
-  { label: 'Watched', to: '/watched' },
-  { label: 'Settings', to: '/settings' },
+  { label: 'Creative', to: '/creative', section: 'creative' },
+  { label: 'Tech', to: '/tech', section: 'tech' },
+  { label: 'Places', to: '/places/food', section: 'places' },
+  { label: 'Watched', to: '/watched', section: 'watched' },
+  { label: 'Settings', to: '/settings', section: 'settings' },
 ];
 
-const searchEntries = [
+type SearchEntry = {
+  label: string;
+  to: string;
+  description: string;
+  visibilityKey?: SectionVisibilityKey | null;
+  categoryId?: string;
+};
+
+const searchEntries: SearchEntry[] = [
   ...mainLinks.map(link => ({
     ...link,
+    visibilityKey: !link.section || link.section === 'places' ? null : link.section,
     description: link.label === 'Creative' ? 'Pencil art, doodles, sketches, crafts, and games' : `Explore ${link.label.toLowerCase()}`,
   })),
-  { label: 'Food & Cafes', to: '/places/food', description: 'Places to eat and remember' },
-  { label: 'Travel', to: '/places/travel', description: 'Destinations and trips' },
-  { label: 'About', to: '/settings/about', description: 'Profile, interests, and contact' },
+  { label: 'Food & Cafes', to: '/places/food', visibilityKey: 'food', description: 'Places to eat and remember' },
+  { label: 'Travel', to: '/places/travel', visibilityKey: 'travel', description: 'Destinations and trips' },
+  { label: 'About', to: '/settings/about', visibilityKey: 'settings', description: 'Profile, interests, and contact' },
   ...CATEGORIES.map(category => ({
     label: category.label,
     to: `/creative/${category.id}`,
+    categoryId: category.id,
     description: category.desc,
   })),
 ];
 
 function GlobalSearch() {
+  const { isVisible, visibility } = useSectionVisibility();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const results = useMemo(() => {
     const term = query.trim().toLowerCase();
+    const visibleSearchEntries = searchEntries.filter(entry => {
+      if (typeof entry.categoryId === 'string') return isCreativeCategoryVisible(visibility, entry.categoryId);
+      if (entry.label === 'Places') return isVisible('food') || isVisible('travel');
+      return !entry.visibilityKey || isVisible(entry.visibilityKey);
+    });
     return term
-      ? searchEntries.filter(entry => `${entry.label} ${entry.description}`.toLowerCase().includes(term)).slice(0, 8)
-      : searchEntries.slice(0, 6);
-  }, [query]);
+      ? visibleSearchEntries.filter(entry => `${entry.label} ${entry.description}`.toLowerCase().includes(term)).slice(0, 8)
+      : visibleSearchEntries.slice(0, 6);
+  }, [isVisible, query, visibility]);
 
   useEffect(() => {
     if (!open) return;
@@ -137,6 +154,14 @@ function GlobalSearch() {
 
 export default function PrimaryNavigation() {
   const location = useLocation();
+  const { isVisible } = useSectionVisibility();
+  const visibleMainLinks = mainLinks.filter(link => {
+    if (!link.section) return true;
+    if (link.section === 'places') return isVisible('food') || isVisible('travel');
+    return isVisible(link.section);
+  }).map(link => link.label === 'Places' && !isVisible('food')
+    ? { ...link, to: '/places/travel' }
+    : link);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-ink/8 bg-paper/85 backdrop-blur-xl dark:border-white/8 dark:bg-[#0c0c0e]/85">
@@ -147,7 +172,7 @@ export default function PrimaryNavigation() {
         </Link>
 
         <nav aria-label="Main navigation" className="hidden items-center gap-1 md:flex">
-          {mainLinks.map(link => {
+          {visibleMainLinks.map(link => {
             const active = link.to === '/'
               ? location.pathname === '/'
               : link.to === '/places/food'

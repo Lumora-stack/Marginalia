@@ -1,9 +1,10 @@
 import { ArrowUpRight, SunMoon, UserRound } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { ContentPage } from '../components/ContentPage';
 import ThemeToggle from '../components/ThemeToggle';
 import { getThemePreference, setThemePreference, type ThemePreference } from '../lib/theme';
+import { useSectionVisibility } from '../lib/section-visibility';
 
 const preferences: { id: ThemePreference; label: string; detail: string }[] = [
   { id: 'system', label: 'System', detail: 'Follow your device' },
@@ -13,7 +14,9 @@ const preferences: { id: ThemePreference; label: string; detail: string }[] = [
 ];
 
 export default function Settings() {
+  const { isVisible } = useSectionVisibility();
   const [preference, setPreference] = useState<ThemePreference>(() => getThemePreference());
+  if (!isVisible('settings')) return <Navigate to="/" replace />;
 
   const chooseTheme = (next: ThemePreference) => {
     setThemePreference(next);

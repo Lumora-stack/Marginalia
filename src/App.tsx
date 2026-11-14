@@ -6,6 +6,7 @@ import ScrollToTop from './components/ScrollToTop';
 import { QualityProvider } from './lib/quality';
 import { applyThemePreference, getThemePreference } from './lib/theme';
 import { SITE_NAME } from './lib/site';
+import { SectionVisibilityProvider } from './lib/section-visibility';
 
 const Home = lazy(() => import('./pages/PublicationHome'));
 const Section = lazy(() => import('./pages/Section'));
@@ -141,35 +142,37 @@ function App() {
   return (
     <BrowserRouter>
       <QualityProvider>
-        <MotionConfig reducedMotion="user">
-          <SystemThemeSync />
-          <ScrollTriggerRefresh />
-          <ScrollToTop />
-          <RouteErrorBoundary>
-            <Routes>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Suspense fallback={<RouteLoading />}><Home /></Suspense>} />
-                <Route path="section/:id" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
-                <Route path="section/:id/:mode" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
-                <Route path="creative" element={<Suspense fallback={<RouteLoading />}><Creative /></Suspense>} />
-                <Route path="creative/:id" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
-                <Route path="creative/:id/:mode" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
-                <Route path="tech" element={<Suspense fallback={<RouteLoading />}><Tech /></Suspense>} />
-                <Route path="tech/:slug" element={<Suspense fallback={<RouteLoading />}><Tech /></Suspense>} />
-                <Route path="places" element={<Navigate to="/places/food" replace />} />
-                <Route path="places/food" element={<Suspense fallback={<RouteLoading />}><Places /></Suspense>} />
-                <Route path="places/travel" element={<Suspense fallback={<RouteLoading />}><Places /></Suspense>} />
-                <Route path="watched" element={<Suspense fallback={<RouteLoading />}><Watched /></Suspense>} />
-                <Route path="watched/:slug" element={<Suspense fallback={<RouteLoading />}><Watched /></Suspense>} />
-                <Route path="settings" element={<Suspense fallback={<RouteLoading />}><Settings /></Suspense>} />
-                <Route path="settings/about" element={<Suspense fallback={<RouteLoading />}><About /></Suspense>} />
-                <Route path="about" element={<Navigate to="/settings/about" replace />} />
-                <Route path="admin" element={<Suspense fallback={<RouteLoading />}><Admin /></Suspense>} />
-                <Route path="*" element={<Suspense fallback={<RouteLoading />}><NotFound /></Suspense>} />
-              </Route>
-            </Routes>
-          </RouteErrorBoundary>
-        </MotionConfig>
+        <SectionVisibilityProvider>
+          <MotionConfig reducedMotion="user">
+            <SystemThemeSync />
+            <ScrollTriggerRefresh />
+            <ScrollToTop />
+            <RouteErrorBoundary>
+              <Routes>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Suspense fallback={<RouteLoading />}><Home /></Suspense>} />
+                  <Route path="section/:id" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
+                  <Route path="section/:id/:mode" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
+                  <Route path="creative" element={<Suspense fallback={<RouteLoading />}><Creative /></Suspense>} />
+                  <Route path="creative/:id" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
+                  <Route path="creative/:id/:mode" element={<Suspense fallback={<RouteLoading />}><Section /></Suspense>} />
+                  <Route path="tech" element={<Suspense fallback={<RouteLoading />}><Tech /></Suspense>} />
+                  <Route path="tech/:slug" element={<Suspense fallback={<RouteLoading />}><Tech /></Suspense>} />
+                  <Route path="places" element={<Suspense fallback={<RouteLoading />}><Places /></Suspense>} />
+                  <Route path="places/food" element={<Suspense fallback={<RouteLoading />}><Places /></Suspense>} />
+                  <Route path="places/travel" element={<Suspense fallback={<RouteLoading />}><Places /></Suspense>} />
+                  <Route path="watched" element={<Suspense fallback={<RouteLoading />}><Watched /></Suspense>} />
+                  <Route path="watched/:slug" element={<Suspense fallback={<RouteLoading />}><Watched /></Suspense>} />
+                  <Route path="settings" element={<Suspense fallback={<RouteLoading />}><Settings /></Suspense>} />
+                  <Route path="settings/about" element={<Suspense fallback={<RouteLoading />}><About /></Suspense>} />
+                  <Route path="about" element={<Navigate to="/settings/about" replace />} />
+                  <Route path="admin" element={<Suspense fallback={<RouteLoading />}><Admin /></Suspense>} />
+                  <Route path="*" element={<Suspense fallback={<RouteLoading />}><NotFound /></Suspense>} />
+                </Route>
+              </Routes>
+            </RouteErrorBoundary>
+          </MotionConfig>
+        </SectionVisibilityProvider>
       </QualityProvider>
     </BrowserRouter>
   );

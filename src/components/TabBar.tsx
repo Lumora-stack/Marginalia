@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Compass, Film, Home, Palette, Settings, Terminal } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { preloadRoute } from '../lib/preloadRoute';
+import { useSectionVisibility } from '../lib/section-visibility';
 
 const tabs = [
   { label: 'Home', to: '/', Icon: Home },
@@ -14,15 +15,26 @@ const tabs = [
 
 export default function TabBar() {
   const location = useLocation();
+  const { isVisible } = useSectionVisibility();
   if (location.pathname.startsWith('/admin')) return null;
+  const visibleTabs = tabs.filter(tab => {
+    if (tab.label === 'Creative') return isVisible('creative');
+    if (tab.label === 'Tech') return isVisible('tech');
+    if (tab.label === 'Places') return isVisible('food') || isVisible('travel');
+    if (tab.label === 'Watched') return isVisible('watched');
+    if (tab.label === 'Settings') return isVisible('settings');
+    return true;
+  }).map(tab => tab.label === 'Places' && !isVisible('food')
+    ? { ...tab, to: '/places/travel' }
+    : tab);
 
   return (
     <nav
       aria-label="Primary mobile navigation"
       className="mobile-tab-bar fixed inset-x-0 bottom-0 z-50 border-t border-ink/10 bg-paper/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_rgba(20,18,14,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0c0c0e]/95 md:hidden"
     >
-      <div className="mx-auto grid max-w-xl grid-cols-6">
-        {tabs.map(({ label, to, Icon }) => {
+      <div className="mx-auto flex max-w-xl justify-around">
+        {visibleTabs.map(({ label, to, Icon }) => {
           const active = to === '/'
             ? location.pathname === '/'
             : to === '/places/food'

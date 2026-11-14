@@ -1,20 +1,23 @@
 import { Suspense } from 'react';
-import { useLocation, useParams, Link } from 'react-router-dom';
+import { useLocation, useParams, Link, Navigate } from 'react-router-dom';
 import Gallery from '../components/Gallery';
 import Games from '../components/Games';
 import GamesHub from '../components/GamesHub';
 import { motion } from 'framer-motion';
 import { getCategoryById, CATEGORIES } from '../lib/categories';
 import { ArrowLeft, Sparkles } from 'lucide-react';
+import { isCreativeCategoryVisible, useSectionVisibility } from '../lib/section-visibility';
 
 export default function Section() {
   const { id, mode } = useParams();
   const location = useLocation();
+  const { visibility, isVisible } = useSectionVisibility();
   const inCreativeJourney = location.pathname.startsWith('/creative/');
   if (!id) return null;
 
   const category = getCategoryById(id);
   const selectedMode = category?.gameModes?.find(gameMode => gameMode.id === mode);
+  const visibleCategories = CATEGORIES.filter(item => isCreativeCategoryVisible(visibility, item.id));
 
   if (!category || (mode && !selectedMode)) {
     return (
@@ -30,6 +33,9 @@ export default function Section() {
         </Link>
       </div>
     );
+  }
+  if (!isVisible('creative') || !isCreativeCategoryVisible(visibility, category.id)) {
+    return <Navigate to={isVisible('creative') && visibleCategories.length ? '/creative' : '/'} replace />;
   }
 
   const isGameCollection = !!category.gameModes;
@@ -80,7 +86,7 @@ export default function Section() {
         <div className="flex items-center gap-3 mb-4">
           <Sparkles size={14} className="text-accent" />
           <p className="text-xs font-mono tracking-[0.3em] uppercase text-accent font-semibold">
-            Collection {category.num} / {String(CATEGORIES.length).padStart(2, '0')}
+            Collection {category.num} / {String(visibleCategories.length).padStart(2, '0')}
           </p>
         </div>
 
@@ -96,7 +102,7 @@ export default function Section() {
 
           {/* Quick Collection Switcher Pills */}
           <div className="hidden lg:flex items-center gap-2 overflow-x-auto pb-1">
-            {CATEGORIES.map(c => (
+            {visibleCategories.map(c => (
               <Link
                 key={c.id}
                 to={`${inCreativeJourney ? '/creative' : '/section'}/${c.id}`}

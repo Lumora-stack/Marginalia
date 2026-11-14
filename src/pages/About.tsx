@@ -1,6 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useThemeColors } from '../lib/useThemeColors';
+import { Navigate } from 'react-router-dom';
+import { useSectionVisibility } from '../lib/section-visibility';
 
 const CountUp = lazy(() => import('../components/CountUp'));
 const ProfileCard = lazy(() => import('../components/ProfileCard'));
@@ -42,7 +44,9 @@ const contacts = [
 ];
 
 export default function About() {
+  const { isVisible } = useSectionVisibility();
   const colors = useThemeColors();
+  if (!isVisible('settings')) return <Navigate to="/" replace />;
 
   return (
     <motion.div

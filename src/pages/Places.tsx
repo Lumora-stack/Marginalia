@@ -1,8 +1,9 @@
 import { ArrowUpRight, MapPin, MapPinned, Utensils, Compass } from 'lucide-react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { Navigate, NavLink, useLocation } from 'react-router-dom';
 import { ContentPage } from '../components/ContentPage';
 import PublicationEntries from '../components/PublicationEntries';
 import { useState, type FormEvent } from 'react';
+import { useSectionVisibility } from '../lib/section-visibility';
 
 const placeTabs = [
   { to: '/places/food', label: 'Food & Cafes', Icon: Utensils },
@@ -11,9 +12,19 @@ const placeTabs = [
 
 export default function Places() {
   const location = useLocation();
+  const { isVisible } = useSectionVisibility();
   const isTravel = location.pathname.endsWith('/travel');
   const [mapQuery, setMapQuery] = useState('');
   const [submittedQuery, setSubmittedQuery] = useState('');
+  const isCurrentSectionVisible = isVisible(isTravel ? 'travel' : 'food');
+  const alternatePath = isTravel ? '/places/food' : '/places/travel';
+
+  if (location.pathname === '/places') {
+    return <Navigate to={isVisible('food') ? '/places/food' : isVisible('travel') ? '/places/travel' : '/'} replace />;
+  }
+  if (!isCurrentSectionVisible) {
+    return <Navigate to={isVisible(isTravel ? 'food' : 'travel') ? alternatePath : '/'} replace />;
+  }
 
   const handleMapSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -31,7 +42,7 @@ export default function Places() {
         : 'Cafes, meals, and local finds—with the details that make a place worth remembering.'}
     >
       <nav aria-label="Place collections" className="mb-8 inline-flex rounded-full border border-ink/10 bg-ink/[0.025] p-1 dark:border-white/10 dark:bg-white/[0.025]">
-        {placeTabs.map(({ to, label, Icon }) => {
+        {placeTabs.filter(tab => tab.to.endsWith('/food') ? isVisible('food') : isVisible('travel')).map(({ to, label, Icon }) => {
           const active = to.endsWith(isTravel ? 'travel' : 'food');
           return (
             <NavLink
@@ -107,8 +118,8 @@ export default function Places() {
             <h2 className="mt-4 font-serif text-2xl">{isTravel ? 'Journeys & little detours' : 'Cafes & things to taste'}</h2>
             <p className="mt-3 text-sm leading-relaxed opacity-55">
               {isTravel
-                ? 'Dates, destination notes, practical tips, and photo memories.'
-                : 'Cuisine, location, a rating, price range, and the dish I would order again.'}
+                ? 'A photo, a few keywords, a destination link, and a short travel summary.'
+                : 'A photo, a few keywords, a location link, and the story behind the visit.'}
             </p>
           </div>
           <div className="mt-8 flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider opacity-45">

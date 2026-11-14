@@ -2,11 +2,15 @@ import { Film, SlidersHorizontal, Star } from 'lucide-react';
 import { useState } from 'react';
 import { ContentPage } from '../components/ContentPage';
 import PublicationEntries from '../components/PublicationEntries';
+import { Navigate } from 'react-router-dom';
+import { useSectionVisibility } from '../lib/section-visibility';
 
 const genres = ['All genres', 'Drama', 'Comedy', 'Sci-Fi', 'Thriller', 'Animation'];
 
 export default function Watched() {
+  const { isVisible } = useSectionVisibility();
   const [genre, setGenre] = useState('All genres');
+  if (!isVisible('watched')) return <Navigate to="/" replace />;
 
   return (
     <ContentPage

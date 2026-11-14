@@ -2,12 +2,16 @@ import { Code2, Search, SlidersHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { ContentPage } from '../components/ContentPage';
 import PublicationEntries from '../components/PublicationEntries';
+import { Navigate } from 'react-router-dom';
+import { useSectionVisibility } from '../lib/section-visibility';
 
 const topics = ['All topics', 'DevSecOps', 'CI/CD', 'Cloud security', 'Tooling'];
 
 export default function Tech() {
+  const { isVisible } = useSectionVisibility();
   const [topic, setTopic] = useState('All topics');
   const [query, setQuery] = useState('');
+  if (!isVisible('tech')) return <Navigate to="/" replace />;
 
   return (
     <ContentPage
