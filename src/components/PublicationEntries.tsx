@@ -83,7 +83,7 @@ function getSaveErrorMessage(saveError: unknown) {
     && /keywords/i.test(errorText)
     && /publication_entries|schema cache|does not exist|could not find/i.test(errorText)
   ) {
-    return 'Places keywords are missing from the Supabase database schema. Apply the keywords migration in supabase/migrations/20261114120000_publication_entry_keywords.sql, then retry.';
+    return 'Publishing to Food & Cafes, Travel, Watched, and Tech requires the keywords database migration. Apply supabase/migrations/20261114120000_publication_entry_keywords.sql in Supabase, then retry.';
   }
   if (message) return message;
   return 'Could not save this entry. Please try again.';
